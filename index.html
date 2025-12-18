@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MaliApp Final</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+  font-family:'Cairo',sans-serif;
+  background:linear-gradient(to bottom,#6a11cb,#2575fc);
+  min-height:100vh;
+  margin:0;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding-top:20px;
+}
+
+.container{
+  background:#fff;
+  width:420px;
+  border-radius:20px;
+  padding:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,.4);
+}
+
+h2,h3{text-align:center}
+
+input,button{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:8px;
+  font-size:16px;
+}
+
+input{border:1px solid #ccc}
+button{
+  background:#28a745;
+  border:none;
+  color:#fff;
+}
+button:hover{background:#218838}
+
+.dashboard{display:none}
+
+.task{
+  background:#f1f1f1;
+  padding:10px;
+  border-radius:10px;
+  display:flex;
+  justify-content:space-between;
+  margin:5px 0;
+}
+
+.team-member{
+  padding:10px;
+  border-radius:10px;
+  margin:4px 0;
+  display:flex;
+  justify-content:space-between;
+}
+
+.level1{background:#d1e7dd}
+.level2{background:#fff3cd}
+.level3{background:#f8d7da}
+.level4{background:#cfe2ff}
+
+#popup{
+  display:none;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:#fff;
+  padding:30px;
+  border-radius:20px;
+  text-align:center;
+  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div id="login">
+    <h2>MaliApp</h2>
+    <input id="email" placeholder="إيميل أو هاتف">
+    <input id="pass" type="password" placeholder="كلمة المرور">
+    <button onclick="login()">دخول</button>
+  </div>
+
+  <div class="dashboard" id="dash">
+    <h2>مرحبا 👋</h2>
+    <p>رصيدك: <b id="balance">0</b> 💰</p>
+    <p>رابطك: <span id="ref"></span></p>
+
+    <h3>المهام اليومية</h3>
+    <div id="tasks"></div>
+
+    <h3>دعوة صديق</h3>
+    <input id="friend" placeholder="إيميل أو هاتف">
+    <button onclick="addFriend()">إضافة</button>
+
+    <h3>الفريق</h3>
+    <div id="team"></div>
+  </div>
+</div>
+
+<div id="popup">
+  <h2>🎉 مستوى جديد!</h2>
+  <p>مكافأة <span id="reward"></span> 💰</p>
+  <button onclick="closePopup()">ممتاز</button>
+</div>
+
+<script>
+let balance=Number(localStorage.balance||0)
+let ref=localStorage.ref||Math.floor(Math.random()*100000)
+let team=JSON.parse(localStorage.team||"[]")
+
+localStorage.ref=ref
+
+const tasksData=[
+ {t:"فتح التطبيق",r:10},
+ {t:"دعوة صديق",r:15},
+ {t:"مشاركة الرابط",r:12}
+]
+
+function login(){
+ if(!email.value||!pass.value)return alert("كمّل البيانات")
+ login.style.display="none"
+ dash.style.display="block"
+ refSpan()
+ update()
+ tasks()
+ teamRender()
+}
+
+function refSpan(){
+ document.getElementById("ref").innerText=
+ "https://maliapp.netlify.app/?ref="+ref
+}
+
+function update(){
+ balanceSpan().innerText=balance
+ localStorage.balance=balance
+}
+
+function balanceSpan(){
+ return document.getElementById("balance")
+}
+
+function tasks(){
+ tasks.innerHTML=""
+ tasksData.forEach(x=>{
+  let d=document.createElement("div")
+  d.className="task"
+  let b=document.createElement("button")
+  b.innerText="إتمام"
+  b.onclick=()=>{
+    balance+=x.r
+    update()
+    b.disabled=true
+  }
+  d.innerHTML=`${x.t} (+${x.r})`
+  d.appendChild(b)
+  tasks.appendChild(d)
+ })
+}
+
+function addFriend(){
+ if(!friend.value)return
+ let lvl=Math.floor(team.length/3)+1
+ team.push({n:friend.value,l:lvl})
+ balance+=10
+ rewardLevel(lvl)
+ save()
+ teamRender()
+ friend.value=""
+}
+
+function teamRender(){
+ teamDiv.innerHTML=""
+ team.forEach(m=>{
+  let d=document.createElement("div")
+  d.className="team-member level"+m.l
+  d.innerHTML=`${m.n} | مستوى ${m.l}`
+  teamDiv.appendChild(d)
+ })
+}
+
+function rewardLevel(l){
+ let r= l==2?20:l==3?30:l>=4?50:0
+ if(r){
+  balance+=r
+  reward.innerText=r
+  popup.style.display="block"
+ }
+}
+
+function closePopup(){
+ popup.style.display="none"
+}
+
+function save(){
+ localStorage.team=JSON.stringify(team)
+ update()
+}
+</script>
+
+</body>
+</html>
