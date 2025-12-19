@@ -5,170 +5,153 @@
 <title>MaliApp</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } 
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
-  authDomain: "maliapp-63f91.firebaseapp.com",
-  projectId: "maliapp-63f91",
-  storageBucket: "maliapp-63f91.appspot.com",
-  messagingSenderId: "901870433172",
-  appId: "1:901870433172:web:325b2312af72099279d581"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-/* 🔐 تسجيل حساب */
-window.register = async function () {
-  const phone = document.getElementById("phone").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const pass = document.getElementById("password").value;
-  const pass2 = document.getElementById("password2").value;
-  const invite = document.getElementById("invite").value.trim();
-
-  if (!phone || !email || !pass || !pass2) {
-    alert("❌ كل الخانات إجبارية");
-    return;
-  }
-  if (pass.length < 6) {
-    alert("❌ كلمة المرور أقل من 6 أحرف");
-    return;
-  }
-  if (pass !== pass2) {
-    alert("❌ كلمات المرور غير متطابقة");
-    return;
-  }
-
-  try {
-    const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-    const uid = userCred.user.uid;
-
-    // رابط دعوة خاص
-    const myInvite = Math.random().toString(36).substring(2,8);
-
-    await setDoc(doc(db, "users", uid), {
-      phone,
-      email,
-      balance: 0,
-      level: 1,
-      inviteCode: myInvite,
-      invitedBy: invite || null,
-      createdAt: new Date()
-    });
-
-    showApp(myInvite);
-  } catch (e) {
-    alert("❌ " + e.message);
-  }
-};
-
-/* 🔑 تسجيل دخول */
-window.login = async function () {
-  const email = document.getElementById("emailLogin").value.trim();
-  const pass = document.getElementById("passwordLogin").value;
-
-  try {
-    const userCred = await signInWithEmailAndPassword(auth, email, pass);
-    const uid = userCred.user.uid;
-
-    const snap = await getDoc(doc(db, "users", uid));
-    showApp(snap.data().inviteCode);
-  } catch (e) {
-    alert("❌ بيانات الدخول خاطئة");
-  }
-};
-
-function showApp(inviteCode) {
-  document.getElementById("auth").style.display = "none";
-  document.getElementById("app").style.display = "block";
-  document.getElementById("inviteLink").innerText =
-    location.origin + "/?ref=" + inviteCode;
-}
-</script>
-
 <style>
 body{
+  margin:0;
   font-family:Arial;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  height:100vh;
+  background:linear-gradient(135deg,#141e30,#243b55);
+  color:#fff;
   display:flex;
   justify-content:center;
   align-items:center;
+  min-height:100vh;
 }
-.box{
-  background:#fff;
-  width:340px;
-  padding:25px;
-  border-radius:15px;
-  box-shadow:0 20px 40px rgba(0,0,0,.3);
+.card{
+  background:#0f172a;
+  width:360px;
+  padding:20px;
+  border-radius:16px;
+  box-shadow:0 20px 40px rgba(0,0,0,.5);
 }
-h2{margin-bottom:15px}
+h2,h3{text-align:center;margin:10px 0;}
 input,button{
   width:100%;
-  padding:11px;
+  padding:12px;
   margin:6px 0;
-  border-radius:8px;
-  border:1px solid #ccc;
-}
-button{
-  background:#2c5364;
-  color:#fff;
-  font-size:16px;
+  border-radius:10px;
   border:none;
+  font-size:15px;
 }
-.switch{
-  color:#2575fc;
+input{background:#020617;color:#fff;border:1px solid #334155;}
+button{
+  background:#22c55e;
+  color:#000;
+  font-weight:bold;
   cursor:pointer;
-  font-size:14px;
 }
+button:disabled{
+  background:#475569;
+  color:#fff;
+}
+.task{
+  background:#020617;
+  padding:12px;
+  border-radius:10px;
+  margin:8px 0;
+  border:1px solid #334155;
+}
+.timer{
+  margin-top:5px;
+  font-size:14px;
+  color:#38bdf8;
+}
+.hide{display:none;}
 </style>
 </head>
 
 <body>
 
-<div class="box" id="auth">
-  <h2>MaliApp</h2>
+<!-- تسجيل -->
+<div class="card" id="registerBox">
+<h2>MaliApp</h2>
 
-  <!-- تسجيل -->
-  <div id="registerBox">
-    <input id="phone" placeholder="📱 رقم الهاتف">
-    <input id="email" type="email" placeholder="📧 البريد الإلكتروني">
-    <input id="password" type="password" placeholder="🔒 كلمة المرور">
-    <input id="password2" type="password" placeholder="🔒 تأكيد كلمة المرور">
-    <input id="invite" placeholder="🎁 رمز الدعوة (اختياري)">
-    <button onclick="register()">إنشاء حساب</button>
-    <p class="switch" onclick="toggle()">لدي حساب</p>
-  </div>
+<input id="phone" placeholder="📱 رقم الهاتف">
+<input id="email" placeholder="📧 البريد الإلكتروني">
+<input id="pass" type="password" placeholder="🔒 كلمة المرور">
+<input id="pass2" type="password" placeholder="🔒 تأكيد كلمة المرور">
+<input id="invite" placeholder="🔗 رمز الدعوة (اختياري)">
 
-  <!-- دخول -->
-  <div id="loginBox" style="display:none">
-    <input id="emailLogin" type="email" placeholder="📧 البريد الإلكتروني">
-    <input id="passwordLogin" type="password" placeholder="🔒 كلمة المرور">
-    <button onclick="login()">تسجيل دخول</button>
-    <p class="switch" onclick="toggle()">إنشاء حساب</p>
-  </div>
+<button onclick="register()">إنشاء حساب</button>
 </div>
 
-<div class="box" id="app" style="display:none">
-  <h2>🎉 مرحبا بك</h2>
-  <p>رابط دعوتك:</p>
-  <p id="inviteLink" style="word-break:break-all;color:#2575fc"></p>
+<!-- التطبيق -->
+<div class="card hide" id="appBox">
+<h3>🎉 مرحبا بك</h3>
+<p>💰 الرصيد: <span id="balance">0</span> مالي</p>
+<p>⭐ المستوى: 1</p>
+
+<h3>📝 مهام اليوم</h3>
+<div id="tasks"></div>
 </div>
 
 <script>
-function toggle(){
-  registerBox.style.display =
-    registerBox.style.display === "none" ? "block" : "none";
-  loginBox.style.display =
-    loginBox.style.display === "none" ? "block" : "none";
+let balance = Number(localStorage.getItem("balance")) || 0;
+let completed = JSON.parse(localStorage.getItem("tasksDone")) || [];
+
+function register(){
+  let p=document.getElementById("pass").value;
+  let p2=document.getElementById("pass2").value;
+  let e=document.getElementById("email").value;
+
+  if(!e || !p || !p2){
+    alert("رجاءً إكمال كل الخانات");
+    return;
+  }
+  if(p.length<6){
+    alert("كلمة المرور أقل من 6 أحرف");
+    return;
+  }
+  if(p!==p2){
+    alert("كلمات المرور غير متطابقة");
+    return;
+  }
+
+  localStorage.setItem("user",e);
+  document.getElementById("registerBox").classList.add("hide");
+  document.getElementById("appBox").classList.remove("hide");
+  init();
+}
+
+function init(){
+  document.getElementById("balance").innerText=balance;
+  loadTasks();
+}
+
+function loadTasks(){
+  let tasksBox=document.getElementById("tasks");
+  tasksBox.innerHTML="";
+  for(let i=1;i<=5;i++){
+    let done = completed.includes(i);
+    let div=document.createElement("div");
+    div.className="task";
+    div.innerHTML=`
+      <b>مهمة ${i}</b><br>
+      <button ${done?"disabled":""} onclick="startTask(${i},this)">ابدأ المهمة</button>
+      <div class="timer" id="timer${i}"></div>
+    `;
+    tasksBox.appendChild(div);
+  }
+}
+
+function startTask(id,btn){
+  btn.disabled=true;
+  let time=30;
+  let t=document.getElementById("timer"+id);
+  t.innerText=`⏳ ${time} ثانية`;
+
+  let interval=setInterval(()=>{
+    time--;
+    t.innerText=`⏳ ${time} ثانية`;
+    if(time<=0){
+      clearInterval(interval);
+      t.innerText="✅ تمت المهمة";
+      balance+=10;
+      completed.push(id);
+      localStorage.setItem("balance",balance);
+      localStorage.setItem("tasksDone",JSON.stringify(completed));
+      document.getElementById("balance").innerText=balance;
+    }
+  },1000);
 }
 </script>
 
