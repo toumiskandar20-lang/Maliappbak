@@ -8,22 +8,9 @@
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-/* 🔐 Firebase Config */
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
   authDomain: "maliapp-63f91.firebaseapp.com",
@@ -35,187 +22,190 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 
-/* عناصر */
-const authBox = document.getElementById("auth");
-const appBox = document.getElementById("app");
-const statusText = document.getElementById("status");
+/* ===== AUTH ===== */
+window.register = function () {
+  const email = emailR.value;
+  const pass = passR.value;
+  const pass2 = passR2.value;
 
-let currentTaskRunning = false;
+  if(pass !== pass2){ alert("كلمة المرور غير متطابقة"); return; }
 
-/* 🔹 تسجيل حساب */
-window.register = async () => {
-  const email = emailInput.value.trim();
-  const pass = passInput.value.trim();
-  const invite = inviteInput.value.trim();
-
-  if (!email || !pass) return alert("❌ أكمل المعطيات");
-
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    const uid = cred.user.uid;
-
-    const referralCode = uid.substring(0, 6);
-
-    await setDoc(doc(db, "users", uid), {
-      email,
-      balance: 0,
-      level: 1,
-      teamCount: 0,
-      referralCode,
-      invitedBy: invite || null,
-      lastTasks: {},
-      createdAt: serverTimestamp()
-    });
-
-    statusText.innerText = "✅ حسابك تخلق بنجاح";
-  } catch (e) {
-    alert(e.message);
-  }
+  createUserWithEmailAndPassword(auth,email,pass)
+  .then(()=>{
+    initUser();
+    showApp();
+  }).catch(e=>alert(e.message));
 };
 
-/* 🔹 تسجيل دخول */
-window.login = async () => {
-  const email = emailInput.value.trim();
-  const pass = passInput.value.trim();
-
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch (e) {
-    alert("❌ بيانات غير صحيحة");
-  }
+window.login = function () {
+  signInWithEmailAndPassword(auth,emailL.value,passL.value)
+  .then(showApp)
+  .catch(e=>alert(e.message));
 };
 
-/* 🔹 مراقبة الجلسة */
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    authBox.style.display = "none";
-    appBox.style.display = "block";
-    loadUser(user.uid);
+window.logout = function(){
+  signOut(auth).then(()=>location.reload());
+};
+
+/* ===== USER INIT ===== */
+function initUser(){
+  if(!localStorage.balance){
+    localStorage.balance = 0;
+    localStorage.team = JSON.stringify([]);
+    localStorage.ref = Math.floor(100000 + Math.random()*900000);
+    localStorage.tasks = JSON.stringify({});
   }
-});
-
-/* 🔹 تحميل البيانات */
-async function loadUser(uid) {
-  const snap = await getDoc(doc(db, "users", uid));
-  const data = snap.data();
-
-  document.getElementById("balance").innerText = data.balance;
-  document.getElementById("ref").innerText =
-    location.origin + "?ref=" + data.referralCode;
 }
 
-/* 🔹 المهام */
-window.startTask = async (id) => {
-  if (currentTaskRunning) return alert("⏳ هناك مهمة قيد التشغيل");
+/* ===== APP ===== */
+function showApp(){
+  authBox.style.display="none";
+  appBox.style.display="block";
+  referral.innerText = location.origin + "?ref=" + localStorage.ref;
+  balance.innerText = localStorage.balance;
+  renderTasks();
+  renderTeam();
+}
 
-  const user = auth.currentUser;
-  const ref = doc(db, "users", user.uid);
-  const snap = await getDoc(ref);
-  const data = snap.data();
+/* ===== TASKS ===== */
+let running = false;
+const tasks = [
+  {id:1,title:"مهمة 1"},
+  {id:2,title:"مهمة 2"},
+  {id:3,title:"مهمة 3"},
+  {id:4,title:"مهمة 4"},
+  {id:5,title:"مهمة 5"},
+];
 
-  const now = Date.now();
-  const last = data.lastTasks?.[id] || 0;
+function renderTasks(){
+  tasksBox.innerHTML="";
+  let saved = JSON.parse(localStorage.tasks||"{}");
 
-  if (now - last < 86400000) {
-    return alert("⛔ هذه المهمة متاحة بعد 24 ساعة");
-  }
+  tasks.forEach(t=>{
+    const doneTime = saved[t.id];
+    const now = Date.now();
+    let btnText="ابدأ";
+    let disabled=false;
 
-  currentTaskRunning = true;
-  const btn = document.getElementById("task" + id);
-  btn.innerText = "⏳ جاري التنفيذ";
+    if(doneTime && now-doneTime < 86400000){
+      btnText="تمت المهمة";
+      disabled=true;
+    }
 
-  setTimeout(async () => {
-    await updateDoc(ref, {
-      balance: data.balance + 10,
-      [`lastTasks.${id}`]: Date.now()
-    });
-    btn.innerText = "✅ تمت";
-    currentTaskRunning = false;
-    document.getElementById("balance").innerText = data.balance + 10;
-  }, 30000);
-};
-
-/* 🔹 سحب راتب وهمي */
-window.withdraw = async () => {
-  const amount = parseInt(document.getElementById("withdraw").value);
-  const user = auth.currentUser;
-  const ref = doc(db, "users", user.uid);
-  const snap = await getDoc(ref);
-  const data = snap.data();
-
-  if (amount > data.balance) return alert("❌ رصيد غير كافي");
-
-  await updateDoc(ref, {
-    balance: data.balance - amount
+    const div=document.createElement("div");
+    div.className="task";
+    div.innerHTML=`<span>${t.title}</span>`;
+    const btn=document.createElement("button");
+    btn.innerText=btnText;
+    btn.disabled=disabled;
+    btn.onclick=()=>startTask(t.id,btn);
+    div.appendChild(btn);
+    tasksBox.appendChild(div);
   });
+}
 
-  document.getElementById("balance").innerText = data.balance - amount;
-  alert("💰 تم طلب سحب الراتب (وهمي)");
-};
+function startTask(id,btn){
+  if(running){ alert("هناك مهمة قيد التشغيل"); return; }
+  running=true;
+  btn.innerText="30...";
+  let time=30;
+  const int=setInterval(()=>{
+    time--;
+    btn.innerText=time+"...";
+    if(time<=0){
+      clearInterval(int);
+      completeTask(id,btn);
+    }
+  },1000);
+}
+
+function completeTask(id,btn){
+  running=false;
+  btn.innerText="تمت المهمة";
+  btn.disabled=true;
+  localStorage.balance = Number(localStorage.balance)+10;
+  balance.innerText=localStorage.balance;
+  let saved=JSON.parse(localStorage.tasks||"{}");
+  saved[id]=Date.now();
+  localStorage.tasks=JSON.stringify(saved);
+}
+
+/* ===== TEAM ===== */
+function addFriend(){
+  const name=friend.value;
+  if(!name)return;
+  let team=JSON.parse(localStorage.team);
+  const level=Math.floor(team.length/3)+1;
+  team.push({name,level});
+  localStorage.team=JSON.stringify(team);
+  localStorage.balance=Number(localStorage.balance)+10;
+  balance.innerText=localStorage.balance;
+  friend.value="";
+  renderTeam();
+}
+
+function renderTeam(){
+  teamBox.innerHTML="";
+  JSON.parse(localStorage.team).forEach(m=>{
+    teamBox.innerHTML+=`<div class="member">${m.name} | مستوى ${m.level}</div>`;
+  });
+}
+
+/* ===== SALARY ===== */
+function withdraw(){
+  const a=Number(amount.value);
+  if(a<=0 || a>localStorage.balance){ alert("رصيد غير كافي"); return; }
+  localStorage.balance-=a;
+  balance.innerText=localStorage.balance;
+  alert("تم سحب الراتب");
+  amount.value="";
+}
 </script>
 
 <style>
-body {
-  margin:0;
-  font-family:Arial;
-  background:linear-gradient(135deg,#141e30,#243b55);
-  color:#fff;
-}
-.box {
-  background:#1e1e2f;
-  padding:20px;
-  max-width:350px;
-  margin:40px auto;
-  border-radius:12px;
-}
-input,button {
-  width:100%;
-  padding:10px;
-  margin:6px 0;
-  border-radius:6px;
-  border:none;
-}
-button {
-  background:#00c6ff;
-  font-weight:bold;
-}
-.task {
-  background:#2a2a40;
-  padding:10px;
-  margin:6px 0;
-  border-radius:6px;
-}
+body{margin:0;font-family:Arial;background:#0f2027;color:#fff}
+.box{background:#1c1c1c;padding:20px;border-radius:12px;width:350px;margin:auto;margin-top:30px}
+input,button{width:100%;padding:10px;margin:5px 0;border-radius:6px;border:none}
+button{background:#00c853;color:#000;font-weight:bold}
+.task,.member{background:#2c2c2c;padding:8px;margin:5px 0;border-radius:6px}
+nav{display:flex;justify-content:space-between}
 </style>
 </head>
 
 <body>
 
-<div class="box" id="auth">
-  <h2>🚀 MaliApp</h2>
-  <input id="emailInput" placeholder="البريد الإلكتروني">
-  <input id="passInput" type="password" placeholder="كلمة المرور">
-  <input id="inviteInput" placeholder="رمز الدعوة (اختياري)">
-  <button onclick="register()">تسجيل</button>
-  <button onclick="login()">دخول</button>
-  <p id="status"></p>
+<div class="box" id="authBox">
+<h2>MaliApp</h2>
+<input id="emailR" placeholder="Email">
+<input id="passR" type="password" placeholder="Password">
+<input id="passR2" type="password" placeholder="Confirm Password">
+<button onclick="register()">تسجيل</button>
+<hr>
+<input id="emailL" placeholder="Email">
+<input id="passL" type="password" placeholder="Password">
+<button onclick="login()">دخول</button>
 </div>
 
-<div class="box" id="app" style="display:none">
-  <h3>💰 الرصيد: <span id="balance">0</span></h3>
-  <p>🔗 رابطك: <span id="ref"></span></p>
+<div class="box" id="appBox" style="display:none">
+<nav>
+<span>الرصيد: <b id="balance">0</b></span>
+<button onclick="logout()">خروج</button>
+</nav>
 
-  <h4>📋 مهام المستوى 1</h4>
-  <div class="task"><button id="task1" onclick="startTask(1)">مهمة 1 (30ث)</button></div>
-  <div class="task"><button id="task2" onclick="startTask(2)">مهمة 2 (30ث)</button></div>
-  <div class="task"><button id="task3" onclick="startTask(3)">مهمة 3 (30ث)</button></div>
-  <div class="task"><button id="task4" onclick="startTask(4)">مهمة 4 (30ث)</button></div>
-  <div class="task"><button id="task5" onclick="startTask(5)">مهمة 5 (30ث)</button></div>
+<p>رابط الدعوة: <small id="referral"></small></p>
 
-  <h4>🏦 سحب راتب</h4>
-  <input id="withdraw" type="number" placeholder="المبلغ">
-  <button onclick="withdraw()">سحب</button>
+<h3>المهام (المستوى 1)</h3>
+<div id="tasksBox"></div>
+
+<h3>الفريق</h3>
+<input id="friend" placeholder="اسم العضو">
+<button onclick="addFriend()">إضافة</button>
+<div id="teamBox"></div>
+
+<h3>سحب راتب</h3>
+<input id="amount" type="number">
+<button onclick="withdraw()">سحب</button>
 </div>
 
 </body>
