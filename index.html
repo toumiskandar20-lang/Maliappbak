@@ -2,215 +2,168 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MaliApp Final</title>
+<title>MaliApp</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<script type="module">
+/* ================= FIREBASE ================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  arrayUnion
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* 🔐 config */
+const firebaseConfig = {
+  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
+  authDomain: "maliapp-63f91.firebaseapp.com",
+  projectId: "maliapp-63f91",
+  storageBucket: "maliapp-63f91.appspot.com",
+  messagingSenderId: "901870433172",
+  appId: "1:901870433172:web:325b2312af72099279d581"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* ================= HELPERS ================= */
+function randomCode() {
+  return Math.random().toString(36).substring(2, 10);
+}
+
+/* ================= REGISTER ================= */
+window.register = async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  if (!email || !password) {
+    alert("❌ عمّر الإيميل والباس");
+    return;
+  }
+
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth, email, password);
+    const uid = userCred.user.uid;
+
+    await setDoc(doc(db, "users", uid), {
+      email,
+      balance: 0,
+      level: 1,
+      team: [],
+      referralCode: randomCode(),
+      createdAt: Date.now()
+    });
+
+    alert("✅ حسابك تخلق");
+  } catch (e) {
+    alert(e.message);
+  }
+};
+
+/* ================= LOGIN ================= */
+window.login = async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+  } catch (e) {
+    alert(e.message);
+  }
+};
+
+/* ================= AUTH STATE ================= */
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    authBox.style.display = "none";
+    appBox.style.display = "block";
+
+    const ref = doc(db, "users", user.uid);
+    const snap = await getDoc(ref);
+    const data = snap.data();
+
+    balance.innerText = data.balance;
+    level.innerText = data.level;
+    invite.innerText = location.origin + "?ref=" + data.referralCode;
+  }
+});
+
+/* ================= SALARY ================= */
+window.salary = async () => {
+  const user = auth.currentUser;
+  const ref = doc(db, "users", user.uid);
+
+  await updateDoc(ref, {
+    balance: 50
+  });
+
+  balance.innerText = 50;
+  alert("💼 تم سحب الراتب");
+};
+
+</script>
 
 <style>
-body{
-  font-family:'Cairo',sans-serif;
-  background:linear-gradient(to bottom,#6a11cb,#2575fc);
-  min-height:100vh;
-  margin:0;
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg,#667eea,#764ba2);
+  height:100vh;
   display:flex;
   justify-content:center;
-  align-items:flex-start;
-  padding-top:20px;
+  align-items:center;
 }
-
-.container{
+.box {
   background:#fff;
-  width:420px;
-  border-radius:20px;
+  width:330px;
   padding:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,.4);
-}
-
-h2,h3{text-align:center}
-
-input,button{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border-radius:8px;
-  font-size:16px;
-}
-
-input{border:1px solid #ccc}
-button{
-  background:#28a745;
-  border:none;
-  color:#fff;
-}
-button:hover{background:#218838}
-
-.dashboard{display:none}
-
-.task{
-  background:#f1f1f1;
-  padding:10px;
-  border-radius:10px;
-  display:flex;
-  justify-content:space-between;
-  margin:5px 0;
-}
-
-.team-member{
-  padding:10px;
-  border-radius:10px;
-  margin:4px 0;
-  display:flex;
-  justify-content:space-between;
-}
-
-.level1{background:#d1e7dd}
-.level2{background:#fff3cd}
-.level3{background:#f8d7da}
-.level4{background:#cfe2ff}
-
-#popup{
-  display:none;
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:#fff;
-  padding:30px;
-  border-radius:20px;
+  border-radius:14px;
   text-align:center;
-  box-shadow:0 10px 40px rgba(0,0,0,.6);
+}
+input,button {
+  width:100%;
+  padding:10px;
+  margin:8px 0;
+}
+button {
+  background:#667eea;
+  color:#fff;
+  border:none;
+  border-radius:6px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-  <div id="login">
-    <h2>MaliApp</h2>
-    <input id="email" placeholder="إيميل أو هاتف">
-    <input id="pass" type="password" placeholder="كلمة المرور">
-    <button onclick="login()">دخول</button>
-  </div>
-
-  <div class="dashboard" id="dash">
-    <h2>مرحبا 👋</h2>
-    <p>رصيدك: <b id="balance">0</b> 💰</p>
-    <p>رابطك: <span id="ref"></span></p>
-
-    <h3>المهام اليومية</h3>
-    <div id="tasks"></div>
-
-    <h3>دعوة صديق</h3>
-    <input id="friend" placeholder="إيميل أو هاتف">
-    <button onclick="addFriend()">إضافة</button>
-
-    <h3>الفريق</h3>
-    <div id="team"></div>
-  </div>
+<div class="box" id="authBox">
+  <h2>MaliApp</h2>
+  <input id="emailInput" type="email" placeholder="Email">
+  <input id="passwordInput" type="password" placeholder="Password">
+  <button onclick="register()">تسجيل</button>
+  <button onclick="login()">دخول</button>
 </div>
 
-<div id="popup">
-  <h2>🎉 مستوى جديد!</h2>
-  <p>مكافأة <span id="reward"></span> 💰</p>
-  <button onclick="closePopup()">ممتاز</button>
+<div class="box" id="appBox" style="display:none">
+  <h3>مرحبا 👋</h3>
+  <p>الرصيد: <span id="balance">0</span> مالي</p>
+  <p>المستوى: <span id="level">1</span></p>
+  <p>رابط الدعوة:</p>
+  <small id="invite"></small>
+  <br><br>
+  <button onclick="salary()">💼 سحب راتب</button>
 </div>
-
-<script>
-let balance=Number(localStorage.balance||0)
-let ref=localStorage.ref||Math.floor(Math.random()*100000)
-let team=JSON.parse(localStorage.team||"[]")
-
-localStorage.ref=ref
-
-const tasksData=[
- {t:"فتح التطبيق",r:10},
- {t:"دعوة صديق",r:15},
- {t:"مشاركة الرابط",r:12}
-]
-
-function login(){
- if(!email.value||!pass.value)return alert("كمّل البيانات")
- login.style.display="none"
- dash.style.display="block"
- refSpan()
- update()
- tasks()
- teamRender()
-}
-
-function refSpan(){
- document.getElementById("ref").innerText=
- "https://maliapp.netlify.app/?ref="+ref
-}
-
-function update(){
- balanceSpan().innerText=balance
- localStorage.balance=balance
-}
-
-function balanceSpan(){
- return document.getElementById("balance")
-}
-
-function tasks(){
- tasks.innerHTML=""
- tasksData.forEach(x=>{
-  let d=document.createElement("div")
-  d.className="task"
-  let b=document.createElement("button")
-  b.innerText="إتمام"
-  b.onclick=()=>{
-    balance+=x.r
-    update()
-    b.disabled=true
-  }
-  d.innerHTML=`${x.t} (+${x.r})`
-  d.appendChild(b)
-  tasks.appendChild(d)
- })
-}
-
-function addFriend(){
- if(!friend.value)return
- let lvl=Math.floor(team.length/3)+1
- team.push({n:friend.value,l:lvl})
- balance+=10
- rewardLevel(lvl)
- save()
- teamRender()
- friend.value=""
-}
-
-function teamRender(){
- teamDiv.innerHTML=""
- team.forEach(m=>{
-  let d=document.createElement("div")
-  d.className="team-member level"+m.l
-  d.innerHTML=`${m.n} | مستوى ${m.l}`
-  teamDiv.appendChild(d)
- })
-}
-
-function rewardLevel(l){
- let r= l==2?20:l==3?30:l>=4?50:0
- if(r){
-  balance+=r
-  reward.innerText=r
-  popup.style.display="block"
- }
-}
-
-function closePopup(){
- popup.style.display="none"
-}
-
-function save(){
- localStorage.team=JSON.stringify(team)
- update()
-}
-</script>
 
 </body>
 </html>
