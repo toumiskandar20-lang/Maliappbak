@@ -164,6 +164,59 @@ button {
   <br><br>
   <button onclick="salary()">💼 سحب راتب</button>
 </div>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
+<script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
+    authDomain: "maliapp-63f91.firebaseapp.com",
+    projectId: "maliapp-63f91",
+    storageBucket: "maliapp-63f91.appspot.com",
+    messagingSenderId: "901870433172",
+    appId: "1:901870433172:web:325b2312af72099279d581"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  // تسجيل حساب جديد
+  function register() {
+    const email = document.getElementById("userEmail").value;
+    const password = document.getElementById("userPass").value;
+
+    auth.createUserWithEmailAndPassword(email, password)
+      .then(() => {
+        alert("🎉 تم إنشاء الحساب بنجاح");
+        showDashboard();
+      })
+      .catch(error => {
+        alert(error.message);
+      });
+  }
+
+  // تسجيل دخول
+  function login() {
+    const email = document.getElementById("userEmail").value;
+    const password = document.getElementById("userPass").value;
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        alert("✅ تم تسجيل الدخول");
+        showDashboard();
+      })
+      .catch(error => {
+        alert(error.message);
+      });
+  }
+
+  function showDashboard() {
+    document.querySelector(".login").style.display = "none";
+    document.querySelector(".dashboard").style.display = "block";
+  }
+</script>
 </body>
 </html>
