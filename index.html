@@ -5,182 +5,218 @@
 <title>MaliApp</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* 🔐 Firebase Config */
+const firebaseConfig = {
+  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
+  authDomain: "maliapp-63f91.firebaseapp.com",
+  projectId: "maliapp-63f91",
+  storageBucket: "maliapp-63f91.appspot.com",
+  messagingSenderId: "901870433172",
+  appId: "1:901870433172:web:325b2312af72099279d581"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+/* عناصر */
+const authBox = document.getElementById("auth");
+const appBox = document.getElementById("app");
+const statusText = document.getElementById("status");
+
+let currentTaskRunning = false;
+
+/* 🔹 تسجيل حساب */
+window.register = async () => {
+  const email = emailInput.value.trim();
+  const pass = passInput.value.trim();
+  const invite = inviteInput.value.trim();
+
+  if (!email || !pass) return alert("❌ أكمل المعطيات");
+
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const uid = cred.user.uid;
+
+    const referralCode = uid.substring(0, 6);
+
+    await setDoc(doc(db, "users", uid), {
+      email,
+      balance: 0,
+      level: 1,
+      teamCount: 0,
+      referralCode,
+      invitedBy: invite || null,
+      lastTasks: {},
+      createdAt: serverTimestamp()
+    });
+
+    statusText.innerText = "✅ حسابك تخلق بنجاح";
+  } catch (e) {
+    alert(e.message);
+  }
+};
+
+/* 🔹 تسجيل دخول */
+window.login = async () => {
+  const email = emailInput.value.trim();
+  const pass = passInput.value.trim();
+
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch (e) {
+    alert("❌ بيانات غير صحيحة");
+  }
+};
+
+/* 🔹 مراقبة الجلسة */
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    authBox.style.display = "none";
+    appBox.style.display = "block";
+    loadUser(user.uid);
+  }
+});
+
+/* 🔹 تحميل البيانات */
+async function loadUser(uid) {
+  const snap = await getDoc(doc(db, "users", uid));
+  const data = snap.data();
+
+  document.getElementById("balance").innerText = data.balance;
+  document.getElementById("ref").innerText =
+    location.origin + "?ref=" + data.referralCode;
+}
+
+/* 🔹 المهام */
+window.startTask = async (id) => {
+  if (currentTaskRunning) return alert("⏳ هناك مهمة قيد التشغيل");
+
+  const user = auth.currentUser;
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
+  const data = snap.data();
+
+  const now = Date.now();
+  const last = data.lastTasks?.[id] || 0;
+
+  if (now - last < 86400000) {
+    return alert("⛔ هذه المهمة متاحة بعد 24 ساعة");
+  }
+
+  currentTaskRunning = true;
+  const btn = document.getElementById("task" + id);
+  btn.innerText = "⏳ جاري التنفيذ";
+
+  setTimeout(async () => {
+    await updateDoc(ref, {
+      balance: data.balance + 10,
+      [`lastTasks.${id}`]: Date.now()
+    });
+    btn.innerText = "✅ تمت";
+    currentTaskRunning = false;
+    document.getElementById("balance").innerText = data.balance + 10;
+  }, 30000);
+};
+
+/* 🔹 سحب راتب وهمي */
+window.withdraw = async () => {
+  const amount = parseInt(document.getElementById("withdraw").value);
+  const user = auth.currentUser;
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
+  const data = snap.data();
+
+  if (amount > data.balance) return alert("❌ رصيد غير كافي");
+
+  await updateDoc(ref, {
+    balance: data.balance - amount
+  });
+
+  document.getElementById("balance").innerText = data.balance - amount;
+  alert("💰 تم طلب سحب الراتب (وهمي)");
+};
+</script>
+
 <style>
-body{
+body {
+  margin:0;
   font-family:Arial;
   background:linear-gradient(135deg,#141e30,#243b55);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  min-height:100vh;
   color:#fff;
 }
-.box{
-  background:#1f2a40;
+.box {
+  background:#1e1e2f;
   padding:20px;
-  width:360px;
-  border-radius:15px;
-  box-shadow:0 20px 40px rgba(0,0,0,.4);
+  max-width:350px;
+  margin:40px auto;
+  border-radius:12px;
 }
-h2,h3{text-align:center;}
-input,button{
+input,button {
   width:100%;
   padding:10px;
   margin:6px 0;
-  border-radius:8px;
+  border-radius:6px;
   border:none;
 }
-input{outline:none;}
-button{
-  background:#00c853;
-  color:#000;
+button {
+  background:#00c6ff;
   font-weight:bold;
-  cursor:pointer;
 }
-button:disabled{
-  background:#555;
-  color:#ccc;
-}
-.task{
-  background:#2e3c5d;
+.task {
+  background:#2a2a40;
   padding:10px;
-  margin:8px 0;
-  border-radius:10px;
-}
-.task.done{
-  background:#1b5e20;
-}
-.timer{
-  font-size:14px;
-  margin-top:5px;
+  margin:6px 0;
+  border-radius:6px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- تسجيل / دخول -->
 <div class="box" id="auth">
-  <h2>MaliApp</h2>
-  <input id="email" type="email" placeholder="البريد الإلكتروني">
-  <input id="password" type="password" placeholder="كلمة المرور">
-  <button onclick="register()">تسجيل حساب</button>
-  <button onclick="login()">تسجيل دخول</button>
+  <h2>🚀 MaliApp</h2>
+  <input id="emailInput" placeholder="البريد الإلكتروني">
+  <input id="passInput" type="password" placeholder="كلمة المرور">
+  <input id="inviteInput" placeholder="رمز الدعوة (اختياري)">
+  <button onclick="register()">تسجيل</button>
+  <button onclick="login()">دخول</button>
+  <p id="status"></p>
 </div>
 
-<!-- التطبيق -->
 <div class="box" id="app" style="display:none">
-  <h2>مرحبا بك 👋</h2>
-  <p>المستوى: <b>1</b></p>
-  <p>الرصيد: <b><span id="balance">0</span> مالي</b></p>
+  <h3>💰 الرصيد: <span id="balance">0</span></h3>
+  <p>🔗 رابطك: <span id="ref"></span></p>
 
-  <h3>المهام (مستوى 1)</h3>
-  <div id="tasks"></div>
+  <h4>📋 مهام المستوى 1</h4>
+  <div class="task"><button id="task1" onclick="startTask(1)">مهمة 1 (30ث)</button></div>
+  <div class="task"><button id="task2" onclick="startTask(2)">مهمة 2 (30ث)</button></div>
+  <div class="task"><button id="task3" onclick="startTask(3)">مهمة 3 (30ث)</button></div>
+  <div class="task"><button id="task4" onclick="startTask(4)">مهمة 4 (30ث)</button></div>
+  <div class="task"><button id="task5" onclick="startTask(5)">مهمة 5 (30ث)</button></div>
+
+  <h4>🏦 سحب راتب</h4>
+  <input id="withdraw" type="number" placeholder="المبلغ">
+  <button onclick="withdraw()">سحب</button>
 </div>
-
-<script>
-let balance = Number(localStorage.getItem("balance")) || 0;
-let user = localStorage.getItem("user");
-let activeTask = null;
-
-const TASK_TIME = 30; // ثانية
-const COOLDOWN = 24 * 60 * 60 * 1000; // 24 ساعة
-
-const tasks = [
-  {id:1,title:"مشاهدة إعلان"},
-  {id:2,title:"فتح التطبيق"},
-  {id:3,title:"زيارة صفحة"},
-  {id:4,title:"تجربة ميزة"},
-  {id:5,title:"مشاركة رابط"}
-];
-
-if(user){
-  showApp();
-}
-
-function register(){
-  const email = email.value;
-  const pass = password.value;
-  if(!email || !pass){ alert("عمّر المعطيات"); return; }
-  localStorage.setItem("user", email);
-  alert("تم إنشاء الحساب ✅");
-  showApp();
-}
-
-function login(){
-  const email = email.value;
-  const pass = password.value;
-  if(localStorage.getItem("user") === email){
-    showApp();
-  }else{
-    alert("الحساب غير موجود");
-  }
-}
-
-function showApp(){
-  document.getElementById("auth").style.display="none";
-  document.getElementById("app").style.display="block";
-  document.getElementById("balance").innerText = balance;
-  renderTasks();
-}
-
-function renderTasks(){
-  const box = document.getElementById("tasks");
-  box.innerHTML = "";
-  tasks.forEach(t=>{
-    const lastDone = localStorage.getItem("task_"+t.id);
-    const now = Date.now();
-    let canDo = !lastDone || now - lastDone > COOLDOWN;
-
-    const div = document.createElement("div");
-    div.className = "task";
-    if(!canDo) div.classList.add("done");
-
-    const btn = document.createElement("button");
-    btn.innerText = canDo ? "ابدأ المهمة" : "تمت المهمة";
-    btn.disabled = !canDo || activeTask;
-
-    btn.onclick = ()=>startTask(t.id,btn,div);
-
-    div.innerHTML = `<b>${t.title}</b>`;
-    div.appendChild(btn);
-    box.appendChild(div);
-  });
-}
-
-function startTask(id,btn,div){
-  if(activeTask){
-    alert("هناك مهمة قيد التشغيل");
-    return;
-  }
-  activeTask = id;
-  let time = TASK_TIME;
-
-  btn.disabled = true;
-  const timer = document.createElement("div");
-  timer.className="timer";
-  div.appendChild(timer);
-
-  const interval = setInterval(()=>{
-    timer.innerText = `⏳ ${time} ثانية`;
-    time--;
-    if(time < 0){
-      clearInterval(interval);
-      completeTask(id,div);
-    }
-  },1000);
-}
-
-function completeTask(id,div){
-  activeTask = null;
-  balance += 10;
-  localStorage.setItem("balance",balance);
-  localStorage.setItem("task_"+id,Date.now());
-  document.getElementById("balance").innerText = balance;
-  div.classList.add("done");
-  renderTasks();
-}
-</script>
 
 </body>
 </html>
