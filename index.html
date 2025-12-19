@@ -7,161 +7,170 @@
 
 <!-- Firebase -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { 
-    getAuth, 
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword 
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { 
-    getFirestore,
-    doc,
-    setDoc,
-    serverTimestamp
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
-    authDomain: "maliapp-63f91.firebaseapp.com",
-    projectId: "maliapp-63f91",
-    storageBucket: "maliapp-63f91.appspot.com",
-    messagingSenderId: "901870433172",
-    appId: "1:901870433172:web:325b2312af72099279d581"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
+  authDomain: "maliapp-63f91.firebaseapp.com",
+  projectId: "maliapp-63f91",
+  storageBucket: "maliapp-63f91.appspot.com",
+  messagingSenderId: "901870433172",
+  appId: "1:901870433172:web:325b2312af72099279d581"
+};
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  // 🔐 تسجيل حساب جديد
-  window.register = async function () {
-    const phone = document.getElementById("phone").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
-    const confirm = document.getElementById("confirm").value;
-    const invite = document.getElementById("invite").value.trim();
+/* 🔐 تسجيل حساب */
+window.register = async function () {
+  const phone = document.getElementById("phone").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const pass = document.getElementById("password").value;
+  const pass2 = document.getElementById("password2").value;
+  const invite = document.getElementById("invite").value.trim();
 
-    // 🛑 تحقق
-    if (!phone || !email || !password || !confirm) {
-      alert("❌ الرجاء تعمير كل الخانات");
-      return;
-    }
-    if (password.length < 6) {
-      alert("❌ كلمة المرور لازمها 6 أحرف على الأقل");
-      return;
-    }
-    if (password !== confirm) {
-      alert("❌ كلمتا المرور غير متطابقتين");
-      return;
-    }
-
-    try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCred.user;
-
-      // 🎁 رابط دعوة خاص
-      const myInviteCode = Math.floor(100000 + Math.random() * 900000).toString();
-
-      // 🧾 تخزين في Firestore
-      await setDoc(doc(db, "users", user.uid), {
-        phone: phone,
-        email: email,
-        balance: 0,
-        level: 1,
-        inviteCode: myInviteCode,
-        invitedBy: invite || null,
-        createdAt: serverTimestamp()
-      });
-
-      alert("✅ تم إنشاء الحساب بنجاح");
-      showApp();
-
-    } catch (error) {
-      alert("❌ " + error.message);
-    }
-  };
-
-  // 🔑 تسجيل دخول
-  window.login = async function () {
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value;
-
-    if (!email || !password) {
-      alert("❌ أدخل الإيميل وكلمة المرور");
-      return;
-    }
-
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      alert("🎉 مرحبا بيك");
-      showApp();
-    } catch (error) {
-      alert("❌ " + error.message);
-    }
-  };
-
-  function showApp() {
-    document.getElementById("auth").style.display = "none";
-    document.getElementById("app").style.display = "block";
+  if (!phone || !email || !pass || !pass2) {
+    alert("❌ كل الخانات إجبارية");
+    return;
   }
+  if (pass.length < 6) {
+    alert("❌ كلمة المرور أقل من 6 أحرف");
+    return;
+  }
+  if (pass !== pass2) {
+    alert("❌ كلمات المرور غير متطابقة");
+    return;
+  }
+
+  try {
+    const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+    const uid = userCred.user.uid;
+
+    // رابط دعوة خاص
+    const myInvite = Math.random().toString(36).substring(2,8);
+
+    await setDoc(doc(db, "users", uid), {
+      phone,
+      email,
+      balance: 0,
+      level: 1,
+      inviteCode: myInvite,
+      invitedBy: invite || null,
+      createdAt: new Date()
+    });
+
+    showApp(myInvite);
+  } catch (e) {
+    alert("❌ " + e.message);
+  }
+};
+
+/* 🔑 تسجيل دخول */
+window.login = async function () {
+  const email = document.getElementById("emailLogin").value.trim();
+  const pass = document.getElementById("passwordLogin").value;
+
+  try {
+    const userCred = await signInWithEmailAndPassword(auth, email, pass);
+    const uid = userCred.user.uid;
+
+    const snap = await getDoc(doc(db, "users", uid));
+    showApp(snap.data().inviteCode);
+  } catch (e) {
+    alert("❌ بيانات الدخول خاطئة");
+  }
+};
+
+function showApp(inviteCode) {
+  document.getElementById("auth").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  document.getElementById("inviteLink").innerText =
+    location.origin + "/?ref=" + inviteCode;
+}
 </script>
 
 <style>
 body{
   font-family:Arial;
-  background:linear-gradient(135deg,#6a11cb,#2575fc);
-  min-height:100vh;
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
 }
 .box{
   background:#fff;
-  width:330px;
-  padding:20px;
-  border-radius:14px;
-  box-shadow:0 15px 40px rgba(0,0,0,.3);
+  width:340px;
+  padding:25px;
+  border-radius:15px;
+  box-shadow:0 20px 40px rgba(0,0,0,.3);
 }
+h2{margin-bottom:15px}
 input,button{
   width:100%;
-  padding:10px;
+  padding:11px;
   margin:6px 0;
-  border-radius:6px;
+  border-radius:8px;
   border:1px solid #ccc;
 }
 button{
-  background:#2575fc;
+  background:#2c5364;
   color:#fff;
-  border:none;
   font-size:16px;
+  border:none;
 }
-hr{margin:10px 0;}
+.switch{
+  color:#2575fc;
+  cursor:pointer;
+  font-size:14px;
+}
 </style>
 </head>
 
 <body>
 
 <div class="box" id="auth">
-  <h2>🆕 تسجيل حساب</h2>
-  <input id="phone" placeholder="رقم الهاتف">
-  <input id="email" type="email" placeholder="البريد الإلكتروني">
-  <input id="password" type="password" placeholder="كلمة المرور">
-  <input id="confirm" type="password" placeholder="تأكيد كلمة المرور">
-  <input id="invite" placeholder="رمز الدعوة (اختياري)">
-  <button onclick="register()">إنشاء حساب</button>
+  <h2>MaliApp</h2>
 
-  <hr>
+  <!-- تسجيل -->
+  <div id="registerBox">
+    <input id="phone" placeholder="📱 رقم الهاتف">
+    <input id="email" type="email" placeholder="📧 البريد الإلكتروني">
+    <input id="password" type="password" placeholder="🔒 كلمة المرور">
+    <input id="password2" type="password" placeholder="🔒 تأكيد كلمة المرور">
+    <input id="invite" placeholder="🎁 رمز الدعوة (اختياري)">
+    <button onclick="register()">إنشاء حساب</button>
+    <p class="switch" onclick="toggle()">لدي حساب</p>
+  </div>
 
-  <h3>🔑 تسجيل دخول</h3>
-  <input id="loginEmail" type="email" placeholder="الإيميل">
-  <input id="loginPassword" type="password" placeholder="كلمة المرور">
-  <button onclick="login()">دخول</button>
+  <!-- دخول -->
+  <div id="loginBox" style="display:none">
+    <input id="emailLogin" type="email" placeholder="📧 البريد الإلكتروني">
+    <input id="passwordLogin" type="password" placeholder="🔒 كلمة المرور">
+    <button onclick="login()">تسجيل دخول</button>
+    <p class="switch" onclick="toggle()">إنشاء حساب</p>
+  </div>
 </div>
 
 <div class="box" id="app" style="display:none">
-  <h2>🎉 مرحبا بك في MaliApp</h2>
-  <p>التسجيل والدخول خدامين 🔐</p>
+  <h2>🎉 مرحبا بك</h2>
+  <p>رابط دعوتك:</p>
+  <p id="inviteLink" style="word-break:break-all;color:#2575fc"></p>
 </div>
+
+<script>
+function toggle(){
+  registerBox.style.display =
+    registerBox.style.display === "none" ? "block" : "none";
+  loginBox.style.display =
+    loginBox.style.display === "none" ? "block" : "none";
+}
+</script>
 
 </body>
 </html>
