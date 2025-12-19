@@ -5,231 +5,182 @@
 <title>MaliApp</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  arrayUnion
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
-  authDomain: "maliapp-63f91.firebaseapp.com",
-  projectId: "maliapp-63f91",
-  storageBucket: "maliapp-63f91.appspot.com",
-  messagingSenderId: "901870433172",
-  appId: "1:901870433172:web:325b2312af72099279d581"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-let currentTask = null;
-let taskTimer = null;
-
-// 🔐 تسجيل حساب
-window.register = async function () {
-  const phone = phoneInput.value;
-  const email = emailInput.value;
-  const pass = passInput.value;
-  const pass2 = pass2Input.value;
-  const invite = inviteInput.value || "none";
-
-  if (!phone || !email || !pass || !pass2) {
-    alert("عمر الخانات الكل");
-    return;
-  }
-  if (pass !== pass2) {
-    alert("كلمات المرور غير متطابقة");
-    return;
-  }
-
-  try {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    const uid = cred.user.uid;
-
-    const myInvite = Math.random().toString(36).substring(2, 8);
-
-    await setDoc(doc(db, "users", uid), {
-      phone,
-      email,
-      balance: 0,
-      level: 1,
-      team: [],
-      inviteCode: myInvite,
-      invitedBy: invite,
-      createdAt: Date.now()
-    });
-
-    alert("✅ تم إنشاء الحساب");
-  } catch (e) {
-    alert(e.message);
-  }
-};
-
-// 🔑 تسجيل دخول
-window.login = async function () {
-  try {
-    await signInWithEmailAndPassword(auth, emailInput.value, passInput.value);
-  } catch (e) {
-    alert(e.message);
-  }
-};
-
-// 🔄 حالة المستخدم
-onAuthStateChanged(auth, async user => {
-  if (!user) return;
-  authBox.style.display = "none";
-  appBox.style.display = "block";
-
-  const snap = await getDoc(doc(db, "users", user.uid));
-  const data = snap.data();
-
-  balance.innerText = data.balance;
-  level.innerText = data.level;
-  inviteLink.innerText = location.origin + "?ref=" + data.inviteCode;
-});
-
-// 🧠 المهام
-window.startTask = function (id) {
-  if (currentTask) {
-    alert("⚠️ توجد مهمة قيد التشغيل");
-    return;
-  }
-
-  currentTask = id;
-  let time = 30;
-  taskStatus.innerText = "⏳ جاري التنفيذ: 30 ثانية";
-
-  taskTimer = setInterval(() => {
-    time--;
-    taskStatus.innerText = "⏳ " + time + " ثانية";
-
-    if (time <= 0) {
-      clearInterval(taskTimer);
-      finishTask();
-    }
-  }, 1000);
-};
-
-async function finishTask() {
-  const user = auth.currentUser;
-  const ref = doc(db, "users", user.uid);
-  const snap = await getDoc(ref);
-  const data = snap.data();
-
-  await updateDoc(ref, {
-    balance: data.balance + 10
-  });
-
-  balance.innerText = data.balance + 10;
-  taskStatus.innerText = "✅ تمت المهمة +10 مالي";
-  currentTask = null;
-}
-
-// 💰 سحب راتب
-window.withdraw = async function () {
-  const amount = Number(withdrawAmount.value);
-  const user = auth.currentUser;
-  const ref = doc(db, "users", user.uid);
-  const snap = await getDoc(ref);
-
-  if (amount <= 0 || amount > snap.data().balance) {
-    alert("رصيد غير كافي");
-    return;
-  }
-
-  await updateDoc(ref, {
-    balance: snap.data().balance - amount
-  });
-
-  balance.innerText = snap.data().balance - amount;
-  alert("💼 تم سحب الراتب بنجاح");
-};
-</script>
-
 <style>
-body {
-  font-family: Arial;
-  background: linear-gradient(135deg,#6a11cb,#2575fc);
-  min-height:100vh;
+body{
+  font-family:Arial;
+  background:linear-gradient(135deg,#141e30,#243b55);
   display:flex;
   justify-content:center;
   align-items:center;
+  min-height:100vh;
+  color:#fff;
 }
-.box {
-  background:#fff;
-  width:360px;
+.box{
+  background:#1f2a40;
   padding:20px;
-  border-radius:14px;
-  box-shadow:0 15px 35px rgba(0,0,0,.3);
+  width:360px;
+  border-radius:15px;
+  box-shadow:0 20px 40px rgba(0,0,0,.4);
 }
-input,button {
+h2,h3{text-align:center;}
+input,button{
   width:100%;
   padding:10px;
   margin:6px 0;
-  border-radius:6px;
-}
-button {
-  background:#2575fc;
-  color:#fff;
+  border-radius:8px;
   border:none;
-  font-size:16px;
 }
-.task {
-  background:#f3f3f3;
+input{outline:none;}
+button{
+  background:#00c853;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:disabled{
+  background:#555;
+  color:#ccc;
+}
+.task{
+  background:#2e3c5d;
   padding:10px;
-  margin:5px 0;
-  border-radius:6px;
+  margin:8px 0;
+  border-radius:10px;
+}
+.task.done{
+  background:#1b5e20;
+}
+.timer{
+  font-size:14px;
+  margin-top:5px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="box" id="authBox">
-  <h2>MaliApp 🔐</h2>
-  <input id="phoneInput" placeholder="رقم الهاتف">
-  <input id="emailInput" placeholder="البريد الإلكتروني">
-  <input id="passInput" type="password" placeholder="كلمة المرور">
-  <input id="pass2Input" type="password" placeholder="تأكيد كلمة المرور">
-  <input id="inviteInput" placeholder="رمز الدعوة (اختياري)">
-  <button onclick="register()">إنشاء حساب</button>
+<!-- تسجيل / دخول -->
+<div class="box" id="auth">
+  <h2>MaliApp</h2>
+  <input id="email" type="email" placeholder="البريد الإلكتروني">
+  <input id="password" type="password" placeholder="كلمة المرور">
+  <button onclick="register()">تسجيل حساب</button>
   <button onclick="login()">تسجيل دخول</button>
 </div>
 
-<div class="box" id="appBox" style="display:none">
-  <h2>🎉 مرحبا بك</h2>
-  <p>الرصيد: <b id="balance">0</b> مالي</p>
-  <p>المستوى: <b id="level">1</b></p>
-  <p>رابط دعوتك:</p>
-  <small id="inviteLink"></small>
+<!-- التطبيق -->
+<div class="box" id="app" style="display:none">
+  <h2>مرحبا بك 👋</h2>
+  <p>المستوى: <b>1</b></p>
+  <p>الرصيد: <b><span id="balance">0</span> مالي</b></p>
 
-  <h3>مهام المستوى 1</h3>
-  <div class="task"><button onclick="startTask(1)">مهمة 1</button></div>
-  <div class="task"><button onclick="startTask(2)">مهمة 2</button></div>
-  <div class="task"><button onclick="startTask(3)">مهمة 3</button></div>
-  <div class="task"><button onclick="startTask(4)">مهمة 4</button></div>
-  <div class="task"><button onclick="startTask(5)">مهمة 5</button></div>
-
-  <p id="taskStatus"></p>
-
-  <h3>💼 سحب راتب</h3>
-  <input id="withdrawAmount" placeholder="المبلغ">
-  <button onclick="withdraw()">سحب</button>
+  <h3>المهام (مستوى 1)</h3>
+  <div id="tasks"></div>
 </div>
+
+<script>
+let balance = Number(localStorage.getItem("balance")) || 0;
+let user = localStorage.getItem("user");
+let activeTask = null;
+
+const TASK_TIME = 30; // ثانية
+const COOLDOWN = 24 * 60 * 60 * 1000; // 24 ساعة
+
+const tasks = [
+  {id:1,title:"مشاهدة إعلان"},
+  {id:2,title:"فتح التطبيق"},
+  {id:3,title:"زيارة صفحة"},
+  {id:4,title:"تجربة ميزة"},
+  {id:5,title:"مشاركة رابط"}
+];
+
+if(user){
+  showApp();
+}
+
+function register(){
+  const email = email.value;
+  const pass = password.value;
+  if(!email || !pass){ alert("عمّر المعطيات"); return; }
+  localStorage.setItem("user", email);
+  alert("تم إنشاء الحساب ✅");
+  showApp();
+}
+
+function login(){
+  const email = email.value;
+  const pass = password.value;
+  if(localStorage.getItem("user") === email){
+    showApp();
+  }else{
+    alert("الحساب غير موجود");
+  }
+}
+
+function showApp(){
+  document.getElementById("auth").style.display="none";
+  document.getElementById("app").style.display="block";
+  document.getElementById("balance").innerText = balance;
+  renderTasks();
+}
+
+function renderTasks(){
+  const box = document.getElementById("tasks");
+  box.innerHTML = "";
+  tasks.forEach(t=>{
+    const lastDone = localStorage.getItem("task_"+t.id);
+    const now = Date.now();
+    let canDo = !lastDone || now - lastDone > COOLDOWN;
+
+    const div = document.createElement("div");
+    div.className = "task";
+    if(!canDo) div.classList.add("done");
+
+    const btn = document.createElement("button");
+    btn.innerText = canDo ? "ابدأ المهمة" : "تمت المهمة";
+    btn.disabled = !canDo || activeTask;
+
+    btn.onclick = ()=>startTask(t.id,btn,div);
+
+    div.innerHTML = `<b>${t.title}</b>`;
+    div.appendChild(btn);
+    box.appendChild(div);
+  });
+}
+
+function startTask(id,btn,div){
+  if(activeTask){
+    alert("هناك مهمة قيد التشغيل");
+    return;
+  }
+  activeTask = id;
+  let time = TASK_TIME;
+
+  btn.disabled = true;
+  const timer = document.createElement("div");
+  timer.className="timer";
+  div.appendChild(timer);
+
+  const interval = setInterval(()=>{
+    timer.innerText = `⏳ ${time} ثانية`;
+    time--;
+    if(time < 0){
+      clearInterval(interval);
+      completeTask(id,div);
+    }
+  },1000);
+}
+
+function completeTask(id,div){
+  activeTask = null;
+  balance += 10;
+  localStorage.setItem("balance",balance);
+  localStorage.setItem("task_"+id,Date.now());
+  document.getElementById("balance").innerText = balance;
+  div.classList.add("done");
+  renderTasks();
+}
+</script>
 
 </body>
 </html>
