@@ -5,208 +5,216 @@
 <title>MaliApp</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-:root{
-  --main:#5b2dff;
-  --bg:#f4f6ff;
-  --card:#ffffff;
-  --text:#222;
+<!-- Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
+  authDomain: "maliapp-63f91.firebaseapp.com",
+  projectId: "maliapp-63f91",
+  storageBucket: "maliapp-63f91.appspot.com",
+  messagingSenderId: "901870433172",
+  appId: "1:901870433172:web:325b2312af72099279d581"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentTask = false;
+let userData = null;
+
+// ================= AUTH =================
+window.register = async () => {
+  const email = emailInput.value;
+  const pass = passInput.value;
+  if(pass.length < 6) return alert("كلمة المرور ضعيفة");
+
+  const cred = await createUserWithEmailAndPassword(auth, email, pass);
+  const uid = cred.user.uid;
+
+  const invite = uid.slice(0,6);
+
+  await setDoc(doc(db,"users",uid),{
+    balance:0,
+    level:1,
+    invite,
+    wallet:"",
+    tasks:{}
+  });
+
+  loadApp(uid);
+};
+
+window.login = async () => {
+  const email = emailInput.value;
+  const pass = passInput.value;
+  const cred = await signInWithEmailAndPassword(auth,email,pass);
+  loadApp(cred.user.uid);
+};
+
+async function loadApp(uid){
+  const snap = await getDoc(doc(db,"users",uid));
+  userData = snap.data();
+  authBox.style.display="none";
+  appBox.style.display="block";
+  updateUI();
 }
-*{box-sizing:border-box;font-family:Arial}
+
+function updateUI(){
+  balance.innerText = userData.balance;
+  level.innerText = userData.level;
+  inviteLink.innerText = location.href+"?ref="+userData.invite;
+}
+
+// ================= TASKS =================
+window.startTask = async (id)=>{
+  if(currentTask) return alert("هناك مهمة تعمل حاليا");
+  const now = Date.now();
+
+  if(userData.tasks[id] && now - userData.tasks[id] < 86400000)
+    return alert("ارجع بعد 24 ساعة");
+
+  currentTask = true;
+  let time = 30;
+  const btn = document.getElementById(id);
+  btn.innerText = time;
+
+  const timer = setInterval(async ()=>{
+    time--;
+    btn.innerText=time;
+    if(time<=0){
+      clearInterval(timer);
+      btn.innerText="✔ تمت";
+      btn.disabled=true;
+      currentTask=false;
+
+      userData.balance+=10;
+      userData.tasks[id]=Date.now();
+
+      if(userData.balance>=50) userData.level=2;
+
+      await updateDoc(doc(db,"users",auth.currentUser.uid),{
+        balance:userData.balance,
+        tasks:userData.tasks,
+        level:userData.level
+      });
+
+      updateUI();
+    }
+  },1000);
+};
+
+// ================= SETTINGS =================
+window.openSettings=()=>{settings.style.display="block";appBox.style.display="none";}
+window.back=()=>{settings.style.display="none";appBox.style.display="block";}
+window.saveWallet=async()=>{
+  userData.wallet=wallet.value;
+  await updateDoc(doc(db,"users",auth.currentUser.uid),{wallet:userData.wallet});
+  alert("تم الحفظ");
+}
+window.logout=async()=>{
+  await signOut(auth);
+  location.reload();
+}
+
+</script>
+
+<style>
 body{
   margin:0;
-  background:var(--bg);
+  font-family:'Segoe UI';
+  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+  color:#fff;
 }
-.screen{
-  display:none;
-  min-height:100vh;
+.box{
+  max-width:400px;
+  margin:30px auto;
+  background:#111;
+  border-radius:15px;
   padding:20px;
-}
-.active{display:block}
-.card{
-  background:var(--card);
-  border-radius:14px;
-  padding:20px;
-  box-shadow:0 10px 25px rgba(0,0,0,.1);
+  animation:fade .5s;
 }
 input,button{
   width:100%;
   padding:12px;
   margin:8px 0;
   border-radius:8px;
-  border:1px solid #ccc;
+  border:none;
 }
 button{
-  background:var(--main);
-  color:#fff;
-  border:none;
-  font-size:16px;
-}
-button:disabled{background:#aaa}
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.settings-btn{
-  font-size:22px;
-  cursor:pointer;
+  background:#00c853;
+  color:#000;
+  font-weight:bold;
 }
 .task{
-  border:1px solid #ddd;
+  background:#222;
   padding:12px;
   border-radius:10px;
-  margin:10px 0;
-}
-.task.done{opacity:.5}
-.bottom-nav{
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:#fff;
+  margin:8px 0;
   display:flex;
-  justify-content:space-around;
-  padding:10px;
-  border-top:1px solid #ddd;
+  justify-content:space-between;
 }
+.settings-btn{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  background:#00c853;
+  color:#000;
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+}
+@keyframes fade{from{opacity:0}to{opacity:1}}
 </style>
 </head>
 
 <body>
 
-<!-- LOGIN -->
-<div class="screen active" id="login">
-  <div class="card">
-    <h2>🚀 MaliApp</h2>
-    <input id="phone" placeholder="رقم الهاتف">
-    <input id="email" placeholder="البريد الإلكتروني">
-    <input id="pass" type="password" placeholder="كلمة المرور">
-    <input id="pass2" type="password" placeholder="تأكيد كلمة المرور">
-    <input id="invite" placeholder="رمز الدعوة (اختياري)">
-    <button onclick="register()">إنشاء حساب</button>
-    <button onclick="login()">تسجيل دخول</button>
-  </div>
+<!-- AUTH -->
+<div class="box" id="authBox">
+  <h2>🔐 MaliApp</h2>
+  <input id="emailInput" placeholder="Email">
+  <input id="passInput" type="password" placeholder="Password">
+  <button onclick="register()">تسجيل</button>
+  <button onclick="login()">دخول</button>
 </div>
 
-<!-- HOME -->
-<div class="screen" id="home">
-  <div class="header">
-    <h3>🏠 MaliApp</h3>
-    <span class="settings-btn" onclick="openSettings()">⚙️</span>
-  </div>
+<!-- APP -->
+<div class="box" id="appBox" style="display:none">
+  <h3>💰 الرصيد: <span id="balance">0</span></h3>
+  <h4>⭐ المستوى: <span id="level">1</span></h4>
+  <p>🔗 رابطك: <span id="inviteLink"></span></p>
 
-  <div class="card">
-    <p>💰 الرصيد: <b id="balance">0</b> مالي</p>
-    <p>⭐ المستوى: <b id="level">1</b></p>
-    <p>🔗 رابط الدعوة:</p>
-    <small id="ref"></small>
-  </div>
-
-  <h3>📋 مهام المستوى 1</h3>
-  <div id="tasks"></div>
+  <div class="task">مهمة 1 <button id="t1" onclick="startTask('t1')">ابدأ</button></div>
+  <div class="task">مهمة 2 <button id="t2" onclick="startTask('t2')">ابدأ</button></div>
+  <div class="task">مهمة 3 <button id="t3" onclick="startTask('t3')">ابدأ</button></div>
+  <div class="task">مهمة 4 <button id="t4" onclick="startTask('t4')">ابدأ</button></div>
+  <div class="task">مهمة 5 <button id="t5" onclick="startTask('t5')">ابدأ</button></div>
 </div>
 
 <!-- SETTINGS -->
-<div class="screen" id="settings">
-  <div class="card">
-    <h3>⚙️ الإعدادات</h3>
-    <button onclick="changeLang()">🌐 تغيير اللغة</button>
-    <button onclick="alert('سيتم ربط المحفظة لاحقًا')">👛 ربط المحفظة</button>
-    <button onclick="logout()">🚪 تسجيل الخروج</button>
-  </div>
+<div class="box" id="settings" style="display:none">
+  <h3>⚙️ الإعدادات</h3>
+  <input id="wallet" placeholder="رابط المحفظة">
+  <button onclick="saveWallet()">حفظ</button>
+  <button onclick="logout()">تسجيل خروج</button>
+  <button onclick="back()">رجوع</button>
 </div>
 
-<script>
-let user = JSON.parse(localStorage.getItem("user"));
-let activeTask = localStorage.getItem("activeTask");
-let tasksData = [
-  {id:1,name:"مهمة 1",reward:5},
-  {id:2,name:"مهمة 2",reward:5},
-  {id:3,name:"مهمة 3",reward:5},
-  {id:4,name:"مهمة 4",reward:5},
-  {id:5,name:"مهمة 5",reward:5},
-];
-
-if(user){showHome();}
-
-function register(){
-  let email = emailInput();
-  if(!email || pass.value.length<6 || pass.value!==pass2.value){
-    alert("تحقق من البيانات");
-    return;
-  }
-  let refCode = "MALI"+Math.floor(Math.random()*100000);
-  user={
-    email,
-    balance:0,
-    level:1,
-    ref:refCode,
-    tasks:{}
-  };
-  localStorage.setItem("user",JSON.stringify(user));
-  showHome();
-}
-
-function login(){
-  if(user) showHome();
-  else alert("لا يوجد حساب، أنشئ حساب أولًا");
-}
-
-function showHome(){
-  switchScreen("home");
-  balance.innerText=user.balance;
-  level.innerText=user.level;
-  ref.innerText=location.href+"?ref="+user.ref;
-  renderTasks();
-}
-
-function renderTasks(){
-  tasks.innerHTML="";
-  tasksData.forEach(t=>{
-    let last = user.tasks[t.id];
-    let done = last && Date.now()-last < 86400000;
-    let div=document.createElement("div");
-    div.className="task"+(done?" done":"");
-    div.innerHTML=`
-      <b>${t.name}</b><br>
-      ربح: ${t.reward} مالي<br>
-      <button ${done?"disabled":""} onclick="startTask(${t.id},${t.reward})">
-        ${done?"تمت المهمة":"ابدأ"}
-      </button>
-    `;
-    tasks.appendChild(div);
-  });
-}
-
-function startTask(id,reward){
-  if(activeTask){alert("هناك مهمة قيد التشغيل");return;}
-  activeTask=id;
-  localStorage.setItem("activeTask",id);
-  setTimeout(()=>{
-    user.balance+=reward;
-    user.tasks[id]=Date.now();
-    if(user.balance>=25) user.level=2;
-    localStorage.setItem("user",JSON.stringify(user));
-    localStorage.removeItem("activeTask");
-    activeTask=null;
-    alert("✅ تمت المهمة");
-    showHome();
-  },30000);
-}
-
-function openSettings(){switchScreen("settings")}
-function logout(){
-  localStorage.removeItem("user");
-  location.reload();
-}
-function switchScreen(id){
-  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
-}
-function emailInput(){return document.getElementById("email").value}
-function changeLang(){alert("اللغة ستضاف قريبًا")}
-</script>
+<div class="settings-btn" onclick="openSettings()">
+  <i class="fa fa-gear"></i>
+</div>
 
 </body>
 </html>
