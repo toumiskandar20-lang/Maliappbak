@@ -5,141 +5,208 @@
 <title>MaliApp</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
-  authDomain: "maliapp-63f91.firebaseapp.com",
-  projectId: "maliapp-63f91",
-  storageBucket: "maliapp-63f91.appspot.com",
-  messagingSenderId: "901870433172",
-  appId: "1:901870433172:web:325b2312af72099279d581"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// ====== تسجيل ======
-window.register = async () => {
-  const email = emailR.value;
-  const pass = passR.value;
-  const invite = inviteR.value || null;
-
-  if(pass.length < 6) return alert("كلمة المرور ضعيفة");
-
-  const cred = await createUserWithEmailAndPassword(auth, email, pass);
-  const uid = cred.user.uid;
-
-  const referralCode = Math.floor(100000 + Math.random()*900000).toString();
-
-  await setDoc(doc(db,"users",uid),{
-    email,
-    balance:0,
-    level:1,
-    referralCode,
-    invitedBy: invite,
-    tasks:{},
-    createdAt: serverTimestamp()
-  });
-
-  loadApp();
-};
-
-// ====== دخول ======
-window.login = async () => {
-  await signInWithEmailAndPassword(auth, emailL.value, passL.value);
-  loadApp();
-};
-
-// ====== تحميل التطبيق ======
-async function loadApp(){
-  authBox.style.display="none";
-  appBox.style.display="block";
-
-  const user = auth.currentUser;
-  const snap = await getDoc(doc(db,"users",user.uid));
-  const data = snap.data();
-
-  balance.innerText = data.balance;
-  ref.innerText = data.referralCode;
-
-  renderTasks(data.tasks || {});
-}
-
-// ====== المهام ======
-let runningTask = null;
-
-window.startTask = async (id)=>{
-  if(runningTask) return alert("هناك مهمة قيد التنفيذ");
-  runningTask = id;
-
-  setTimeout(async ()=>{
-    const refDoc = doc(db,"users",auth.currentUser.uid);
-    await updateDoc(refDoc,{
-      balance: +balance.innerText + 10,
-      [`tasks.${id}`]: Date.now()
-    });
-    runningTask = null;
-    loadApp();
-  },30000);
-};
-
-function renderTasks(done){
-  tasks.innerHTML="";
-  for(let i=1;i<=5;i++){
-    const t = done[i];
-    const locked = t && Date.now()-t < 86400000;
-    tasks.innerHTML+=`
-    <div class="task">
-      مهمة ${i}
-      <button ${locked?"disabled":""} onclick="startTask(${i})">
-        ${locked?"تمت":"ابدأ"}
-      </button>
-    </div>`;
-  }
-}
-
-// ====== إعدادات ======
-window.logout = ()=>signOut(auth).then(()=>location.reload());
-
-</script>
-
 <style>
-body{margin:0;font-family:Arial;background:#f2f2f2}
-.box{background:#fff;padding:20px;margin:20px;border-radius:12px}
-input,button{width:100%;padding:10px;margin:6px 0}
-button{background:#2575fc;color:#fff;border:none;border-radius:6px}
-.task{display:flex;justify-content:space-between;margin:5px 0}
-#settings{position:fixed;right:15px;bottom:15px;font-size:30px}
+:root{
+  --main:#5b2dff;
+  --bg:#f4f6ff;
+  --card:#ffffff;
+  --text:#222;
+}
+*{box-sizing:border-box;font-family:Arial}
+body{
+  margin:0;
+  background:var(--bg);
+}
+.screen{
+  display:none;
+  min-height:100vh;
+  padding:20px;
+}
+.active{display:block}
+.card{
+  background:var(--card);
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 10px 25px rgba(0,0,0,.1);
+}
+input,button{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+button{
+  background:var(--main);
+  color:#fff;
+  border:none;
+  font-size:16px;
+}
+button:disabled{background:#aaa}
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.settings-btn{
+  font-size:22px;
+  cursor:pointer;
+}
+.task{
+  border:1px solid #ddd;
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+}
+.task.done{opacity:.5}
+.bottom-nav{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:#fff;
+  display:flex;
+  justify-content:space-around;
+  padding:10px;
+  border-top:1px solid #ddd;
+}
 </style>
 </head>
 
 <body>
 
-<div class="box" id="authBox">
-<h2>MaliApp</h2>
-<input id="emailR" placeholder="Email">
-<input id="passR" type="password" placeholder="Password">
-<input id="inviteR" placeholder="رمز الدعوة (اختياري)">
-<button onclick="register()">تسجيل</button>
-<hr>
-<input id="emailL" placeholder="Email">
-<input id="passL" type="password" placeholder="Password">
-<button onclick="login()">دخول</button>
+<!-- LOGIN -->
+<div class="screen active" id="login">
+  <div class="card">
+    <h2>🚀 MaliApp</h2>
+    <input id="phone" placeholder="رقم الهاتف">
+    <input id="email" placeholder="البريد الإلكتروني">
+    <input id="pass" type="password" placeholder="كلمة المرور">
+    <input id="pass2" type="password" placeholder="تأكيد كلمة المرور">
+    <input id="invite" placeholder="رمز الدعوة (اختياري)">
+    <button onclick="register()">إنشاء حساب</button>
+    <button onclick="login()">تسجيل دخول</button>
+  </div>
 </div>
 
-<div class="box" id="appBox" style="display:none">
-<h3>رصيدك: <span id="balance">0</span> مالي</h3>
-<p>رمز دعوتك: <b id="ref"></b></p>
-<div id="tasks"></div>
+<!-- HOME -->
+<div class="screen" id="home">
+  <div class="header">
+    <h3>🏠 MaliApp</h3>
+    <span class="settings-btn" onclick="openSettings()">⚙️</span>
+  </div>
+
+  <div class="card">
+    <p>💰 الرصيد: <b id="balance">0</b> مالي</p>
+    <p>⭐ المستوى: <b id="level">1</b></p>
+    <p>🔗 رابط الدعوة:</p>
+    <small id="ref"></small>
+  </div>
+
+  <h3>📋 مهام المستوى 1</h3>
+  <div id="tasks"></div>
 </div>
 
-<div id="settings" onclick="logout()">⚙️</div>
+<!-- SETTINGS -->
+<div class="screen" id="settings">
+  <div class="card">
+    <h3>⚙️ الإعدادات</h3>
+    <button onclick="changeLang()">🌐 تغيير اللغة</button>
+    <button onclick="alert('سيتم ربط المحفظة لاحقًا')">👛 ربط المحفظة</button>
+    <button onclick="logout()">🚪 تسجيل الخروج</button>
+  </div>
+</div>
+
+<script>
+let user = JSON.parse(localStorage.getItem("user"));
+let activeTask = localStorage.getItem("activeTask");
+let tasksData = [
+  {id:1,name:"مهمة 1",reward:5},
+  {id:2,name:"مهمة 2",reward:5},
+  {id:3,name:"مهمة 3",reward:5},
+  {id:4,name:"مهمة 4",reward:5},
+  {id:5,name:"مهمة 5",reward:5},
+];
+
+if(user){showHome();}
+
+function register(){
+  let email = emailInput();
+  if(!email || pass.value.length<6 || pass.value!==pass2.value){
+    alert("تحقق من البيانات");
+    return;
+  }
+  let refCode = "MALI"+Math.floor(Math.random()*100000);
+  user={
+    email,
+    balance:0,
+    level:1,
+    ref:refCode,
+    tasks:{}
+  };
+  localStorage.setItem("user",JSON.stringify(user));
+  showHome();
+}
+
+function login(){
+  if(user) showHome();
+  else alert("لا يوجد حساب، أنشئ حساب أولًا");
+}
+
+function showHome(){
+  switchScreen("home");
+  balance.innerText=user.balance;
+  level.innerText=user.level;
+  ref.innerText=location.href+"?ref="+user.ref;
+  renderTasks();
+}
+
+function renderTasks(){
+  tasks.innerHTML="";
+  tasksData.forEach(t=>{
+    let last = user.tasks[t.id];
+    let done = last && Date.now()-last < 86400000;
+    let div=document.createElement("div");
+    div.className="task"+(done?" done":"");
+    div.innerHTML=`
+      <b>${t.name}</b><br>
+      ربح: ${t.reward} مالي<br>
+      <button ${done?"disabled":""} onclick="startTask(${t.id},${t.reward})">
+        ${done?"تمت المهمة":"ابدأ"}
+      </button>
+    `;
+    tasks.appendChild(div);
+  });
+}
+
+function startTask(id,reward){
+  if(activeTask){alert("هناك مهمة قيد التشغيل");return;}
+  activeTask=id;
+  localStorage.setItem("activeTask",id);
+  setTimeout(()=>{
+    user.balance+=reward;
+    user.tasks[id]=Date.now();
+    if(user.balance>=25) user.level=2;
+    localStorage.setItem("user",JSON.stringify(user));
+    localStorage.removeItem("activeTask");
+    activeTask=null;
+    alert("✅ تمت المهمة");
+    showHome();
+  },30000);
+}
+
+function openSettings(){switchScreen("settings")}
+function logout(){
+  localStorage.removeItem("user");
+  location.reload();
+}
+function switchScreen(id){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+}
+function emailInput(){return document.getElementById("email").value}
+function changeLang(){alert("اللغة ستضاف قريبًا")}
+</script>
 
 </body>
 </html>
