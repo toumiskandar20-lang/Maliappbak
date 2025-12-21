@@ -40,6 +40,12 @@ button{
   display:flex;
   justify-content:space-between;
 }
+.history-card{
+  background:#222;
+  padding:10px;
+  border-radius:8px;
+  margin:6px 0;
+}
 .settings-btn{
   position:fixed;
   right:20px;
@@ -52,12 +58,14 @@ button{
   align-items:center;
   justify-content:center;
   font-size:22px;
+  color:#000;
 }
 </style>
 </head>
 
 <body>
 
+<!-- AUTH -->
 <div class="box" id="authBox">
   <h2>🔐 MaliApp</h2>
   <input id="email" placeholder="Email">
@@ -66,50 +74,29 @@ button{
   <button onclick="login()">دخول</button>
 </div>
 
+<!-- APP -->
 <div class="box" id="appBox" style="display:none">
   <h3>💰 الرصيد: <span id="balance">0</span></h3>
   <h4>⭐ المستوى: <span id="level">1</span></h4>
 
-  <div class="task">مهمة 1 <button onclick="startTask('t1',this)">ابدأ</button></div>
-  <div class="task">مهمة 2 <button onclick="startTask('t2',this)">ابدأ</button></div>
+  <div class="task">مهمة 1 <button id="t1" onclick="startTask('t1',this)">ابدأ</button></div>
+  <div class="task">مهمة 2 <button id="t2" onclick="startTask('t2',this)">ابدأ</button></div>
 
   <h3>💸 سحب راتب</h3>
   <input id="withdrawAmount" type="number" placeholder="المبلغ">
   <button onclick="requestWithdraw()">طلب سحب</button>
 
-  async function loadWithdrawHistory(){
-  const user = auth.currentUser;
-  if(!user) return;
+  <h3>📜 سجل السحوبات</h3>
+  <div id="withdrawHistory"></div>
+</div>
 
-  const q = query(
-    collection(db,"withdraw_requests"),
-    where("userId","==",user.uid)
-  );
-
-  const snap = await getDocs(q);
-  const box = document.getElementById("withdrawHistory");
-  box.innerHTML = "";
-
-  snap.forEach(d=>{
-    const w = d.data();
-    let badge = "⏳ قيد المراجعة";
-    if(w.status==="approved") badge="✅ تم القبول";
-    if(w.status==="rejected") badge="❌ مرفوض";
-
-    box.innerHTML += `
-      <div class="history-card">
-        <div>💰 ${w.amount}</div>
-        <div>${badge}</div>
-      </div>
-    `;
-  });
-}
-
+<!-- SETTINGS -->
 <div class="box" id="settings" style="display:none">
   <h3>⚙️ الإعدادات</h3>
   <input id="wallet" placeholder="رابط المحفظة">
   <button onclick="saveWallet()">حفظ</button>
   <button onclick="logout()">خروج</button>
+  <button onclick="back()">رجوع</button>
 </div>
 
 <div class="settings-btn" onclick="openSettings()">
@@ -118,10 +105,26 @@ button{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, query, where, getDocs, serverTimestamp } 
-from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
@@ -136,15 +139,16 @@ const db = getFirestore(app);
 let userData = {};
 let currentTask = false;
 
-// AUTH
+// ===== AUTH =====
 window.register = async ()=>{
-  const email = email.value;
-  const pass = password.value;
-  const cred = await createUserWithEmailAndPassword(auth,email,pass);
+  const e = email.value;
+  const p = password.value;
+  const cred = await createUserWithEmailAndPassword(auth,e,p);
   await setDoc(doc(db,"users",cred.user.uid),{
     balance:0,
     level:1,
-    tasks:{}
+    tasks:{},
+    wallet:""
   });
 };
 
@@ -167,55 +171,84 @@ function updateUI(){
   level.innerText = userData.level;
 }
 
-// TASK
+// ===== TASKS =====
 window.startTask = async (id,btn)=>{
-  if(currentTask) return alert("مهمة قيد التشغيل");
-  currentTask=true;
-  let t=30;
-  const timer=setInterval(async()=>{
-    btn.innerText=t--;
-    if(t<0){
+  if(currentTask) return alert("❌ توجد مهمة قيد التشغيل");
+  currentTask = true;
+  let t = 30;
+  btn.disabled = true;
+
+  const timer = setInterval(async ()=>{
+    btn.innerText = t--;
+    if(t < 0){
       clearInterval(timer);
-      btn.innerText="✔ تمت";
-      btn.disabled=true;
-      currentTask=false;
-      userData.balance+=10;
-      userData.tasks[id]=Date.now();
-      await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
+      btn.innerText = "✔ تمت";
+      currentTask = false;
+
+      userData.balance += 10;
+      userData.tasks[id] = Date.now();
+      if(userData.balance >= 50) userData.level = 2;
+
+      await updateDoc(doc(db,"users",auth.currentUser.uid), userData);
       updateUI();
     }
   },1000);
 };
 
-// WITHDRAW
+// ===== WITHDRAW =====
 window.requestWithdraw = async ()=>{
-  const amount=Number(withdrawAmount.value);
+  const amount = Number(withdrawAmount.value);
+  if(amount <= 0) return alert("❌ مبلغ غير صحيح");
+
   await addDoc(collection(db,"withdrawals"),{
-    userId:auth.currentUser.uid,
+    userId: auth.currentUser.uid,
     amount,
     status:"pending",
-    createdAt:serverTimestamp()
+    createdAt: serverTimestamp()
   });
+
   withdrawAmount.value="";
   loadWithdrawHistory();
 };
 
 async function loadWithdrawHistory(){
-  const q=query(collection(db,"withdrawals"),where("userId","==",auth.currentUser.uid));
-  const snap=await getDocs(q);
-  withdrawHistory.innerHTML="";
+  const q = query(
+    collection(db,"withdrawals"),
+    where("userId","==",auth.currentUser.uid)
+  );
+  const snap = await getDocs(q);
+  withdrawHistory.innerHTML = "";
+
   snap.forEach(d=>{
-    withdrawHistory.innerHTML+=`<div>💵 ${d.data().amount} | ⏳ قيد المراجعة</div>`;
+    const w = d.data();
+    let s = "⏳ قيد المراجعة";
+    if(w.status==="approved") s="✅ تم القبول";
+    if(w.status==="rejected") s="❌ مرفوض";
+
+    withdrawHistory.innerHTML += `
+      <div class="history-card">
+        💵 ${w.amount} <br>${s}
+      </div>`;
   });
 }
 
-// SETTINGS
-window.openSettings=()=>{appBox.style.display="none";settings.style.display="block";}
-window.saveWallet=async()=>{
-  await updateDoc(doc(db,"users",auth.currentUser.uid),{wallet:wallet.value});
-  alert("تم الحفظ");
+// ===== SETTINGS =====
+window.openSettings = ()=>{
+  appBox.style.display="none";
+  settings.style.display="block";
 }
-window.logout=async()=>{await signOut(auth);location.reload();}
+window.back = ()=>{
+  settings.style.display="none";
+  appBox.style.display="block";
+}
+window.saveWallet = async ()=>{
+  await updateDoc(doc(db,"users",auth.currentUser.uid),{wallet:wallet.value});
+  alert("✅ تم الحفظ");
+}
+window.logout = async ()=>{
+  await signOut(auth);
+  location.reload();
+}
 </script>
 
 </body>
