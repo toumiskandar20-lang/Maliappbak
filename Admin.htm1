@@ -2,88 +2,131 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Dashboard - MaliApp</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, query, where, getDocs, updateDoc, doc } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, signInWithEmailAndPassword } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
   authDomain: "maliapp-63f91.firebaseapp.com",
   projectId: "maliapp-63f91",
+  storageBucket: "maliapp-63f91.appspot.com",
+  messagingSenderId: "901870433172",
+  appId: "1:901870433172:web:325b2312af72099279d581"
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    alert("لازم تسجيل دخول");
-    return;
+// 🔐 تسجيل دخول Admin
+window.adminLogin = async () => {
+  const email = adminEmail.value;
+  const pass = adminPass.value;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+    document.getElementById("login").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+    loadWithdrawals();
+  } catch (e) {
+    alert("❌ فشل تسجيل الدخول");
   }
+};
 
-  loadUsers();
-});
+// 📥 تحميل طلبات السحب
+async function loadWithdrawals() {
+  const q = query(
+    collection(db, "withdrawals"),
+    where("status", "==", "pending")
+  );
 
-async function loadUsers() {
-  const usersCol = collection(db, "users");
-  const snapshot = await getDocs(usersCol);
-  const container = document.getElementById("users");
+  const snap = await getDocs(q);
+  const box = document.getElementById("requests");
+  box.innerHTML = "";
 
-  container.innerHTML = "";
-
-  snapshot.forEach(docu => {
-    const u = docu.data();
-    if (u.role === "user") {
-      container.innerHTML += `
-        <div class="card">
-          <p>📧 ${u.email}</p>
-          <p>💰 الرصيد: ${u.balance}</p>
-          <input type="number" id="bal-${docu.id}" placeholder="رصيد جديد">
-          <button onclick="updateBalance('${docu.id}')">تحديث</button>
-        </div>
-      `;
-    }
+  snap.forEach(d => {
+    const w = d.data();
+    box.innerHTML += `
+      <div class="card">
+        <p>📧 ${w.email}</p>
+        <p>💰 ${w.amount}</p>
+        <button onclick="approve('${d.id}')">✅ قبول</button>
+        <button onclick="reject('${d.id}')">❌ رفض</button>
+      </div>
+    `;
   });
 }
 
-window.updateBalance = async function(uid) {
-  const val = document.getElementById(`bal-${uid}`).value;
-  if (!val) return alert("أدخل رقم");
-
-  await updateDoc(doc(db, "users", uid), {
-    balance: Number(val)
+// ✅ قبول
+window.approve = async (id) => {
+  await updateDoc(doc(db, "withdrawals", id), {
+    status: "approved"
   });
+  loadWithdrawals();
+};
 
-  alert("تم التحديث ✅");
-  loadUsers();
-}
+// ❌ رفض
+window.reject = async (id) => {
+  await updateDoc(doc(db, "withdrawals", id), {
+    status: "rejected"
+  });
+  loadWithdrawals();
+};
 </script>
 
 <style>
-body { font-family:Arial; background:#f4f6f8; padding:20px }
-.card {
-  background:#fff;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:10px;
+body{
+  font-family:Arial;
+  background:#0f2027;
+  color:#fff;
 }
-button {
-  background:#2575fc;
-  color:white;
-  border:none;
-  padding:6px 10px;
+.box{
+  max-width:400px;
+  margin:40px auto;
+  background:#111;
+  padding:20px;
+  border-radius:12px;
+}
+input,button{
+  width:100%;
+  padding:10px;
+  margin:6px 0;
   border-radius:6px;
+  border:none;
+}
+button{
+  background:#00c853;
+  font-weight:bold;
+}
+.card{
+  background:#222;
+  padding:10px;
+  border-radius:8px;
+  margin:10px 0;
 }
 </style>
 </head>
 
 <body>
-<h2>🛠 Admin Dashboard</h2>
-<div id="users"></div>
+
+<div class="box" id="login">
+  <h3>🔐 Admin Login</h3>
+  <input id="adminEmail" placeholder="Admin Email">
+  <input id="adminPass" type="password" placeholder="Password">
+  <button onclick="adminLogin()">دخول</button>
+</div>
+
+<div class="box" id="panel" style="display:none">
+  <h3>📥 طلبات السحب</h3>
+  <div id="requests"></div>
+</div>
+
 </body>
 </html>
