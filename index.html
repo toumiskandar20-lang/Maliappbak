@@ -263,7 +263,30 @@ window.logout = async ()=>{
   await signOut(auth);
   location.reload();
 }
-</script>
+</script>async function loadWithdrawHistory(){
+  const q = query(
+    collection(db,"withdrawals"),
+    where("userId","==",auth.currentUser.uid)
+  );
+
+  const snap = await getDocs(q);
+  withdrawHistory.innerHTML="";
+
+  snap.forEach(d=>{
+    const w = d.data();
+    let cls="pending", txt="قيد المراجعة";
+
+    if(w.status==="approved"){cls="approved";txt="تم القبول";}
+    if(w.status==="rejected"){cls="rejected";txt="مرفوض";}
+
+    withdrawHistory.innerHTML += `
+      <div class="history-card">
+        <div>💵 ${w.amount}</div>
+        <span class="badge ${cls}">${txt}</span>
+      </div>
+    `;
+  });
+}
 
 </body>
 </html>
