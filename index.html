@@ -1,4 +1,12 @@
-<!DOCTYPE html>
+<!DOCTYPE html><div class="box">
+  <h3>💰 سحب راتب</h3>
+
+  <input id="withdrawAmount" type="number" placeholder="أدخل مبلغ السحب">
+  <button onclick="requestWithdraw()">طلب سحب</button>
+
+  <h3>📜 سجل السحوبات</h3>
+  <div id="withdrawHistory"></div>
+</div>
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
@@ -9,7 +17,90 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
 <!-- Firebase -->
-<script type="module">
+<script type="module"><script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { 
+  getFirestore, collection, addDoc, query, where, getDocs, serverTimestamp 
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
+  authDomain: "maliapp-63f91.firebaseapp.com",
+  projectId: "maliapp-63f91",
+  storageBucket: "maliapp-63f91.appspot.com",
+  messagingSenderId: "901870433172",
+  appId: "1:901870433172:web:325b2312af72099279d581"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// 🔹 طلب سحب
+window.requestWithdraw = async function () {
+  const amount = Number(document.getElementById("withdrawAmount").value);
+
+  if (!amount || amount <= 0) {
+    alert("❌ أدخل مبلغ صحيح");
+    return;
+  }
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert("❌ يجب تسجيل الدخول");
+    return;
+  }
+
+  await addDoc(collection(db, "withdrawals"), {
+    userId: user.uid,
+    email: user.email,
+    amount: amount,
+    status: "pending",
+    createdAt: serverTimestamp()
+  });
+
+  alert("✅ تم إرسال طلب السحب (قيد المراجعة)");
+  document.getElementById("withdrawAmount").value = "";
+  loadWithdrawHistory();
+};
+
+// 🔹 تحميل سجل السحوبات
+async function loadWithdrawHistory() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const q = query(
+    collection(db, "withdrawals"),
+    where("userId", "==", user.uid)
+  );
+
+  const snapshot = await getDocs(q);
+  const container = document.getElementById("withdrawHistory");
+  container.innerHTML = "";
+
+  snapshot.forEach(doc => {
+    const d = doc.data();
+    let statusText = "⏳ قيد المراجعة";
+    if (d.status === "approved") statusText = "✅ تم القبول";
+    if (d.status === "rejected") statusText = "❌ مرفوض";
+
+    container.innerHTML += `
+      <div style="background:#f1f1f1;padding:10px;margin:5px;border-radius:6px">
+        💵 ${d.amount} <br>
+        📌 ${statusText}
+      </div>
+    `;
+  });
+}
+
+// 🔹 عند تسجيل الدخول
+onAuthStateChanged(auth, user => {
+  if (user) {
+    loadWithdrawHistory();
+  }
+});
+</script>
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
