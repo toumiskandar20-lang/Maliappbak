@@ -86,9 +86,23 @@ button{
   <input id="withdrawAmount" type="number" placeholder="المبلغ">
   <button onclick="requestWithdraw()">طلب سحب</button>
 
-  <h3>📜 سجل السحوبات</h3>
-  <div id="withdrawHistory"></div>
-</div>
+  .history-card{
+  background:#1c1c1c;
+  padding:12px;
+  border-radius:10px;
+  margin:8px 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.badge{
+  padding:4px 10px;
+  border-radius:12px;
+  font-size:12px;
+}
+.pending{background:#ff9800}
+.approved{background:#00c853}
+.rejected{background:#d50000}
 
 <!-- SETTINGS -->
 <div class="box" id="settings" style="display:none">
