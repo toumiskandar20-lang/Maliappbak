@@ -10,24 +10,26 @@
 <style>
 body{
   margin:0;
-  font-family:Arial;
+  font-family:'Segoe UI',Arial;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   color:#fff;
 }
 .box{
-  max-width:400px;
+  max-width:420px;
   margin:25px auto;
   background:#111;
-  border-radius:15px;
+  border-radius:18px;
   padding:20px;
-  animation:fade .5s;
+  animation:fade .4s ease;
 }
+h3,h4{margin:8px 0}
 input,button{
   width:100%;
   padding:12px;
   margin:8px 0;
-  border-radius:8px;
+  border-radius:10px;
   border:none;
+  font-size:15px;
 }
 button{
   background:#00c853;
@@ -35,25 +37,26 @@ button{
   cursor:pointer;
 }
 button:disabled{
-  background:#555;
+  opacity:.6;
 }
 .task{
-  background:#222;
-  padding:10px;
-  border-radius:8px;
-  margin:6px 0;
-  display:flex;
-  justify-content:space-between;
-}
-.history-card{
   background:#1c1c1c;
   padding:12px;
-  border-radius:10px;
+  border-radius:12px;
   margin:8px 0;
   display:flex;
   justify-content:space-between;
   align-items:center;
-  animation:slide .4s;
+}
+.history-card{
+  background:#1c1c1c;
+  padding:12px;
+  border-radius:12px;
+  margin:8px 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  animation:slide .3s ease;
 }
 .badge{
   padding:5px 12px;
@@ -63,22 +66,24 @@ button:disabled{
 .pending{background:#ff9800}
 .approved{background:#00c853}
 .rejected{background:#d50000}
+
 .settings-btn{
   position:fixed;
   right:20px;
   bottom:20px;
-  width:55px;
-  height:55px;
+  width:56px;
+  height:56px;
   border-radius:50%;
   background:#00c853;
+  color:#000;
   display:flex;
   align-items:center;
   justify-content:center;
   font-size:22px;
-  color:#000;
 }
+
 @keyframes fade{from{opacity:0}to{opacity:1}}
-@keyframes slide{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+@keyframes slide{from{transform:translateY(10px);opacity:0}to{opacity:1}}
 </style>
 </head>
 
@@ -101,6 +106,8 @@ button:disabled{
   <div class="task">مهمة 1 <button onclick="startTask('t1',this)">ابدأ</button></div>
   <div class="task">مهمة 2 <button onclick="startTask('t2',this)">ابدأ</button></div>
 
+  <button onclick="openRecharge()">➕ تعبئة الرصيد</button>
+
   <h3>💸 سحب راتب</h3>
   <input id="withdrawAmount" type="number" placeholder="المبلغ">
   <button onclick="requestWithdraw()">طلب سحب</button>
@@ -109,12 +116,20 @@ button:disabled{
   <div id="withdrawHistory"></div>
 </div>
 
+<!-- RECHARGE -->
+<div class="box" id="rechargeBox" style="display:none">
+  <h3>➕ تعبئة الرصيد</h3>
+  <p>أرسل المبلغ إلى رابط المحفظة:</p>
+  <input id="walletLink" readonly>
+  <button onclick="back()">رجوع</button>
+</div>
+
 <!-- SETTINGS -->
 <div class="box" id="settings" style="display:none">
   <h3>⚙️ الإعدادات</h3>
   <input id="wallet" placeholder="رابط المحفظة">
   <button onclick="saveWallet()">حفظ</button>
-  <button onclick="logout()">خروج</button>
+  <button onclick="logout()">تسجيل خروج</button>
   <button onclick="back()">رجوع</button>
 </div>
 
@@ -125,24 +140,12 @@ button:disabled{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
+  getAuth, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  addDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  serverTimestamp
+  getFirestore, doc, setDoc, getDoc, updateDoc,
+  addDoc, collection, query, where, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -155,21 +158,16 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let userData = {};
-let currentTask = false;
+let userData={}, currentTask=false;
 
 // AUTH
-window.register = async ()=>{
+window.register = async()=>{
   const cred = await createUserWithEmailAndPassword(auth,email.value,password.value);
   await setDoc(doc(db,"users",cred.user.uid),{
-    balance:0,
-    level:1,
-    tasks:{},
-    wallet:""
+    balance:0, level:1, wallet:"", tasks:{}
   });
 };
-
-window.login = async ()=>{
+window.login = async()=>{
   await signInWithEmailAndPassword(auth,email.value,password.value);
 };
 
@@ -185,52 +183,46 @@ onAuthStateChanged(auth, async user=>{
 
 // UI
 function updateUI(){
-  balance.innerText = userData.balance;
-  level.innerText = userData.level;
+  balance.innerText=userData.balance;
+  level.innerText=userData.level;
+  walletLink.value=userData.wallet || "لم يتم ربط محفظة";
 }
 
 // TASK
-window.startTask = async (id,btn)=>{
-  if(currentTask) return alert("❌ توجد مهمة تعمل حاليا");
-  currentTask = true;
-  let t = 30;
-  btn.disabled = true;
-
-  const timer = setInterval(async ()=>{
-    btn.innerText = t--;
-    if(t < 0){
+window.startTask = async(id,btn)=>{
+  if(currentTask) return alert("⚠️ توجد مهمة تعمل");
+  currentTask=true;
+  let t=30;
+  btn.disabled=true;
+  const timer=setInterval(async()=>{
+    btn.innerText=t--;
+    if(t<0){
       clearInterval(timer);
-      btn.innerText = "✔ تمت";
-      currentTask = false;
-
-      userData.balance += 10;
-      userData.tasks[id] = Date.now();
-      if(userData.balance >= 50) userData.level = 2;
-
-      await updateDoc(doc(db,"users",auth.currentUser.uid), userData);
+      btn.innerText="✔ تمت";
+      currentTask=false;
+      userData.balance+=10;
+      userData.tasks[id]=Date.now();
+      if(userData.balance>=50) userData.level=2;
+      await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
       updateUI();
     }
   },1000);
 };
 
-// WITHDRAW (تحقق + نقص الرصيد)
-window.requestWithdraw = async ()=>{
-  const amount = Number(withdrawAmount.value);
+// WITHDRAW
+window.requestWithdraw = async()=>{
+  const amount=Number(withdrawAmount.value);
+  if(amount<=0) return alert("❌ مبلغ غير صحيح");
+  if(amount>userData.balance) return alert("❌ الرصيد غير كافي");
 
-  if(amount <= 0) return alert("❌ مبلغ غير صحيح");
-  if(amount > userData.balance) return alert("❌ الرصيد غير كافي");
-
-  // نقص الرصيد فورا
-  userData.balance -= amount;
-  await updateDoc(doc(db,"users",auth.currentUser.uid),{
-    balance:userData.balance
-  });
+  userData.balance-=amount;
+  await updateDoc(doc(db,"users",auth.currentUser.uid),{balance:userData.balance});
 
   await addDoc(collection(db,"withdrawals"),{
-    userId: auth.currentUser.uid,
+    userId:auth.currentUser.uid,
     amount,
     status:"pending",
-    createdAt: serverTimestamp()
+    createdAt:serverTimestamp()
   });
 
   withdrawAmount.value="";
@@ -238,54 +230,40 @@ window.requestWithdraw = async ()=>{
   loadWithdrawHistory();
 };
 
-// HISTORIQUE احترافي
+// HISTORY
 async function loadWithdrawHistory(){
-  const q = query(
-    collection(db,"withdrawals"),
-    where("userId","==",auth.currentUser.uid)
-  );
-
-  const snap = await getDocs(q);
+  const q=query(collection(db,"withdrawals"),
+    where("userId","==",auth.currentUser.uid));
+  const snap=await getDocs(q);
   withdrawHistory.innerHTML="";
-
   snap.forEach(d=>{
-    const w = d.data();
-    let cls="pending", txt="قيد المراجعة", icon="⏳";
-
+    const w=d.data();
+    let cls="pending",txt="قيد المراجعة",icon="⏳";
     if(w.status==="approved"){cls="approved";txt="تم القبول";icon="✅";}
     if(w.status==="rejected"){cls="rejected";txt="مرفوض";icon="❌";}
-
-    const date = w.createdAt?.toDate().toLocaleDateString() || "";
-
-    withdrawHistory.innerHTML += `
+    withdrawHistory.innerHTML+=`
       <div class="history-card">
-        <div>
-          ${icon} <strong>${w.amount}</strong><br>
-          <small>${date}</small>
-        </div>
+        <div>${icon} ${w.amount}</div>
         <span class="badge ${cls}">${txt}</span>
-      </div>
-    `;
+      </div>`;
   });
 }
 
-// SETTINGS
-window.openSettings=()=>{
-  appBox.style.display="none";
-  settings.style.display="block";
-}
+// NAV
+window.openSettings=()=>{appBox.style.display="none";settings.style.display="block";}
+window.openRecharge=()=>{appBox.style.display="none";rechargeBox.style.display="block";}
 window.back=()=>{
   settings.style.display="none";
+  rechargeBox.style.display="none";
   appBox.style.display="block";
-}
+};
 window.saveWallet=async()=>{
-  await updateDoc(doc(db,"users",auth.currentUser.uid),{wallet:wallet.value});
+  userData.wallet=wallet.value;
+  await updateDoc(doc(db,"users",auth.currentUser.uid),{wallet:userData.wallet});
+  updateUI();
   alert("✅ تم الحفظ");
 }
-window.logout=async()=>{
-  await signOut(auth);
-  location.reload();
-}
+window.logout=async()=>{await signOut(auth);location.reload();}
 </script>
 
 </body>
