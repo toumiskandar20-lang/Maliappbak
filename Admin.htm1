@@ -2,32 +2,30 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>Admin Dashboard</title>
+<title>Admin Dashboard - MaliApp</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 body{
-  font-family:Arial;
   background:#0f2027;
   color:#fff;
-  margin:0;
+  font-family:Arial;
 }
 .box{
   max-width:500px;
   margin:30px auto;
   background:#111;
   padding:20px;
-  border-radius:15px;
+  border-radius:12px;
 }
 .card{
   background:#222;
   padding:12px;
-  border-radius:10px;
-  margin:10px 0;
+  margin:8px 0;
+  border-radius:8px;
 }
 button{
   padding:8px 12px;
-  margin:5px;
+  margin-top:6px;
   border:none;
   border-radius:6px;
   cursor:pointer;
@@ -40,21 +38,21 @@ button{
 <body>
 
 <div class="box">
-  <h2>🛠️ Admin Dashboard</h2>
-  <div id="withdrawList">تحميل...</div>
+  <h2>🛠 Admin Dashboard</h2>
+  <div id="withdrawList">جاري التحميل...</div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { 
-  getFirestore, collection, getDocs, doc, updateDoc, getDoc 
+  getFirestore, doc, getDoc, collection, getDocs, updateDoc 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
   authDomain: "maliapp-63f91.firebaseapp.com",
-  projectId: "maliapp-63f91"
+  projectId: "maliapp-63f91",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -64,28 +62,26 @@ const db = getFirestore(app);
 // تحقق من الأدمن
 onAuthStateChanged(auth, async user=>{
   if(!user){
-    alert("❌ غير مسجل");
+    alert("لازم تسجيل الدخول");
     location.href="index.html";
     return;
   }
 
   const snap = await getDoc(doc(db,"users",user.uid));
-  if(!snap.exists() || !snap.data().isAdmin){
-    alert("❌ ليس لديك صلاحية");
-    location.href="index.html";
+  if(!snap.exists() || snap.data().role !== "admin"){
+    alert("❌ دخول غير مصرح");
     return;
   }
 
   loadWithdrawals();
 });
 
-// تحميل السحوبات
+// تحميل طلبات السحب
 async function loadWithdrawals(){
   const list = document.getElementById("withdrawList");
   list.innerHTML = "";
 
   const snap = await getDocs(collection(db,"withdrawals"));
-
   snap.forEach(d=>{
     const w = d.data();
     if(w.status !== "pending") return;
@@ -94,8 +90,6 @@ async function loadWithdrawals(){
       <div class="card">
         👤 ${w.userId}<br>
         💰 ${w.amount}<br>
-        📌 ${w.status}
-        <br>
         <button class="approve" onclick="approve('${d.id}')">قبول</button>
         <button class="reject" onclick="reject('${d.id}')">رفض</button>
       </div>
@@ -104,20 +98,14 @@ async function loadWithdrawals(){
 }
 
 // قبول
-window.approve = async (id)=>{
-  await updateDoc(doc(db,"withdrawals",id),{
-    status:"approved"
-  });
-  alert("✅ تم القبول");
+window.approve = async(id)=>{
+  await updateDoc(doc(db,"withdrawals",id),{status:"approved"});
   loadWithdrawals();
 }
 
 // رفض
-window.reject = async (id)=>{
-  await updateDoc(doc(db,"withdrawals",id),{
-    status:"rejected"
-  });
-  alert("❌ تم الرفض");
+window.reject = async(id)=>{
+  await updateDoc(doc(db,"withdrawals",id),{status:"rejected"});
   loadWithdrawals();
 }
 </script>
