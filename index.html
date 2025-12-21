@@ -10,7 +10,7 @@
 <style>
 body{
   margin:0;
-  font-family:'Segoe UI';
+  font-family:Arial;
   background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
   color:#fff;
 }
@@ -30,14 +30,13 @@ input,button{
 }
 button{
   background:#00c853;
-  color:#000;
   font-weight:bold;
 }
 .task{
   background:#222;
-  padding:12px;
-  border-radius:10px;
-  margin:8px 0;
+  padding:10px;
+  border-radius:8px;
+  margin:6px 0;
   display:flex;
   justify-content:space-between;
 }
@@ -45,11 +44,10 @@ button{
   position:fixed;
   right:20px;
   bottom:20px;
-  background:#00c853;
-  color:#000;
   width:55px;
   height:55px;
   border-radius:50%;
+  background:#00c853;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -60,70 +58,51 @@ button{
 
 <body>
 
-<!-- AUTH -->
 <div class="box" id="authBox">
   <h2>🔐 MaliApp</h2>
-  <input id="emailInput" placeholder="Email">
-  <input id="passInput" type="password" placeholder="Password">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
   <button onclick="register()">تسجيل</button>
   <button onclick="login()">دخول</button>
 </div>
 
-<!-- APP -->
 <div class="box" id="appBox" style="display:none">
   <h3>💰 الرصيد: <span id="balance">0</span></h3>
   <h4>⭐ المستوى: <span id="level">1</span></h4>
 
-  <div class="task">مهمة 1 <button id="t1" onclick="startTask('t1')">ابدأ</button></div>
-  <div class="task">مهمة 2 <button id="t2" onclick="startTask('t2')">ابدأ</button></div>
+  <div class="task">مهمة 1 <button onclick="startTask('t1',this)">ابدأ</button></div>
+  <div class="task">مهمة 2 <button onclick="startTask('t2',this)">ابدأ</button></div>
 
-  <hr>
-
-  <h3>💰 سحب رصيد</h3>
-  <input id="withdrawAmount" type="number" placeholder="مبلغ السحب">
+  <h3>💸 سحب راتب</h3>
+  <input id="withdrawAmount" type="number" placeholder="المبلغ">
   <button onclick="requestWithdraw()">طلب سحب</button>
 
   <h3>📜 سجل السحوبات</h3>
   <div id="withdrawHistory"></div>
 </div>
 
-<!-- SETTINGS -->
 <div class="box" id="settings" style="display:none">
   <h3>⚙️ الإعدادات</h3>
   <input id="wallet" placeholder="رابط المحفظة">
   <button onclick="saveWallet()">حفظ</button>
-  <button onclick="logout()">تسجيل خروج</button>
-  <button onclick="back()">رجوع</button>
+  <button onclick="logout()">خروج</button>
 </div>
 
 <div class="settings-btn" onclick="openSettings()">
   <i class="fa fa-gear"></i>
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { 
-  getAuth, 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  onAuthStateChanged,
-  signOut 
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { 
-  getFirestore, 
-  doc, setDoc, getDoc, updateDoc,
-  collection, addDoc, query, where, getDocs,
-  serverTimestamp 
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, query, where, getDocs, serverTimestamp } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
   authDomain: "maliapp-63f91.firebaseapp.com",
   projectId: "maliapp-63f91",
-  storageBucket: "maliapp-63f91.appspot.com",
-  messagingSenderId: "901870433172",
-  appId: "1:901870433172:web:325b2312af72099279d581"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -133,22 +112,20 @@ const db = getFirestore(app);
 let userData = {};
 let currentTask = false;
 
-/* AUTH */
-window.register = async () => {
-  const email = emailInput.value;
-  const pass = passInput.value;
+// AUTH
+window.register = async ()=>{
+  const email = email.value;
+  const pass = password.value;
   const cred = await createUserWithEmailAndPassword(auth,email,pass);
-
   await setDoc(doc(db,"users",cred.user.uid),{
     balance:0,
     level:1,
-    wallet:"",
     tasks:{}
   });
 };
 
-window.login = async () => {
-  await signInWithEmailAndPassword(auth,emailInput.value,passInput.value);
+window.login = async ()=>{
+  await signInWithEmailAndPassword(auth,email.value,password.value);
 };
 
 onAuthStateChanged(auth, async user=>{
@@ -166,62 +143,54 @@ function updateUI(){
   level.innerText = userData.level;
 }
 
-/* TASK */
-window.startTask = async (id)=>{
-  if(currentTask) return alert("انتظر انتهاء المهمة");
-  currentTask = true;
-
-  setTimeout(async ()=>{
-    userData.balance += 10;
-    userData.tasks[id] = Date.now();
-    await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
-    updateUI();
-    currentTask=false;
-  },3000);
+// TASK
+window.startTask = async (id,btn)=>{
+  if(currentTask) return alert("مهمة قيد التشغيل");
+  currentTask=true;
+  let t=30;
+  const timer=setInterval(async()=>{
+    btn.innerText=t--;
+    if(t<0){
+      clearInterval(timer);
+      btn.innerText="✔ تمت";
+      btn.disabled=true;
+      currentTask=false;
+      userData.balance+=10;
+      userData.tasks[id]=Date.now();
+      await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
+      updateUI();
+    }
+  },1000);
 };
 
-/* WITHDRAW */
+// WITHDRAW
 window.requestWithdraw = async ()=>{
-  const amount = Number(withdrawAmount.value);
-  if(amount<=0) return alert("مبلغ غير صحيح");
-
-  await addDoc(collection(db,"withdraw_requests"),{
-    userId: auth.currentUser.uid,
+  const amount=Number(withdrawAmount.value);
+  await addDoc(collection(db,"withdrawals"),{
+    userId:auth.currentUser.uid,
     amount,
     status:"pending",
-    createdAt: serverTimestamp()
+    createdAt:serverTimestamp()
   });
-
   withdrawAmount.value="";
   loadWithdrawHistory();
 };
 
 async function loadWithdrawHistory(){
-  const q = query(
-    collection(db,"withdraw_requests"),
-    where("userId","==",auth.currentUser.uid)
-  );
-
-  const snap = await getDocs(q);
+  const q=query(collection(db,"withdrawals"),where("userId","==",auth.currentUser.uid));
+  const snap=await getDocs(q);
   withdrawHistory.innerHTML="";
-
   snap.forEach(d=>{
-    const w=d.data();
-    withdrawHistory.innerHTML+=`
-      <div style="background:#222;padding:10px;margin:5px;border-radius:8px">
-        💰 ${w.amount} — ${w.status=="pending"?"⏳ تحت المراجعة":"✅ مقبول"}
-      </div>
-    `;
+    withdrawHistory.innerHTML+=`<div>💵 ${d.data().amount} | ⏳ قيد المراجعة</div>`;
   });
 }
 
-/* SETTINGS */
-window.openSettings=()=>{settings.style.display="block";appBox.style.display="none";}
-window.back=()=>{settings.style.display="none";appBox.style.display="block";}
+// SETTINGS
+window.openSettings=()=>{appBox.style.display="none";settings.style.display="block";}
 window.saveWallet=async()=>{
-  userData.wallet=wallet.value;
-  await updateDoc(doc(db,"users",auth.currentUser.uid),{wallet:userData.wallet});
-};
+  await updateDoc(doc(db,"users",auth.currentUser.uid),{wallet:wallet.value});
+  alert("تم الحفظ");
+}
 window.logout=async()=>{await signOut(auth);location.reload();}
 </script>
 
