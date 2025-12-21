@@ -77,9 +77,33 @@ button{
   <input id="withdrawAmount" type="number" placeholder="المبلغ">
   <button onclick="requestWithdraw()">طلب سحب</button>
 
-  <h3>📜 سجل السحوبات</h3>
-  <div id="withdrawHistory"></div>
-</div>
+  async function loadWithdrawHistory(){
+  const user = auth.currentUser;
+  if(!user) return;
+
+  const q = query(
+    collection(db,"withdraw_requests"),
+    where("userId","==",user.uid)
+  );
+
+  const snap = await getDocs(q);
+  const box = document.getElementById("withdrawHistory");
+  box.innerHTML = "";
+
+  snap.forEach(d=>{
+    const w = d.data();
+    let badge = "⏳ قيد المراجعة";
+    if(w.status==="approved") badge="✅ تم القبول";
+    if(w.status==="rejected") badge="❌ مرفوض";
+
+    box.innerHTML += `
+      <div class="history-card">
+        <div>💰 ${w.amount}</div>
+        <div>${badge}</div>
+      </div>
+    `;
+  });
+}
 
 <div class="box" id="settings" style="display:none">
   <h3>⚙️ الإعدادات</h3>
