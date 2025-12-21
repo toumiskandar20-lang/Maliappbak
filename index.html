@@ -251,42 +251,53 @@ window.back=()=>{
   loadTasks();
 };
 
-// ===== WITHDRAW =====
-window.requestWithdraw = async ()=>{
+<script type="module">
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+window.requestWithdraw = async () => {
   const amount = Number(withdrawAmount.value);
-  if(amount<=0) return alert("❌ مبلغ غير صحيح");
-  if(amount>userData.balance) return alert("❌ الرصيد غير كاف");
 
+  if (!amount || amount <= 0) {
+    alert("❌ أدخل مبلغ صحيح");
+    return;
+  }
+
+  if (amount > userData.balance) {
+    alert("❌ لا يمكن سحب مبلغ أكبر من رصيدك");
+    return;
+  }
+
+  const user = auth.currentUser;
+  if (!user) {
+    alert("❌ يجب تسجيل الدخول");
+    return;
+  }
+
+  // 🔻 إنقاص الرصيد مباشرة
   userData.balance -= amount;
-  await updateDoc(doc(db,"users",auth.currentUser.uid),{balance:userData.balance});
 
-  await addDoc(collection(db,"withdrawals"),{
-    userId:auth.currentUser.uid,
-    amount,
-    status:"pending",
-    createdAt:serverTimestamp()
+  await addDoc(collection(db, "withdrawals"), {
+    userId: user.uid,
+    email: user.email,        // ✅ هذا هو الحقل الجديد
+    amount: amount,
+    status: "pending",
+    createdAt: serverTimestamp()
   });
 
-  withdrawAmount.value="";
+  // تحديث الرصيد في users
+  await updateDoc(doc(db, "users", user.uid), {
+    balance: userData.balance
+  });
+
   updateUI();
+  withdrawAmount.value = "";
+
+  alert("✅ تم إرسال طلب السحب (تحت المراجعة)");
   loadWithdrawHistory();
-};
-
-async function loadWithdrawHistory(){
-  const q=query(collection(db,"withdrawals"),where("userId","==",auth.currentUser.uid));
-  const snap=await getDocs(q);
-  withdrawHistory.innerHTML="";
-  snap.forEach(d=>{
-    const w=d.data();
-    withdrawHistory.innerHTML+=`
-      <div class="task">💵 ${w.amount} | ⏳ قيد المراجعة</div>`;
-  });
-}
-
-// ===== LOGOUT =====
-window.logout=async ()=>{
-  await signOut(auth);
-  location.reload();
 };
 </script>
 
