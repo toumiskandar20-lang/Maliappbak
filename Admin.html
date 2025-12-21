@@ -7,89 +7,78 @@
 
 <style>
 body{
-  margin:0;
-  font-family:Arial;
   background:#0f2027;
   color:#fff;
+  font-family:Arial;
 }
 .box{
-  max-width:900px;
+  max-width:600px;
   margin:30px auto;
   background:#111;
-  border-radius:12px;
   padding:20px;
+  border-radius:12px;
 }
 .card{
-  background:#1c1c1c;
-  padding:15px;
+  background:#222;
+  padding:12px;
   border-radius:10px;
   margin:10px 0;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
 }
 button{
   padding:8px 12px;
+  margin:5px;
   border:none;
   border-radius:6px;
-  font-weight:bold;
   cursor:pointer;
 }
-.approve{background:#00c853;}
-.reject{background:#ff5252;}
+.approve{background:#00c853}
+.reject{background:#d50000;color:#fff}
 </style>
 </head>
 
 <body>
 
 <div class="box">
-  <h2>🛠 Admin Dashboard</h2>
-  <div id="withdrawList">جاري التحميل...</div>
+  <h2>📊 لوحة تحكم الأدمن</h2>
+  <div id="withdrawList"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { 
-  getFirestore, collection, getDocs, doc, updateDoc, getDoc 
+  getFirestore, collection, getDocs, doc, updateDoc, getDoc, serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "API_KEY",
   authDomain: "PROJECT.firebaseapp.com",
-  projectId: "PROJECT_ID"
+  projectId: "PROJECT_ID",
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🔐 تحقق Admin
-onAuthStateChanged(auth, async (user)=>{
+onAuthStateChanged(auth, async user=>{
   if(!user){
     document.body.innerHTML="❌ يجب تسجيل الدخول";
     return;
   }
 
-  const snap = await getDoc(doc(db,"users",user.uid));
-  if(!snap.exists() || snap.data().isAdmin !== true){
-    document.body.innerHTML="❌ دخول غير مصرح";
+  const adminSnap = await getDoc(doc(db,"users",user.uid));
+  if(!adminSnap.exists() || adminSnap.data().isAdmin !== true){
+    document.body.innerHTML="🚫 دخول غير مصرح";
     return;
   }
 
   loadWithdrawals();
 });
 
-// 📥 تحميل طلبات السحب
 async function loadWithdrawals(){
-  const box = document.getElementById("withdrawList");
-  box.innerHTML = "";
-
   const snap = await getDocs(collection(db,"withdrawals"));
-  if(snap.empty){
-    box.innerHTML="لا توجد طلبات";
-    return;
-  }
+  const box = document.getElementById("withdrawList");
+  box.innerHTML="";
 
   snap.forEach(d=>{
     const w = d.data();
@@ -97,42 +86,35 @@ async function loadWithdrawals(){
 
     box.innerHTML += `
       <div class="card">
-        <div>
-          <div>📧 ${w.email}</div>
-          <div>💰 ${w.amount}</div>
-        </div>
-        <div>
-          <button class="approve" onclick="approve('${d.id}','${w.userId}',${w.amount})">قبول</button>
-          <button class="reject" onclick="reject('${d.id}')">رفض</button>
-        </div>
+        <div>👤 ${w.email}</div>
+        <div>💰 ${w.amount}</div>
+        <button class="approve" onclick="approve('${d.id}','${w.userId}',${w.amount})">قبول</button>
+        <button class="reject" onclick="reject('${d.id}')">رفض</button>
       </div>
     `;
   });
 }
 
-// ✅ قبول السحب
-window.approve = async (withdrawId, userId, amount)=>{
-  const userRef = doc(db,"users",userId);
+window.approve = async (wid, uid, amount)=>{
+  await updateDoc(doc(db,"withdrawals",wid),{
+    status:"approved",
+    approvedAt:serverTimestamp()
+  });
+
+  const userRef = doc(db,"users",uid);
   const userSnap = await getDoc(userRef);
-
-  if(!userSnap.exists()) return alert("المستخدم غير موجود");
-
   const newBalance = userSnap.data().balance - amount;
-  if(newBalance < 0) return alert("رصيد غير كافي");
 
-  await updateDoc(userRef,{ balance:newBalance });
-  await updateDoc(doc(db,"withdrawals",withdrawId),{ status:"approved" });
-
-  alert("✅ تم قبول السحب");
+  await updateDoc(userRef,{balance:newBalance});
   loadWithdrawals();
-}
+};
 
-// ❌ رفض السحب
-window.reject = async (withdrawId)=>{
-  await updateDoc(doc(db,"withdrawals",withdrawId),{ status:"rejected" });
-  alert("❌ تم رفض السحب");
+window.reject = async (wid)=>{
+  await updateDoc(doc(db,"withdrawals",wid),{
+    status:"rejected"
+  });
   loadWithdrawals();
-}
+};
 </script>
 
 </body>
