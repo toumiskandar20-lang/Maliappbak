@@ -40,31 +40,6 @@ button{
   margin:6px 0;
   display:flex;
   justify-content:space-between;
-  align-items:center;
-}
-.history-card{
-  background:#1c1c1c;
-  padding:12px;
-  border-radius:10px;
-  margin:8px 0;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  animation:fade .4s;
-}
-.badge{
-  padding:4px 10px;
-  border-radius:12px;
-  font-size:12px;
-}
-.pending{background:#ff9800}
-.approved{background:#00c853}
-.rejected{background:#d50000}
-.level-card{
-  background:#1c1c1c;
-  padding:15px;
-  border-radius:12px;
-  margin:10px 0;
 }
 .settings-btn{
   position:fixed;
@@ -80,19 +55,30 @@ button{
   font-size:22px;
   color:#000;
 }
-@keyframes fade{from{opacity:0}to{opacity:1}}
 </style>
 </head>
 
 <body>
 
-<!-- AUTH -->
+<!-- LOGIN -->
 <div class="box" id="authBox">
-  <h2>🔐 MaliApp</h2>
-  <input id="email" placeholder="البريد الإلكتروني">
-  <input id="password" type="password" placeholder="كلمة المرور">
-  <button onclick="register()">تسجيل حساب</button>
-  <button onclick="login()">تسجيل دخول</button>
+  <h2>🔐 تسجيل الدخول</h2>
+  <input id="loginEmail" placeholder="البريد الإلكتروني">
+  <input id="loginPassword" type="password" placeholder="كلمة المرور">
+  <button onclick="login()">دخول</button>
+  <button onclick="openRegister()">إنشاء حساب جديد</button>
+</div>
+
+<!-- REGISTER -->
+<div class="box" id="registerBox" style="display:none">
+  <h2>✨ إنشاء حساب</h2>
+  <input id="regEmail" placeholder="البريد الإلكتروني">
+  <input id="regPhone" placeholder="رقم الهاتف">
+  <input id="regPassword" type="password" placeholder="كلمة المرور">
+  <input id="regConfirm" type="password" placeholder="تأكيد كلمة المرور">
+  <input id="regRef" placeholder="UID صاحب الدعوة (اختياري)">
+  <button onclick="register()">إنشاء الحساب</button>
+  <button onclick="backToLogin()">⬅ رجوع</button>
 </div>
 
 <!-- APP -->
@@ -100,37 +86,14 @@ button{
   <h3>💰 الرصيد: <span id="balance">0</span></h3>
   <h4>⭐ المستوى: <span id="level">1</span></h4>
 
-  <button onclick="openUpgrade()">🚀 تعزيز المستوى</button>
-
   <div id="tasksBox"></div>
 
-  <h3>💸 سحب راتب</h3>
+  <h3>💸 طلب سحب</h3>
   <input id="withdrawAmount" type="number" placeholder="المبلغ">
-  <button onclick="requestWithdraw()">طلب سحب</button>
+  <button onclick="requestWithdraw()">طلب</button>
 
-  <h3>📜 سجل السحوبات</h3>
+  <h3>📜 السجل</h3>
   <div id="withdrawHistory"></div>
-</div>
-
-<!-- UPGRADE -->
-<div class="box" id="upgradeBox" style="display:none">
-  <h3>🚀 تعزيز المستوى</h3>
-
-  <div class="level-card">
-    <h4>المستوى 2</h4>
-    <p>11 مهمة يوميًا</p>
-    <p>💰 230 نقطة</p>
-    <button onclick="upgradeLevel(2)">ترقية</button>
-  </div>
-
-  <div class="level-card">
-    <h4>المستوى 3</h4>
-    <p>23 مهمة يوميًا</p>
-    <p>💰 590 نقطة</p>
-    <button onclick="upgradeLevel(3)">ترقية</button>
-  </div>
-
-  <button onclick="back()">⬅ رجوع</button>
 </div>
 
 <div class="settings-btn" onclick="logout()">
@@ -139,7 +102,7 @@ button{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
+import { 
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -171,33 +134,52 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 let userData = {};
-let currentTask = false;
+let currentTask=false;
 
-const LEVELS = {
-  1:{tasks:5},
-  2:{tasks:11, price:230},
-  3:{tasks:23, price:590}
-};
+/* NAV */
+window.openRegister=()=>{
+  authBox.style.display="none";
+  registerBox.style.display="block";
+}
+window.backToLogin=()=>{
+  registerBox.style.display="none";
+  authBox.style.display="block";
+}
 
-/* AUTH */
+/* REGISTER */
 window.register = async ()=>{
-  const cred = await createUserWithEmailAndPassword(auth,email.value,password.value);
+  if(regPassword.value!==regConfirm.value)
+    return alert("❌ كلمات السر غير متطابقة");
+
+  const cred = await createUserWithEmailAndPassword(
+    auth,regEmail.value,regPassword.value
+  );
+
   await setDoc(doc(db,"users",cred.user.uid),{
+    email:regEmail.value,
+    phone:regPhone.value,
+    ref:regRef.value || null,
     balance:0,
     level:1,
-    tasks:{}
+    tasks:{},
+    createdAt:serverTimestamp()
   });
 };
 
+/* LOGIN */
 window.login = async ()=>{
-  await signInWithEmailAndPassword(auth,email.value,password.value);
+  await signInWithEmailAndPassword(
+    auth,loginEmail.value,loginPassword.value
+  );
 };
 
+/* AUTH STATE */
 onAuthStateChanged(auth, async user=>{
   if(!user) return;
   const snap = await getDoc(doc(db,"users",user.uid));
-  userData = snap.data();
+  userData=snap.data();
   authBox.style.display="none";
+  registerBox.style.display="none";
   appBox.style.display="block";
   updateUI();
   loadTasks();
@@ -205,80 +187,47 @@ onAuthStateChanged(auth, async user=>{
 });
 
 function updateUI(){
-  balance.innerText = userData.balance;
-  level.innerText = userData.level;
+  balance.innerText=userData.balance;
+  level.innerText=userData.level;
 }
 
 /* TASKS */
 function loadTasks(){
   tasksBox.innerHTML="";
-  const count = LEVELS[userData.level].tasks;
-  for(let i=1;i<=count;i++){
-    tasksBox.innerHTML += `
+  for(let i=1;i<=5;i++){
+    tasksBox.innerHTML+=`
       <div class="task">
         مهمة ${i}
-        <button onclick="startTask('t${i}',this)">ابدأ</button>
+        <button onclick="startTask(this)">ابدأ</button>
       </div>`;
   }
 }
-
-window.startTask = async (id,btn)=>{
-  if(currentTask) return alert("❌ توجد مهمة قيد التشغيل");
+window.startTask=async(btn)=>{
+  if(currentTask) return;
   currentTask=true;
-  let t=30;
+  let t=20;
   btn.disabled=true;
-
-  const timer=setInterval(async ()=>{
+  const timer=setInterval(async()=>{
     btn.innerText=t--;
     if(t<0){
       clearInterval(timer);
-      btn.innerText="✔ تمت";
+      btn.innerText="✔";
       currentTask=false;
       userData.balance+=10;
-      userData.tasks[id]=Date.now();
-      await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
+      await updateDoc(doc(db,"users",auth.currentUser.uid),{
+        balance:userData.balance
+      });
       updateUI();
     }
   },1000);
-};
-
-/* UPGRADE */
-window.openUpgrade=()=>{
-  appBox.style.display="none";
-  upgradeBox.style.display="block";
-};
-
-window.upgradeLevel = async (lvl)=>{
-  if(userData.level>=lvl) return alert("❌ لديك هذا المستوى");
-  const price = LEVELS[lvl].price;
-  if(userData.balance < price) return alert("❌ الرصيد غير كاف");
-
-  userData.balance -= price;
-  userData.level = lvl;
-
-  await updateDoc(doc(db,"users",auth.currentUser.uid),{
-    balance:userData.balance,
-    level:userData.level
-  });
-
-  alert("🎉 تمت الترقية");
-  back();
-};
-
-window.back=()=>{
-  upgradeBox.style.display="none";
-  appBox.style.display="block";
-  updateUI();
-  loadTasks();
-};
+}
 
 /* WITHDRAW */
-window.requestWithdraw = async ()=>{
-  const amount = Number(withdrawAmount.value);
-  if(amount<=0) return alert("❌ مبلغ غير صحيح");
-  if(amount>userData.balance) return alert("❌ الرصيد غير كاف");
+window.requestWithdraw=async()=>{
+  const amount=Number(withdrawAmount.value);
+  if(amount<=0||amount>userData.balance) return alert("❌ مبلغ غير صحيح");
 
-  userData.balance -= amount;
+  userData.balance-=amount;
 
   await addDoc(collection(db,"withdrawals"),{
     userId:auth.currentUser.uid,
@@ -292,35 +241,23 @@ window.requestWithdraw = async ()=>{
     balance:userData.balance
   });
 
-  withdrawAmount.value="";
   updateUI();
+  withdrawAmount.value="";
   loadWithdrawHistory();
-};
+}
 
 async function loadWithdrawHistory(){
-  const q=query(
-    collection(db,"withdrawals"),
-    where("userId","==",auth.currentUser.uid)
-  );
-  const snap=await getDocs(q);
   withdrawHistory.innerHTML="";
-
+  const q=query(collection(db,"withdrawals"),
+    where("userId","==",auth.currentUser.uid));
+  const snap=await getDocs(q);
   snap.forEach(d=>{
-    const w=d.data();
-    let cls="pending", txt="قيد المراجعة";
-    if(w.status==="approved"){cls="approved";txt="تم القبول";}
-    if(w.status==="rejected"){cls="rejected";txt="مرفوض";}
-
-    withdrawHistory.innerHTML+=`
-      <div class="history-card">
-        <div>💵 ${w.amount}</div>
-        <span class="badge ${cls}">${txt}</span>
-      </div>`;
+    withdrawHistory.innerHTML+=`<div>💵 ${d.data().amount}</div>`;
   });
 }
 
 /* LOGOUT */
-window.logout = async ()=>{
+window.logout=async()=>{
   await signOut(auth);
   location.reload();
 }
