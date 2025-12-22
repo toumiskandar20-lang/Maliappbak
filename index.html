@@ -5,7 +5,7 @@
 <title>MaliApp</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 
 <style>
 body{
@@ -33,28 +33,27 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-.task,.history{
+.task{
   background:#222;
-  padding:12px;
-  border-radius:10px;
-  margin:8px 0;
+  padding:10px;
+  border-radius:8px;
+  margin:6px 0;
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
-.badge{
-  padding:4px 10px;
-  border-radius:12px;
-  font-size:12px;
+.history{
+  background:#1c1c1c;
+  padding:10px;
+  border-radius:8px;
+  margin:6px 0;
 }
-.pending{background:#ff9800}
-.approved{background:#00c853}
 .level-card{
   background:#1c1c1c;
   padding:15px;
   border-radius:12px;
   margin:10px 0;
 }
+.hidden{display:none}
 </style>
 </head>
 
@@ -63,46 +62,47 @@ button{
 <!-- LOGIN -->
 <div class="box" id="loginBox">
   <h2>🔐 تسجيل الدخول</h2>
-  <input id="loginEmail" placeholder="Email">
+  <input id="loginEmail" placeholder="البريد الإلكتروني">
   <input id="loginPassword" type="password" placeholder="كلمة المرور">
   <button onclick="login()">دخول</button>
-  <button onclick="openRegister()">إنشاء حساب</button>
+  <button onclick="openRegister()">إنشاء حساب جديد</button>
 </div>
 
 <!-- REGISTER -->
-<div class="box" id="registerBox" style="display:none">
+<div class="box hidden" id="registerBox">
   <h2>📝 إنشاء حساب</h2>
-  <input id="regEmail" placeholder="Email">
+  <input id="regEmail" placeholder="البريد الإلكتروني">
   <input id="regPhone" placeholder="رقم الهاتف">
-  <input id="regPassword" type="password" placeholder="كلمة المرور">
-  <input id="regConfirm" type="password" placeholder="تأكيد كلمة المرور">
-  <input id="refUid" placeholder="UID صاحب الدعوة (اختياري)">
+  <input id="regPass" type="password" placeholder="كلمة المرور">
+  <input id="regPass2" type="password" placeholder="تأكيد كلمة المرور">
+  <input id="regInvite" placeholder="UID صاحب الدعوة (اختياري)">
   <button onclick="register()">تسجيل</button>
-  <button onclick="backLogin()">⬅ رجوع</button>
+  <button onclick="backLogin()">رجوع</button>
 </div>
 
 <!-- APP -->
-<div class="box" id="appBox" style="display:none">
+<div class="box hidden" id="appBox">
   <h3>💰 الرصيد: <span id="balance">0</span></h3>
   <h4>⭐ المستوى: <span id="level">1</span></h4>
+  <p>🆔 UID: <span id="myUid"></span></p>
 
-  <button onclick="openUpgrade()">🚀 تعزيز المستوى</button>
+  <button onclick="openUpgrade()">🚀 ترقية الحساب</button>
 
   <div id="tasksBox"></div>
 
   <h3>💸 طلب سحب</h3>
   <input id="withdrawAmount" type="number" placeholder="المبلغ">
-  <button onclick="requestWithdraw()">سحب</button>
+  <button onclick="requestWithdraw()">طلب سحب</button>
 
-  <h3>📜 سجل السحوبات</h3>
+  <h3>📜 سجل السحب</h3>
   <div id="withdrawHistory"></div>
 
   <button onclick="logout()">🚪 خروج</button>
 </div>
 
 <!-- UPGRADE -->
-<div class="box" id="upgradeBox" style="display:none">
-  <h3>🚀 تعزيز المستوى</h3>
+<div class="box hidden" id="upgradeBox">
+  <h3>🚀 ترقية الحساب</h3>
 
   <div class="level-card">
     <h4>المستوى 2</h4>
@@ -118,7 +118,7 @@ button{
     <button onclick="upgrade(3)">ترقية</button>
   </div>
 
-  <button onclick="backApp()">⬅ رجوع</button>
+  <button onclick="backApp()">رجوع</button>
 </div>
 
 <script type="module">
@@ -126,73 +126,65 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, query, where, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig={
-  apiKey:"AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
-  authDomain:"maliapp-63f91.firebaseapp.com",
-  projectId:"maliapp-63f91"
+const firebaseConfig = {
+  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
+  authDomain: "maliapp-63f91.firebaseapp.com",
+  projectId: "maliapp-63f91"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-let userData={};
+let userData = {};
+let currentTask=false;
 
 const LEVELS={
-  1:{tasks:5,ref:5},
-  2:{tasks:11,price:230,ref:23},
-  3:{tasks:23,price:590,ref:34}
+  1:{tasks:5,reward:5},
+  2:{tasks:11,price:230,reward:23},
+  3:{tasks:23,price:590,reward:34}
 };
 
 /* NAV */
-window.openRegister=()=>{loginBox.style.display="none";registerBox.style.display="block";}
-window.backLogin=()=>{registerBox.style.display="none";loginBox.style.display="block";}
+window.openRegister=()=>{loginBox.classList.add("hidden");registerBox.classList.remove("hidden");}
+window.backLogin=()=>{registerBox.classList.add("hidden");loginBox.classList.remove("hidden");}
+window.backApp=()=>{upgradeBox.classList.add("hidden");appBox.classList.remove("hidden");}
 
 /* REGISTER */
 window.register=async()=>{
-  if(regPassword.value!==regConfirm.value) return alert("❌ كلمات السر غير متطابقة");
-
-  const cred=await createUserWithEmailAndPassword(auth,regEmail.value,regPassword.value);
-  const ref=refUid.value||null;
+  if(regPass.value!==regPass2.value) return alert("❌ كلمة السر غير متطابقة");
+  const cred=await createUserWithEmailAndPassword(auth,regEmail.value,regPass.value);
 
   await setDoc(doc(db,"users",cred.user.uid),{
     email:regEmail.value,
     phone:regPhone.value,
     balance:0,
     level:1,
-    referrer:ref,
-    createdAt:serverTimestamp()
+    inviter:regInvite.value||null,
+    tasks:{}
   });
-
-  // مكافأة الدعوة
-  if(ref){
-    const refDoc=doc(db,"users",ref);
-    const snap=await getDoc(refDoc);
-    if(snap.exists()){
-      const r=snap.data();
-      const bonus=LEVELS[r.level]?.ref||0;
-      await updateDoc(refDoc,{balance:(r.balance||0)+bonus});
-    }
-  }
 };
 
 /* LOGIN */
-window.login=async()=>{await signInWithEmailAndPassword(auth,loginEmail.value,loginPassword.value);}
+window.login=async()=>{
+  await signInWithEmailAndPassword(auth,loginEmail.value,loginPassword.value);
+};
 
 onAuthStateChanged(auth,async user=>{
   if(!user) return;
   const snap=await getDoc(doc(db,"users",user.uid));
   userData=snap.data();
-  loginBox.style.display="none";
-  registerBox.style.display="none";
-  appBox.style.display="block";
-  refresh();
+  loginBox.classList.add("hidden");
+  registerBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+  myUid.innerText=user.uid;
+  updateUI();
   loadTasks();
   loadWithdraws();
 });
 
 /* UI */
-function refresh(){
+function updateUI(){
   balance.innerText=userData.balance;
   level.innerText=userData.level;
 }
@@ -204,20 +196,63 @@ function loadTasks(){
     tasksBox.innerHTML+=`
     <div class="task">
       مهمة ${i}
-      <button onclick="doTask(this)">ابدأ</button>
+      <button onclick="startTask(this)">ابدأ</button>
     </div>`;
   }
 }
 
-window.doTask=async(btn)=>{
+window.startTask=async(btn)=>{
+  if(currentTask) return;
+  currentTask=true;
+  let t=20;
   btn.disabled=true;
-  setTimeout(async()=>{
-    userData.balance+=10;
-    await updateDoc(doc(db,"users",auth.currentUser.uid),{balance:userData.balance});
-    refresh();
-    btn.innerText="✔";
-  },3000);
+  const timer=setInterval(async()=>{
+    btn.innerText=t--;
+    if(t<0){
+      clearInterval(timer);
+      btn.innerText="✔";
+      currentTask=false;
+      userData.balance+=10;
+      await updateDoc(doc(db,"users",auth.currentUser.uid),{balance:userData.balance});
+      updateUI();
+    }
+  },1000);
 };
+
+/* UPGRADE */
+window.openUpgrade=()=>{
+  appBox.classList.add("hidden");
+  upgradeBox.classList.remove("hidden");
+}
+
+window.upgrade=async(lvl)=>{
+  if(userData.level>=lvl) return alert("❌ لديك هذا المستوى");
+  if(userData.balance<LEVELS[lvl].price) return alert("❌ الرصيد غير كاف");
+
+  userData.balance-=LEVELS[lvl].price;
+  userData.level=lvl;
+
+  await updateDoc(doc(db,"users",auth.currentUser.uid),{
+    balance:userData.balance,
+    level:lvl
+  });
+
+  // مكافأة الدعوة
+  if(userData.inviter){
+    const inviterRef=doc(db,"users",userData.inviter);
+    const inviterSnap=await getDoc(inviterRef);
+    if(inviterSnap.exists()){
+      await updateDoc(inviterRef,{
+        balance:inviterSnap.data().balance+LEVELS[lvl].reward
+      });
+    }
+  }
+
+  alert("🎉 تمت الترقية");
+  backApp();
+  updateUI();
+  loadTasks();
+}
 
 /* WITHDRAW */
 window.requestWithdraw=async()=>{
@@ -225,7 +260,6 @@ window.requestWithdraw=async()=>{
   if(amount<=0||amount>userData.balance) return alert("❌ مبلغ غير صالح");
 
   userData.balance-=amount;
-  await updateDoc(doc(db,"users",auth.currentUser.uid),{balance:userData.balance});
 
   await addDoc(collection(db,"withdrawals"),{
     userId:auth.currentUser.uid,
@@ -235,44 +269,30 @@ window.requestWithdraw=async()=>{
     createdAt:serverTimestamp()
   });
 
-  refresh();
+  await updateDoc(doc(db,"users",auth.currentUser.uid),{balance:userData.balance});
+  withdrawAmount.value="";
+  updateUI();
   loadWithdraws();
-};
+}
 
-/* HISTORY */
 async function loadWithdraws(){
   withdrawHistory.innerHTML="";
   const q=query(collection(db,"withdrawals"),where("userId","==",auth.currentUser.uid));
   const snap=await getDocs(q);
   snap.forEach(d=>{
+    const w=d.data();
     withdrawHistory.innerHTML+=`
     <div class="history">
-      <span>${d.data().amount}</span>
-      <span class="badge pending">قيد المراجعة</span>
+      💵 ${w.amount} - ${w.status}
     </div>`;
   });
 }
 
-/* UPGRADE */
-window.openUpgrade=()=>{appBox.style.display="none";upgradeBox.style.display="block";}
-window.backApp=()=>{upgradeBox.style.display="none";appBox.style.display="block";}
-
-window.upgrade=async(lvl)=>{
-  if(userData.level>=lvl) return;
-  const price=LEVELS[lvl].price;
-  if(userData.balance<price) return alert("❌ الرصيد غير كاف");
-
-  userData.balance-=price;
-  userData.level=lvl;
-
-  await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
-  backApp();
-  refresh();
-  loadTasks();
-};
-
 /* LOGOUT */
-window.logout=async()=>{await signOut(auth);location.reload();}
+window.logout=async()=>{
+  await signOut(auth);
+  location.reload();
+}
 </script>
 
 </body>
