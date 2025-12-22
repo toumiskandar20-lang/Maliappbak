@@ -3,52 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <title>maliapp</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
-body{
-    font-family: Arial;
-    background:#f2f2f2;
-    direction:rtl;
-}
-.container{
-    max-width:400px;
-    margin:40px auto;
-    background:#fff;
-    padding:20px;
-    border-radius:10px;
-    box-shadow:0 0 10px #ccc;
-}
-h2{text-align:center;color:#2c7be5}
-input,button{
-    width:100%;
-    padding:10px;
-    margin:6px 0;
-    border-radius:6px;
-    border:1px solid #ccc;
-}
-button{
-    background:#2c7be5;
-    color:#fff;
-    border:none;
-}
-.menu button{
-    background:#eee;
-    color:#000;
-    margin:3px 0;
-}
+body{font-family:Arial; background:#121212; color:#fff; direction:rtl;}
+.container{max-width:400px; margin:40px auto; background:#1b1b1b; padding:20px; border-radius:10px; box-shadow:0 0 10px #0f0;}
+h2{text-align:center;color:#0f0;}
+input,button,textarea{width:100%; padding:10px; margin:6px 0; border-radius:6px; border:1px solid #0f0; background:#121212; color:#fff;}
+button{background:#0f0; color:#000; border:none;}
+.menu button{background:#222; color:#0f0; margin:3px 0;}
 .hidden{display:none}
-.box{
-    background:#f9f9f9;
-    padding:10px;
-    border-radius:6px;
-    margin:10px 0;
-}
+.box{background:#1a1a1a; padding:10px; border-radius:6px; margin:10px 0; border:1px solid #0f0;}
 </style>
 </head>
 <body>
 
 <div class="container" id="login">
 <h2>maliapp 💰</h2>
-<input id="email" placeholder="إيميل أو هاتف">
+<input id="email" placeholder="إيميل">
 <input id="pass" type="password" placeholder="كلمة المرور">
 <button onclick="login()">دخول / تسجيل</button>
 </div>
@@ -89,69 +62,133 @@ button{
 
 <div id="support" class="hidden">
 <h3>📞 الدعم</h3>
-<textarea placeholder="اكتب مشكلتك" style="width:100%"></textarea>
-<button>إرسال</button>
-</div>
-
+<textarea id="supportMsg" placeholder="اكتب مشكلتك"></textarea>
+<button onclick="sendSupport()">إرسال</button>
+<div id="smsg"></div>
 </div>
 
 <script>
-let balance = 0;
-let team = 0;
-let refcode = "REF" + Math.floor(Math.random()*9999);
+// ⚡ Firebase Config
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "XXXX"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+
+let currentUser = null;
+let refcode = "";
 
 function login(){
-    localStorage.setItem("logged",1);
-    showApp();
+  const email = document.getElementById("email").value;
+  const pass = document.getElementById("pass").value;
+  auth.signInWithEmailAndPassword(email, pass)
+  .then(user=>{currentUser=user.user; loadUser();})
+  .catch(err=>{
+    // إذا المستخدم جديد، نسجّله
+    auth.createUserWithEmailAndPassword(email, pass)
+    .then(user=>{currentUser=user.user; loadUser();})
+    .catch(e=>alert(e.message));
+  });
 }
 
-function showApp(){
+function loadUser(){
+  refcode = "REF" + Math.floor(Math.random()*9999);
+  db.ref("users/"+currentUser.uid).once("value").then(snapshot=>{
+    if(!snapshot.exists()){
+      db.ref("users/"+currentUser.uid).set({
+        balance:0,
+        team:0,
+        refcode:refcode
+      });
+    }else{
+      const data = snapshot.val();
+      refcode = data.refcode;
+    }
     document.getElementById("login").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
-    document.getElementById("reflink").innerText =
-    location.href + "?ref=" + refcode;
+    document.getElementById("reflink").innerText = location.href + "?ref=" + refcode;
     update();
+  });
 }
 
 function update(){
-    document.getElementById("balance").innerText = balance;
-    document.getElementById("team").innerText = team;
+  db.ref("users/"+currentUser.uid).once("value").then(s=>{
+    const data = s.val();
+    document.getElementById("balance").innerText = data.balance;
+    document.getElementById("team").innerText = data.team;
+  });
 }
 
 function show(id){
-    document.querySelectorAll("#app > div").forEach(d=>d.classList.add("hidden"));
-    document.getElementById(id).classList.remove("hidden");
+  document.querySelectorAll("#app > div").forEach(d=>d.classList.add("hidden"));
+  document.getElementById(id).classList.remove("hidden");
 }
 
+// 📝 المهام
 function task(){
-    balance += 5;
+  db.ref("users/"+currentUser.uid).once("value").then(s=>{
+    let bal = s.val().balance;
+    bal += 5;
+    db.ref("users/"+currentUser.uid+"/balance").set(bal);
     update();
     alert("تمت المهمة ✔️");
+  });
 }
 
+// 🔗 دعوة
 function invite(){
-    team++;
-    balance++;
+  db.ref("users/"+currentUser.uid).once("value").then(s=>{
+    let bal = s.val().balance;
+    let team = s.val().team;
+    bal += 1;
+    team +=1;
+    db.ref("users/"+currentUser.uid).update({balance:bal,team:team});
     update();
+  });
 }
 
+// 💸 سحب
 function withdraw(){
-    let a = Number(document.getElementById("amount").value);
-    if(a>balance){
-        document.getElementById("wmsg").innerText="رصيد غير كافي";
+  const a = Number(document.getElementById("amount").value);
+  db.ref("users/"+currentUser.uid).once("value").then(s=>{
+    let bal = s.val().balance;
+    if(a>bal){
+      document.getElementById("wmsg").innerText="رصيد غير كافي";
     }else{
-        balance -= a;
-        update();
-        document.getElementById("wmsg").innerText="تم إرسال طلب السحب ✔️";
+      bal -= a;
+      db.ref("users/"+currentUser.uid+"/balance").set(bal);
+      db.ref("withdrawals").push({uid:currentUser.uid,amount:a,date:Date.now()});
+      document.getElementById("wmsg").innerText="تم إرسال طلب السحب ✔️";
+      update();
     }
+  });
+}
+
+// 📞 دعم
+function sendSupport(){
+  const msg = document.getElementById("supportMsg").value;
+  if(msg==""){return;}
+  db.ref("support").push({uid:currentUser.uid,message:msg,date:Date.now()});
+  document.getElementById("smsg").innerText="تم الإرسال ✔️";
+  document.getElementById("supportMsg").value="";
 }
 
 function logout(){
-    localStorage.removeItem("logged");
-    location.reload();
+  auth.signOut();
+  location.reload();
 }
 
-if(localStorage.getItem("logged")) showApp();
+// 🔄 إذا مسجل
+auth.onAuthStateChanged(u=>{
+  if(u){currentUser=u; loadUser();}
+});
 </script>
 
 </body>
