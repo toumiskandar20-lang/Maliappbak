@@ -46,6 +46,24 @@ button{
   border-radius:12px;
   margin:10px 0;
 }
+.history-card{
+  background:#1c1c1c;
+  padding:12px;
+  border-radius:10px;
+  margin:8px 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.badge{
+  padding:4px 10px;
+  border-radius:12px;
+  font-size:12px;
+}
+.pending{background:#ff9800}
+.approved{background:#00c853}
+.rejected{background:#d50000}
+
 .settings-btn{
   position:fixed;
   right:20px;
@@ -98,15 +116,15 @@ button{
   <div class="level-card">
     <h4>المستوى 2</h4>
     <p>11 مهمة يوميًا</p>
-    <p>💰 السعر: 230 نقطة</p>
-    <button onclick="upgradeLevel(2)">الترقية</button>
+    <p>💰 230 نقطة</p>
+    <button onclick="upgradeLevel(2)">ترقية</button>
   </div>
 
   <div class="level-card">
     <h4>المستوى 3</h4>
     <p>23 مهمة يوميًا</p>
-    <p>💰 السعر: 590 نقطة</p>
-    <button onclick="upgradeLevel(3)">الترقية</button>
+    <p>💰 590 نقطة</p>
+    <button onclick="upgradeLevel(3)">ترقية</button>
   </div>
 
   <button onclick="back()">⬅ رجوع</button>
@@ -191,9 +209,8 @@ function updateUI(){
 // ===== TASKS =====
 function loadTasks(){
   tasksBox.innerHTML="";
-  const count = LEVELS[userData.level].tasks;
-  for(let i=1;i<=count;i++){
-    tasksBox.innerHTML += `
+  for(let i=1;i<=LEVELS[userData.level].tasks;i++){
+    tasksBox.innerHTML+=`
       <div class="task">
         مهمة ${i}
         <button onclick="startTask('t${i}',this)">ابدأ</button>
@@ -202,7 +219,7 @@ function loadTasks(){
 }
 
 window.startTask = async (id,btn)=>{
-  if(currentTask) return alert("❌ توجد مهمة قيد التشغيل");
+  if(currentTask) return alert("مهمة قيد التشغيل");
   currentTask=true;
   let t=30;
   btn.disabled=true;
@@ -221,29 +238,68 @@ window.startTask = async (id,btn)=>{
   },1000);
 };
 
+// ===== WITHDRAW =====
+window.requestWithdraw = async ()=>{
+  const amount = Number(withdrawAmount.value);
+  if(amount<=0) return alert("مبلغ غير صحيح");
+  if(amount>userData.balance) return alert("الرصيد غير كاف");
+
+  const user = auth.currentUser;
+  userData.balance -= amount;
+
+  await addDoc(collection(db,"withdrawals"),{
+    userId:user.uid,
+    email:user.email, // ✅ مضاف
+    amount,
+    status:"pending",
+    createdAt:serverTimestamp()
+  });
+
+  await updateDoc(doc(db,"users",user.uid),{balance:userData.balance});
+  updateUI();
+  withdrawAmount.value="";
+  loadWithdrawHistory();
+};
+
+async function loadWithdrawHistory(){
+  const q=query(collection(db,"withdrawals"),where("userId","==",auth.currentUser.uid));
+  const snap=await getDocs(q);
+  withdrawHistory.innerHTML="";
+
+  snap.forEach(d=>{
+    const w=d.data();
+    let cls="pending",txt="قيد المراجعة";
+    if(w.status==="approved"){cls="approved";txt="تم القبول";}
+    if(w.status==="rejected"){cls="rejected";txt="مرفوض";}
+
+    withdrawHistory.innerHTML+=`
+      <div class="history-card">
+        <div>💵 ${w.amount}</div>
+        <span class="badge ${cls}">${txt}</span>
+      </div>`;
+  });
+}
+
 // ===== UPGRADE =====
 window.openUpgrade=()=>{
   appBox.style.display="none";
   upgradeBox.style.display="block";
 };
+window.upgradeLevel=async lvl=>{
+  if(userData.level>=lvl) return alert("لديك هذا المستوى");
+  const price=LEVELS[lvl].price;
+  if(userData.balance<price) return alert("رصيد غير كاف");
 
-window.upgradeLevel = async (lvl)=>{
-  if(userData.level>=lvl) return alert("❌ لديك هذا المستوى");
-  const price = LEVELS[lvl].price;
-  if(userData.balance < price) return alert("❌ الرصيد غير كاف");
-
-  userData.balance -= price;
-  userData.level = lvl;
+  userData.balance-=price;
+  userData.level=lvl;
 
   await updateDoc(doc(db,"users",auth.currentUser.uid),{
     balance:userData.balance,
-    level:userData.level
+    level:lvl
   });
 
-  alert("🎉 تمت الترقية بنجاح");
   back();
 };
-
 window.back=()=>{
   upgradeBox.style.display="none";
   appBox.style.display="block";
@@ -251,53 +307,9 @@ window.back=()=>{
   loadTasks();
 };
 
-<script type="module">
-import {
-  collection,
-  addDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-window.requestWithdraw = async () => {
-  const amount = Number(withdrawAmount.value);
-
-  if (!amount || amount <= 0) {
-    alert("❌ أدخل مبلغ صحيح");
-    return;
-  }
-
-  if (amount > userData.balance) {
-    alert("❌ لا يمكن سحب مبلغ أكبر من رصيدك");
-    return;
-  }
-
-  const user = auth.currentUser;
-  if (!user) {
-    alert("❌ يجب تسجيل الدخول");
-    return;
-  }
-
-  // 🔻 إنقاص الرصيد مباشرة
-  userData.balance -= amount;
-
-  await addDoc(collection(db, "withdrawals"), {
-    userId: user.uid,
-    email: user.email,        // ✅ هذا هو الحقل الجديد
-    amount: amount,
-    status: "pending",
-    createdAt: serverTimestamp()
-  });
-
-  // تحديث الرصيد في users
-  await updateDoc(doc(db, "users", user.uid), {
-    balance: userData.balance
-  });
-
-  updateUI();
-  withdrawAmount.value = "";
-
-  alert("✅ تم إرسال طلب السحب (تحت المراجعة)");
-  loadWithdrawHistory();
+window.logout=async()=>{
+  await signOut(auth);
+  location.reload();
 };
 </script>
 
