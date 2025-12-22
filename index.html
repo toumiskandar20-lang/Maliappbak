@@ -40,6 +40,7 @@ button{
   margin:6px 0;
   display:flex;
   justify-content:space-between;
+  align-items:center;
 }
 .history-card{
   background:#1c1c1c;
@@ -48,6 +49,7 @@ button{
   margin:8px 0;
   display:flex;
   justify-content:space-between;
+  align-items:center;
 }
 .badge{
   padding:4px 10px;
@@ -57,6 +59,26 @@ button{
 .pending{background:#ff9800}
 .approved{background:#00c853}
 .rejected{background:#d50000}
+.level-card{
+  background:#1c1c1c;
+  padding:15px;
+  border-radius:12px;
+  margin:10px 0;
+}
+.settings-btn{
+  position:fixed;
+  right:20px;
+  bottom:20px;
+  width:55px;
+  height:55px;
+  border-radius:50%;
+  background:#00c853;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:22px;
+  color:#000;
+}
 </style>
 </head>
 
@@ -65,11 +87,22 @@ button{
 <!-- AUTH -->
 <div class="box" id="authBox">
   <h2>🔐 MaliApp</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <input id="refUid" placeholder="UID صاحب الدعوة (اختياري)">
-  <button onclick="register()">إنشاء حساب</button>
+  <input id="email" placeholder="البريد الإلكتروني">
+  <input id="password" type="password" placeholder="كلمة المرور">
   <button onclick="login()">تسجيل دخول</button>
+  <button onclick="openRegister()">إنشاء حساب</button>
+</div>
+
+<!-- REGISTER -->
+<div class="box" id="registerBox" style="display:none">
+  <h3>📝 إنشاء حساب</h3>
+  <input id="rEmail" placeholder="البريد الإلكتروني">
+  <input id="rPhone" placeholder="رقم الهاتف">
+  <input id="rPassword" type="password" placeholder="كلمة المرور">
+  <input id="rPassword2" type="password" placeholder="تأكيد كلمة المرور">
+  <input id="inviterUid" placeholder="UID صاحب الدعوة (اختياري)">
+  <button onclick="register()">تسجيل</button>
+  <button onclick="backToLogin()">⬅ رجوع</button>
 </div>
 
 <!-- APP -->
@@ -78,57 +111,58 @@ button{
   <h4>⭐ المستوى: <span id="level">1</span></h4>
 
   <button onclick="openUpgrade()">🚀 ترقية الحساب</button>
+  <button onclick="openWithdrawHistory()">📜 سجل السحب</button>
 
   <div id="tasksBox"></div>
 
   <h3>💸 طلب سحب</h3>
   <input id="withdrawAmount" type="number" placeholder="المبلغ">
-  <button onclick="requestWithdraw()">طلب سحب</button>
+  <button onclick="requestWithdraw()">إرسال الطلب</button>
+</div>
 
-  <button onclick="openHistory()">📜 سجل السحب</button>
+<!-- WITHDRAW HISTORY -->
+<div class="box" id="historyBox" style="display:none">
+  <h3>📜 سجل السحب</h3>
+  <div id="withdrawHistory"></div>
+  <button onclick="backToApp()">⬅ رجوع</button>
 </div>
 
 <!-- UPGRADE -->
 <div class="box" id="upgradeBox" style="display:none">
   <h3>🚀 ترقية الحساب</h3>
 
-  <button onclick="upgrade(2)">المستوى 2 – 230 نقطة</button>
-  <button onclick="upgrade(3)">المستوى 3 – 590 نقطة</button>
+  <div class="level-card">
+    <h4>المستوى 2</h4>
+    <p>11 مهمة / اليوم</p>
+    <p>💰 230 نقطة</p>
+    <button onclick="upgradeLevel(2)">ترقية</button>
+  </div>
 
-  <button onclick="back()">⬅ رجوع</button>
+  <div class="level-card">
+    <h4>المستوى 3</h4>
+    <p>23 مهمة / اليوم</p>
+    <p>💰 590 نقطة</p>
+    <button onclick="upgradeLevel(3)">ترقية</button>
+  </div>
+
+  <button onclick="backToApp()">⬅ رجوع</button>
 </div>
 
-<!-- HISTORY -->
-<div class="box" id="historyBox" style="display:none">
-  <h3>📜 سجل السحوبات</h3>
-  <div id="withdrawHistory"></div>
-  <button onclick="back()">⬅ رجوع</button>
+<div class="settings-btn" onclick="logout()">
+  <i class="fa fa-sign-out"></i>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
+  getAuth, createUserWithEmailAndPassword,
+  signInWithEmailAndPassword, onAuthStateChanged, signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  addDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  serverTimestamp
+  getFirestore, doc, setDoc, getDoc, updateDoc,
+  addDoc, collection, query, where, getDocs, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* 🔥 Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
   authDomain: "maliapp-63f91.firebaseapp.com",
@@ -143,52 +177,50 @@ let userData={};
 let currentTask=false;
 
 const LEVELS={
-  1:{tasks:5,ref:5},
-  2:{tasks:11,price:230,ref:23},
-  3:{tasks:23,price:590,ref:34}
+  1:{tasks:5},
+  2:{tasks:11,price:230},
+  3:{tasks:23,price:590}
 };
 
-/* REGISTER */
+/* NAV */
+window.openRegister=()=>{authBox.style.display="none";registerBox.style.display="block";}
+window.backToLogin=()=>{registerBox.style.display="none";authBox.style.display="block";}
+window.backToApp=()=>{
+  historyBox.style.display="none";
+  upgradeBox.style.display="none";
+  appBox.style.display="block";
+}
+
+/* AUTH */
 window.register=async()=>{
-  const cred=await createUserWithEmailAndPassword(auth,email.value,password.value);
+  if(rPassword.value!==rPassword2.value) return alert("❌ كلمة السر غير متطابقة");
+  const cred=await createUserWithEmailAndPassword(auth,rEmail.value,rPassword.value);
+
   await setDoc(doc(db,"users",cred.user.uid),{
+    email:rEmail.value,
+    phone:rPhone.value,
     balance:0,
     level:1,
-    ref:refUid.value||null
+    inviterUid:inviterUid.value || null,
+    createdAt:serverTimestamp()
   });
 };
 
-/* LOGIN */
 window.login=async()=>{
   await signInWithEmailAndPassword(auth,email.value,password.value);
 };
 
-/* AUTH STATE */
 onAuthStateChanged(auth,async user=>{
   if(!user) return;
   const snap=await getDoc(doc(db,"users",user.uid));
   userData=snap.data();
-
-  /* مكافأة الدعوة */
-  if(userData.ref && !userData.refPaid){
-    const reward=LEVELS[userData.level].ref;
-    const refDoc=doc(db,"users",userData.ref);
-    const refSnap=await getDoc(refDoc);
-    if(refSnap.exists()){
-      await updateDoc(refDoc,{
-        balance:(refSnap.data().balance||0)+reward
-      });
-    }
-    await updateDoc(doc(db,"users",user.uid),{refPaid:true});
-  }
-
   authBox.style.display="none";
+  registerBox.style.display="none";
   appBox.style.display="block";
   updateUI();
   loadTasks();
 });
 
-/* UI */
 function updateUI(){
   balance.innerText=userData.balance;
   level.innerText=userData.level;
@@ -197,31 +229,32 @@ function updateUI(){
 /* TASKS */
 function loadTasks(){
   tasksBox.innerHTML="";
-  for(let i=1;i<=LEVELS[userData.level].tasks;i++){
+  const count=LEVELS[userData.level].tasks;
+  for(let i=1;i<=count;i++){
     tasksBox.innerHTML+=`
-    <div class="task">
-      مهمة ${i}
-      <button onclick="startTask(this)">ابدأ</button>
-    </div>`;
+      <div class="task">
+        مهمة ${i}
+        <button onclick="startTask(${i},this)">ابدأ</button>
+      </div>`;
   }
 }
 
-window.startTask=(btn)=>{
+window.startTask=async(id,btn)=>{
   if(currentTask) return;
   currentTask=true;
-  let t=10;
   btn.disabled=true;
-  const timer=setInterval(()=>{
+  let t=30;
+
+  const timer=setInterval(async()=>{
     btn.innerText=t--;
     if(t<0){
       clearInterval(timer);
-      btn.innerText="✔";
-      userData.balance+=10;
-      updateDoc(doc(db,"users",auth.currentUser.uid),{
-        balance:userData.balance
+      currentTask=false;
+      btn.innerText="✔ تمت";
+      await updateDoc(doc(db,"users",auth.currentUser.uid),{
+        balance:userData.balance+=10
       });
       updateUI();
-      currentTask=false;
     }
   },1000);
 };
@@ -232,16 +265,20 @@ window.openUpgrade=()=>{
   upgradeBox.style.display="block";
 };
 
-window.upgrade=async(lvl)=>{
-  if(userData.level>=lvl) return alert("لديك هذا المستوى");
-  if(userData.balance<LEVELS[lvl].price) return alert("الرصيد غير كاف");
+window.upgradeLevel=async(lvl)=>{
+  if(userData.level>=lvl) return alert("❌ لديك هذا المستوى");
+  if(userData.balance<LEVELS[lvl].price) return alert("❌ الرصيد غير كاف");
+
   userData.balance-=LEVELS[lvl].price;
   userData.level=lvl;
+
   await updateDoc(doc(db,"users",auth.currentUser.uid),{
     balance:userData.balance,
     level:lvl
   });
-  back();
+
+  alert("🎉 تمت الترقية");
+  backToApp();
   updateUI();
   loadTasks();
 };
@@ -249,7 +286,8 @@ window.upgrade=async(lvl)=>{
 /* WITHDRAW */
 window.requestWithdraw=async()=>{
   const amount=Number(withdrawAmount.value);
-  if(amount<=0||amount>userData.balance) return alert("مبلغ غير صحيح");
+  if(amount<=0||amount>userData.balance) return alert("❌ مبلغ غير صالح");
+
   userData.balance-=amount;
 
   await addDoc(collection(db,"withdrawals"),{
@@ -266,10 +304,11 @@ window.requestWithdraw=async()=>{
 
   withdrawAmount.value="";
   updateUI();
+  alert("✅ تم إرسال الطلب");
 };
 
 /* HISTORY */
-window.openHistory=async()=>{
+window.openWithdrawHistory=async()=>{
   appBox.style.display="none";
   historyBox.style.display="block";
   withdrawHistory.innerHTML="";
@@ -282,20 +321,18 @@ window.openHistory=async()=>{
 
   snap.forEach(d=>{
     const w=d.data();
-    const date=w.createdAt?.toDate().toLocaleString()||"";
     withdrawHistory.innerHTML+=`
-    <div class="history-card">
-      <div>💵 ${w.amount}<br><small>${date}</small></div>
-      <span class="badge ${w.status}">${w.status}</span>
-    </div>`;
+      <div class="history-card">
+        <div>💵 ${w.amount}</div>
+        <span class="badge ${w.status}">${w.status}</span>
+      </div>`;
   });
 };
 
-/* BACK */
-window.back=()=>{
-  upgradeBox.style.display="none";
-  historyBox.style.display="none";
-  appBox.style.display="block";
+/* LOGOUT */
+window.logout=async()=>{
+  await signOut(auth);
+  location.reload();
 };
 </script>
 
