@@ -2,189 +2,156 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>MaliApp</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
+<title>maliapp</title>
 <style>
 body{
-  margin:0;
-  font-family:Arial;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  color:#fff;
+    font-family: Arial;
+    background:#f2f2f2;
+    direction:rtl;
 }
-.box{
-  max-width:420px;
-  margin:25px auto;
-  background:#111;
-  border-radius:16px;
-  padding:20px;
+.container{
+    max-width:400px;
+    margin:40px auto;
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 0 10px #ccc;
 }
+h2{text-align:center;color:#2c7be5}
 input,button{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border-radius:8px;
-  border:none;
+    width:100%;
+    padding:10px;
+    margin:6px 0;
+    border-radius:6px;
+    border:1px solid #ccc;
 }
-button{background:#00c853;font-weight:bold}
-.row{display:flex;gap:8px}
-.row input{flex:1}
-.badge{background:#ff9800;padding:4px 10px;border-radius:12px;font-size:12px}
-.history-card{
-  background:#1c1c1c;
-  padding:12px;
-  border-radius:10px;
-  margin:8px 0;
-  display:flex;
-  justify-content:space-between;
+button{
+    background:#2c7be5;
+    color:#fff;
+    border:none;
 }
-.toast{
-  position:fixed;
-  bottom:90px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#00c853;
-  color:#000;
-  padding:10px 18px;
-  border-radius:20px;
-  display:none;
-  font-weight:bold;
+.menu button{
+    background:#eee;
+    color:#000;
+    margin:3px 0;
+}
+.hidden{display:none}
+.box{
+    background:#f9f9f9;
+    padding:10px;
+    border-radius:6px;
+    margin:10px 0;
 }
 </style>
 </head>
-
 <body>
 
-<div class="box" id="authBox">
-  <h2>🔐 MaliApp</h2>
-  <input id="email" placeholder="البريد الإلكتروني">
-  <input id="password" type="password" placeholder="كلمة المرور">
-  <button onclick="register()">تسجيل حساب</button>
-  <button onclick="login()">تسجيل دخول</button>
+<div class="container" id="login">
+<h2>maliapp 💰</h2>
+<input id="email" placeholder="إيميل أو هاتف">
+<input id="pass" type="password" placeholder="كلمة المرور">
+<button onclick="login()">دخول / تسجيل</button>
 </div>
 
-<div class="box" id="appBox" style="display:none">
-  <h3>💰 الرصيد: <span id="balance">0</span></h3>
-  <button onclick="openWithdraw()">💸 طلب سحب</button>
+<div class="container hidden" id="app">
+<h2>maliapp 💰</h2>
+
+<div class="box">
+رصيدك: <b><span id="balance">0</span> مالي</b><br>
+فريقك: <b><span id="team">0</span></b>
 </div>
 
-<!-- WITHDRAW PAGE -->
-<div class="box" id="withdrawBox" style="display:none">
-  <h3>💸 سحب الأرباح</h3>
-
-  <label>محفظتك</label>
-  <div class="row">
-    <input id="walletInput" placeholder="أدخل عنوان محفظتك">
-    <button onclick="saveWallet()">📋</button>
-  </div>
-
-  <label>مبلغ السحب</label>
-  <div class="row">
-    <input id="withdrawAmount" type="number" placeholder="0">
-    <button onclick="maxAmount()">MAX</button>
-  </div>
-
-  <button onclick="submitWithdraw()">قم بأمر السحب</button>
-
-  <h4>📜 Historique</h4>
-  <div id="history"></div>
-
-  <p style="font-size:13px;color:#ccc">
-    عزيز المشارك سيتم تفعيل طلب السحب بين 24 إلى 72 ساعة كحد أقصى
-  </p>
-
-  <button onclick="back()">⬅ رجوع</button>
+<div class="menu">
+<button onclick="show('tasks')">📋 المهام</button>
+<button onclick="show('ref')">🔗 رابط الدعوة</button>
+<button onclick="show('withdraw')">💸 طلب سحب</button>
+<button onclick="show('support')">📞 الدعم</button>
+<button onclick="logout()">🚪 خروج</button>
 </div>
 
-<div class="toast" id="toast">✅ تم حفظ المحفظة</div>
+<div id="tasks" class="hidden">
+<h3>📋 المهام اليومية</h3>
+<button onclick="task()">إنجاز مهمة (+5 مالي)</button>
+</div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore,doc,setDoc,getDoc,updateDoc,addDoc,collection,query,where,getDocs,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<div id="ref" class="hidden">
+<h3>🔗 رابط الدعوة</h3>
+<div class="box" id="reflink"></div>
+<button onclick="invite()">محاكاة دخول عضو (+1 مالي)</button>
+</div>
 
-const app=initializeApp({
-  apiKey:"AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
-  authDomain:"maliapp-63f91.firebaseapp.com",
-  projectId:"maliapp-63f91"
-});
+<div id="withdraw" class="hidden">
+<h3>💸 طلب سحب</h3>
+<input id="amount" placeholder="المبلغ">
+<button onclick="withdraw()">إرسال الطلب</button>
+<div id="wmsg"></div>
+</div>
 
-const auth=getAuth(app);
-const db=getFirestore(app);
-let userData={};
+<div id="support" class="hidden">
+<h3>📞 الدعم</h3>
+<textarea placeholder="اكتب مشكلتك" style="width:100%"></textarea>
+<button>إرسال</button>
+</div>
 
-window.register=async()=>{
-  const c=await createUserWithEmailAndPassword(auth,email.value,password.value);
-  await setDoc(doc(db,"users",c.user.uid),{balance:0});
-};
+</div>
 
-window.login=async()=>{await signInWithEmailAndPassword(auth,email.value,password.value)};
+<script>
+let balance = 0;
+let team = 0;
+let refcode = "REF" + Math.floor(Math.random()*9999);
 
-onAuthStateChanged(auth,async u=>{
-  if(!u)return;
-  const s=await getDoc(doc(db,"users",u.uid));
-  userData=s.data();
-  authBox.style.display="none";
-  appBox.style.display="block";
-  balance.innerText=userData.balance;
-  if(userData.wallet) walletInput.value=userData.wallet;
-  loadHistory();
-});
-
-window.openWithdraw=()=>{
-  appBox.style.display="none";
-  withdrawBox.style.display="block";
-};
-
-window.back=()=>{
-  withdrawBox.style.display="none";
-  appBox.style.display="block";
-};
-
-window.saveWallet=async()=>{
-  if(userData.wallet)return;
-  const w=walletInput.value;
-  if(!w)return;
-  userData.wallet=w;
-  await updateDoc(doc(db,"users",auth.currentUser.uid),{wallet:w});
-  toast.style.display="block";
-  setTimeout(()=>toast.style.display="none",2000);
-};
-
-window.maxAmount=()=>withdrawAmount.value=userData.balance;
-
-window.submitWithdraw=async()=>{
-  const amount=Number(withdrawAmount.value);
-  if(amount<=0||amount>userData.balance)return;
-  userData.balance-=amount;
-  await addDoc(collection(db,"withdrawals"),{
-    userId:auth.currentUser.uid,
-    amount,
-    wallet:userData.wallet,
-    status:"تحت المراجعة",
-    createdAt:serverTimestamp()
-  });
-  await updateDoc(doc(db,"users",auth.currentUser.uid),{balance:userData.balance});
-  balance.innerText=userData.balance;
-  withdrawAmount.value="";
-  loadHistory();
-};
-
-async function loadHistory(){
-  history.innerHTML="";
-  const q=query(collection(db,"withdrawals"),where("userId","==",auth.currentUser.uid));
-  const snap=await getDocs(q);
-  snap.forEach(d=>{
-    const w=d.data();
-    history.innerHTML+=`
-    <div class="history-card">
-      <span>${w.amount}</span>
-      <span class="badge">${w.status}</span>
-    </div>`;
-  });
+function login(){
+    localStorage.setItem("logged",1);
+    showApp();
 }
+
+function showApp(){
+    document.getElementById("login").classList.add("hidden");
+    document.getElementById("app").classList.remove("hidden");
+    document.getElementById("reflink").innerText =
+    location.href + "?ref=" + refcode;
+    update();
+}
+
+function update(){
+    document.getElementById("balance").innerText = balance;
+    document.getElementById("team").innerText = team;
+}
+
+function show(id){
+    document.querySelectorAll("#app > div").forEach(d=>d.classList.add("hidden"));
+    document.getElementById(id).classList.remove("hidden");
+}
+
+function task(){
+    balance += 5;
+    update();
+    alert("تمت المهمة ✔️");
+}
+
+function invite(){
+    team++;
+    balance++;
+    update();
+}
+
+function withdraw(){
+    let a = Number(document.getElementById("amount").value);
+    if(a>balance){
+        document.getElementById("wmsg").innerText="رصيد غير كافي";
+    }else{
+        balance -= a;
+        update();
+        document.getElementById("wmsg").innerText="تم إرسال طلب السحب ✔️";
+    }
+}
+
+function logout(){
+    localStorage.removeItem("logged");
+    location.reload();
+}
+
+if(localStorage.getItem("logged")) showApp();
 </script>
 
 </body>
