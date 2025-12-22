@@ -40,7 +40,6 @@ button{
   margin:6px 0;
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 .history-card{
   background:#1c1c1c;
@@ -49,8 +48,6 @@ button{
   margin:8px 0;
   display:flex;
   justify-content:space-between;
-  align-items:center;
-  animation:fade .3s;
 }
 .badge{
   padding:4px 10px;
@@ -60,16 +57,6 @@ button{
 .pending{background:#ff9800}
 .approved{background:#00c853}
 .rejected{background:#d50000}
-.level-card{
-  background:#1c1c1c;
-  padding:15px;
-  border-radius:12px;
-  margin:10px 0;
-}
-.back-btn{
-  background:#444;
-}
-@keyframes fade{from{opacity:0}to{opacity:1}}
 </style>
 </head>
 
@@ -78,8 +65,9 @@ button{
 <!-- AUTH -->
 <div class="box" id="authBox">
   <h2>🔐 MaliApp</h2>
-  <input id="email" placeholder="البريد الإلكتروني">
-  <input id="password" type="password" placeholder="كلمة المرور">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+  <input id="refUid" placeholder="UID صاحب الدعوة (اختياري)">
   <button onclick="register()">إنشاء حساب</button>
   <button onclick="login()">تسجيل دخول</button>
 </div>
@@ -95,37 +83,26 @@ button{
 
   <h3>💸 طلب سحب</h3>
   <input id="withdrawAmount" type="number" placeholder="المبلغ">
-  <button onclick="requestWithdraw()">إرسال الطلب</button>
+  <button onclick="requestWithdraw()">طلب سحب</button>
 
-  <button onclick="openWithdrawHistory()">📜 سجل السحب</button>
-</div>
-
-<!-- WITHDRAW HISTORY PAGE -->
-<div class="box" id="withdrawPage" style="display:none">
-  <h3>📜 سجل السحب</h3>
-  <div id="withdrawHistory"></div>
-  <button class="back-btn" onclick="backToApp()">⬅ رجوع</button>
+  <button onclick="openHistory()">📜 سجل السحب</button>
 </div>
 
 <!-- UPGRADE -->
 <div class="box" id="upgradeBox" style="display:none">
   <h3>🚀 ترقية الحساب</h3>
 
-  <div class="level-card">
-    <h4>المستوى 2</h4>
-    <p>11 مهمة يوميًا</p>
-    <p>💰 230 نقطة</p>
-    <button onclick="upgradeLevel(2)">ترقية</button>
-  </div>
+  <button onclick="upgrade(2)">المستوى 2 – 230 نقطة</button>
+  <button onclick="upgrade(3)">المستوى 3 – 590 نقطة</button>
 
-  <div class="level-card">
-    <h4>المستوى 3</h4>
-    <p>23 مهمة يوميًا</p>
-    <p>💰 590 نقطة</p>
-    <button onclick="upgradeLevel(3)">ترقية</button>
-  </div>
+  <button onclick="back()">⬅ رجوع</button>
+</div>
 
-  <button class="back-btn" onclick="backToApp()">⬅ رجوع</button>
+<!-- HISTORY -->
+<div class="box" id="historyBox" style="display:none">
+  <h3>📜 سجل السحوبات</h3>
+  <div id="withdrawHistory"></div>
+  <button onclick="back()">⬅ رجوع</button>
 </div>
 
 <script type="module">
@@ -148,10 +125,10 @@ import {
   query,
   where,
   getDocs,
-  serverTimestamp,
-  orderBy
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+/* 🔥 Firebase */
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
   authDomain: "maliapp-63f91.firebaseapp.com",
@@ -162,33 +139,49 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let userData = {};
-let currentTask = false;
+let userData={};
+let currentTask=false;
 
-const LEVELS = {
-  1:{tasks:5},
-  2:{tasks:11, price:230},
-  3:{tasks:23, price:590}
+const LEVELS={
+  1:{tasks:5,ref:5},
+  2:{tasks:11,price:230,ref:23},
+  3:{tasks:23,price:590,ref:34}
 };
 
-/* AUTH */
-window.register = async ()=>{
-  const cred = await createUserWithEmailAndPassword(auth,email.value,password.value);
+/* REGISTER */
+window.register=async()=>{
+  const cred=await createUserWithEmailAndPassword(auth,email.value,password.value);
   await setDoc(doc(db,"users",cred.user.uid),{
     balance:0,
     level:1,
-    tasks:{}
+    ref:refUid.value||null
   });
 };
 
-window.login = async ()=>{
+/* LOGIN */
+window.login=async()=>{
   await signInWithEmailAndPassword(auth,email.value,password.value);
 };
 
-onAuthStateChanged(auth, async user=>{
+/* AUTH STATE */
+onAuthStateChanged(auth,async user=>{
   if(!user) return;
-  const snap = await getDoc(doc(db,"users",user.uid));
-  userData = snap.data();
+  const snap=await getDoc(doc(db,"users",user.uid));
+  userData=snap.data();
+
+  /* مكافأة الدعوة */
+  if(userData.ref && !userData.refPaid){
+    const reward=LEVELS[userData.level].ref;
+    const refDoc=doc(db,"users",userData.ref);
+    const refSnap=await getDoc(refDoc);
+    if(refSnap.exists()){
+      await updateDoc(refDoc,{
+        balance:(refSnap.data().balance||0)+reward
+      });
+    }
+    await updateDoc(doc(db,"users",user.uid),{refPaid:true});
+  }
+
   authBox.style.display="none";
   appBox.style.display="block";
   updateUI();
@@ -197,39 +190,38 @@ onAuthStateChanged(auth, async user=>{
 
 /* UI */
 function updateUI(){
-  balance.innerText = userData.balance;
-  level.innerText = userData.level;
+  balance.innerText=userData.balance;
+  level.innerText=userData.level;
 }
 
 /* TASKS */
 function loadTasks(){
   tasksBox.innerHTML="";
-  const count = LEVELS[userData.level].tasks;
-  for(let i=1;i<=count;i++){
+  for(let i=1;i<=LEVELS[userData.level].tasks;i++){
     tasksBox.innerHTML+=`
-      <div class="task">
-        مهمة ${i}
-        <button onclick="startTask('t${i}',this)">ابدأ</button>
-      </div>`;
+    <div class="task">
+      مهمة ${i}
+      <button onclick="startTask(this)">ابدأ</button>
+    </div>`;
   }
 }
 
-window.startTask = async (id,btn)=>{
-  if(currentTask) return alert("❌ مهمة قيد التنفيذ");
+window.startTask=(btn)=>{
+  if(currentTask) return;
   currentTask=true;
-  let t=30;
+  let t=10;
   btn.disabled=true;
-
-  const timer=setInterval(async ()=>{
+  const timer=setInterval(()=>{
     btn.innerText=t--;
     if(t<0){
       clearInterval(timer);
-      btn.innerText="✔ تمت";
-      currentTask=false;
+      btn.innerText="✔";
       userData.balance+=10;
-      userData.tasks[id]=Date.now();
-      await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
+      updateDoc(doc(db,"users",auth.currentUser.uid),{
+        balance:userData.balance
+      });
       updateUI();
+      currentTask=false;
     }
   },1000);
 };
@@ -240,29 +232,25 @@ window.openUpgrade=()=>{
   upgradeBox.style.display="block";
 };
 
-window.upgradeLevel = async (lvl)=>{
-  if(userData.level>=lvl) return alert("❌ لديك هذا المستوى");
-  const price = LEVELS[lvl].price;
-  if(userData.balance < price) return alert("❌ الرصيد غير كاف");
-
-  userData.balance -= price;
-  userData.level = lvl;
-
+window.upgrade=async(lvl)=>{
+  if(userData.level>=lvl) return alert("لديك هذا المستوى");
+  if(userData.balance<LEVELS[lvl].price) return alert("الرصيد غير كاف");
+  userData.balance-=LEVELS[lvl].price;
+  userData.level=lvl;
   await updateDoc(doc(db,"users",auth.currentUser.uid),{
     balance:userData.balance,
-    level:userData.level
+    level:lvl
   });
-
-  backToApp();
+  back();
+  updateUI();
+  loadTasks();
 };
 
 /* WITHDRAW */
-window.requestWithdraw = async ()=>{
-  const amount = Number(withdrawAmount.value);
-  if(amount<=0) return alert("❌ مبلغ غير صحيح");
-  if(amount>userData.balance) return alert("❌ الرصيد غير كاف");
-
-  userData.balance -= amount;
+window.requestWithdraw=async()=>{
+  const amount=Number(withdrawAmount.value);
+  if(amount<=0||amount>userData.balance) return alert("مبلغ غير صحيح");
+  userData.balance-=amount;
 
   await addDoc(collection(db,"withdrawals"),{
     userId:auth.currentUser.uid,
@@ -278,47 +266,36 @@ window.requestWithdraw = async ()=>{
 
   withdrawAmount.value="";
   updateUI();
-  alert("✅ تم إرسال طلب السحب");
 };
 
-/* WITHDRAW PAGE */
-window.openWithdrawHistory = async ()=>{
+/* HISTORY */
+window.openHistory=async()=>{
   appBox.style.display="none";
-  withdrawPage.style.display="block";
+  historyBox.style.display="block";
+  withdrawHistory.innerHTML="";
 
   const q=query(
     collection(db,"withdrawals"),
-    where("userId","==",auth.currentUser.uid),
-    orderBy("createdAt","desc")
+    where("userId","==",auth.currentUser.uid)
   );
   const snap=await getDocs(q);
-  withdrawHistory.innerHTML="";
 
   snap.forEach(d=>{
     const w=d.data();
-    let cls="pending", txt="قيد المراجعة";
-    if(w.status==="approved"){cls="approved";txt="تم القبول";}
-    if(w.status==="rejected"){cls="rejected";txt="مرفوض";}
-
-    const date=w.createdAt?.toDate().toLocaleString("ar");
-
+    const date=w.createdAt?.toDate().toLocaleString()||"";
     withdrawHistory.innerHTML+=`
-      <div class="history-card">
-        <div>
-          💵 ${w.amount}<br>
-          <small>${date}</small>
-        </div>
-        <span class="badge ${cls}">${txt}</span>
-      </div>`;
+    <div class="history-card">
+      <div>💵 ${w.amount}<br><small>${date}</small></div>
+      <span class="badge ${w.status}">${w.status}</span>
+    </div>`;
   });
 };
 
-window.backToApp=()=>{
+/* BACK */
+window.back=()=>{
   upgradeBox.style.display="none";
-  withdrawPage.style.display="none";
+  historyBox.style.display="none";
   appBox.style.display="block";
-  updateUI();
-  loadTasks();
 };
 </script>
 
