@@ -50,6 +50,7 @@ button{
   display:flex;
   justify-content:space-between;
   align-items:center;
+  animation:fade .4s;
 }
 .badge{
   padding:4px 10px;
@@ -65,6 +66,33 @@ button{
   border-radius:12px;
   margin:10px 0;
 }
+.wallet-box{
+  background:#1c1c1c;
+  padding:12px;
+  border-radius:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  word-break:break-all;
+}
+.copy-btn{
+  background:#00c853;
+  color:#000;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer;
+}
+.toast{
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%);
+  background:#00c853;
+  color:#000;
+  padding:10px 18px;
+  border-radius:20px;
+  display:none;
+}
 .settings-btn{
   position:fixed;
   right:20px;
@@ -79,6 +107,7 @@ button{
   font-size:22px;
   color:#000;
 }
+@keyframes fade{from{opacity:0}to{opacity:1}}
 </style>
 </head>
 
@@ -89,20 +118,8 @@ button{
   <h2>🔐 MaliApp</h2>
   <input id="email" placeholder="البريد الإلكتروني">
   <input id="password" type="password" placeholder="كلمة المرور">
+  <button onclick="register()">تسجيل حساب</button>
   <button onclick="login()">تسجيل دخول</button>
-  <button onclick="openRegister()">إنشاء حساب</button>
-</div>
-
-<!-- REGISTER -->
-<div class="box" id="registerBox" style="display:none">
-  <h3>📝 إنشاء حساب</h3>
-  <input id="rEmail" placeholder="البريد الإلكتروني">
-  <input id="rPhone" placeholder="رقم الهاتف">
-  <input id="rPassword" type="password" placeholder="كلمة المرور">
-  <input id="rPassword2" type="password" placeholder="تأكيد كلمة المرور">
-  <input id="inviterUid" placeholder="UID صاحب الدعوة (اختياري)">
-  <button onclick="register()">تسجيل</button>
-  <button onclick="backToLogin()">⬅ رجوع</button>
 </div>
 
 <!-- APP -->
@@ -110,43 +127,62 @@ button{
   <h3>💰 الرصيد: <span id="balance">0</span></h3>
   <h4>⭐ المستوى: <span id="level">1</span></h4>
 
-  <button onclick="openUpgrade()">🚀 ترقية الحساب</button>
-  <button onclick="openWithdrawHistory()">📜 سجل السحب</button>
+  <button onclick="openUpgrade()">🚀 تعزيز المستوى</button>
+  <button onclick="openTopup()">💳 تعبئة رصيد</button>
 
   <div id="tasksBox"></div>
 
-  <h3>💸 طلب سحب</h3>
+  <h3>💸 سحب راتب</h3>
   <input id="withdrawAmount" type="number" placeholder="المبلغ">
-  <button onclick="requestWithdraw()">إرسال الطلب</button>
+  <button onclick="requestWithdraw()">طلب سحب</button>
+
+  <button onclick="openHistory()">📜 سجل السحب</button>
 </div>
 
-<!-- WITHDRAW HISTORY -->
+<!-- HISTORY -->
 <div class="box" id="historyBox" style="display:none">
-  <h3>📜 سجل السحب</h3>
+  <h3>📜 سجل السحوبات</h3>
   <div id="withdrawHistory"></div>
+  <button onclick="backToApp()">⬅ رجوع</button>
+</div>
+
+<!-- TOPUP -->
+<div class="box" id="topupBox" style="display:none">
+  <h3>💳 تعبئة رصيد</h3>
+  <p>انسخ عنوان المحفظة وأرسل عليه</p>
+
+  <div class="wallet-box">
+    <span id="walletText">TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW</span>
+    <span class="copy-btn" onclick="copyWallet()">
+      <i class="fa fa-copy"></i>
+    </span>
+  </div>
+
   <button onclick="backToApp()">⬅ رجوع</button>
 </div>
 
 <!-- UPGRADE -->
 <div class="box" id="upgradeBox" style="display:none">
-  <h3>🚀 ترقية الحساب</h3>
+  <h3>🚀 تعزيز المستوى</h3>
 
   <div class="level-card">
     <h4>المستوى 2</h4>
-    <p>11 مهمة / اليوم</p>
+    <p>11 مهمة يوميًا</p>
     <p>💰 230 نقطة</p>
     <button onclick="upgradeLevel(2)">ترقية</button>
   </div>
 
   <div class="level-card">
     <h4>المستوى 3</h4>
-    <p>23 مهمة / اليوم</p>
+    <p>23 مهمة يوميًا</p>
     <p>💰 590 نقطة</p>
     <button onclick="upgradeLevel(3)">ترقية</button>
   </div>
 
   <button onclick="backToApp()">⬅ رجوع</button>
 </div>
+
+<div class="toast" id="toast">✅ تم النسخ بنجاح</div>
 
 <div class="settings-btn" onclick="logout()">
   <i class="fa fa-sign-out"></i>
@@ -155,12 +191,24 @@ button{
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import {
-  getAuth, createUserWithEmailAndPassword,
-  signInWithEmailAndPassword, onAuthStateChanged, signOut
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
-  getFirestore, doc, setDoc, getDoc, updateDoc,
-  addDoc, collection, query, where, getDocs, serverTimestamp
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -173,122 +221,105 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-let userData={};
-let currentTask=false;
+let userData = {};
+let currentTask = false;
 
-const LEVELS={
+const LEVELS = {
   1:{tasks:5},
-  2:{tasks:11,price:230},
-  3:{tasks:23,price:590}
+  2:{tasks:11, price:230},
+  3:{tasks:23, price:590}
 };
 
-/* NAV */
-window.openRegister=()=>{authBox.style.display="none";registerBox.style.display="block";}
-window.backToLogin=()=>{registerBox.style.display="none";authBox.style.display="block";}
-window.backToApp=()=>{
-  historyBox.style.display="none";
-  upgradeBox.style.display="none";
-  appBox.style.display="block";
-}
-
 /* AUTH */
-window.register=async()=>{
-  if(rPassword.value!==rPassword2.value) return alert("❌ كلمة السر غير متطابقة");
-  const cred=await createUserWithEmailAndPassword(auth,rEmail.value,rPassword.value);
-
+window.register = async ()=>{
+  const cred = await createUserWithEmailAndPassword(auth,email.value,password.value);
   await setDoc(doc(db,"users",cred.user.uid),{
-    email:rEmail.value,
-    phone:rPhone.value,
     balance:0,
     level:1,
-    inviterUid:inviterUid.value || null,
-    createdAt:serverTimestamp()
+    tasks:{}
   });
 };
 
-window.login=async()=>{
+window.login = async ()=>{
   await signInWithEmailAndPassword(auth,email.value,password.value);
 };
 
-onAuthStateChanged(auth,async user=>{
+onAuthStateChanged(auth, async user=>{
   if(!user) return;
-  const snap=await getDoc(doc(db,"users",user.uid));
-  userData=snap.data();
+  const snap = await getDoc(doc(db,"users",user.uid));
+  userData = snap.data();
   authBox.style.display="none";
-  registerBox.style.display="none";
   appBox.style.display="block";
   updateUI();
   loadTasks();
 });
 
 function updateUI(){
-  balance.innerText=userData.balance;
-  level.innerText=userData.level;
+  balance.innerText = userData.balance;
+  level.innerText = userData.level;
 }
 
 /* TASKS */
 function loadTasks(){
   tasksBox.innerHTML="";
-  const count=LEVELS[userData.level].tasks;
+  const count = LEVELS[userData.level].tasks;
   for(let i=1;i<=count;i++){
-    tasksBox.innerHTML+=`
+    tasksBox.innerHTML += `
       <div class="task">
         مهمة ${i}
-        <button onclick="startTask(${i},this)">ابدأ</button>
+        <button onclick="startTask('t${i}',this)">ابدأ</button>
       </div>`;
   }
 }
 
-window.startTask=async(id,btn)=>{
-  if(currentTask) return;
+window.startTask = async (id,btn)=>{
+  if(currentTask) return alert("❌ توجد مهمة قيد التشغيل");
   currentTask=true;
-  btn.disabled=true;
   let t=30;
+  btn.disabled=true;
 
-  const timer=setInterval(async()=>{
+  const timer=setInterval(async ()=>{
     btn.innerText=t--;
     if(t<0){
       clearInterval(timer);
-      currentTask=false;
       btn.innerText="✔ تمت";
-      await updateDoc(doc(db,"users",auth.currentUser.uid),{
-        balance:userData.balance+=10
-      });
+      currentTask=false;
+      userData.balance+=10;
+      userData.tasks[id]=Date.now();
+      await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
       updateUI();
     }
   },1000);
 };
 
-/* UPGRADE */
+/* NAV */
 window.openUpgrade=()=>{
   appBox.style.display="none";
   upgradeBox.style.display="block";
 };
-
-window.upgradeLevel=async(lvl)=>{
-  if(userData.level>=lvl) return alert("❌ لديك هذا المستوى");
-  if(userData.balance<LEVELS[lvl].price) return alert("❌ الرصيد غير كاف");
-
-  userData.balance-=LEVELS[lvl].price;
-  userData.level=lvl;
-
-  await updateDoc(doc(db,"users",auth.currentUser.uid),{
-    balance:userData.balance,
-    level:lvl
-  });
-
-  alert("🎉 تمت الترقية");
-  backToApp();
-  updateUI();
-  loadTasks();
+window.openHistory=()=>{
+  appBox.style.display="none";
+  historyBox.style.display="block";
+  loadWithdrawHistory();
+};
+window.openTopup=()=>{
+  appBox.style.display="none";
+  topupBox.style.display="block";
+};
+window.backToApp=()=>{
+  historyBox.style.display="none";
+  upgradeBox.style.display="none";
+  topupBox.style.display="none";
+  appBox.style.display="block";
 };
 
 /* WITHDRAW */
-window.requestWithdraw=async()=>{
-  const amount=Number(withdrawAmount.value);
-  if(amount<=0||amount>userData.balance) return alert("❌ مبلغ غير صالح");
+window.requestWithdraw = async ()=>{
+  const amount = Number(withdrawAmount.value);
+  if(amount<=0) return alert("❌ مبلغ غير صحيح");
+  if(amount>userData.balance) return alert("❌ الرصيد غير كاف");
 
-  userData.balance-=amount;
+  userData.balance -= amount;
 
   await addDoc(collection(db,"withdrawals"),{
     userId:auth.currentUser.uid,
@@ -304,36 +335,42 @@ window.requestWithdraw=async()=>{
 
   withdrawAmount.value="";
   updateUI();
-  alert("✅ تم إرسال الطلب");
 };
 
-/* HISTORY */
-window.openWithdrawHistory=async()=>{
-  appBox.style.display="none";
-  historyBox.style.display="block";
-  withdrawHistory.innerHTML="";
-
+async function loadWithdrawHistory(){
   const q=query(
     collection(db,"withdrawals"),
     where("userId","==",auth.currentUser.uid)
   );
   const snap=await getDocs(q);
+  withdrawHistory.innerHTML="";
 
   snap.forEach(d=>{
     const w=d.data();
+    let cls="pending", txt="قيد المراجعة";
+    if(w.status==="approved"){cls="approved";txt="تم القبول";}
+    if(w.status==="rejected"){cls="rejected";txt="مرفوض";}
+
     withdrawHistory.innerHTML+=`
       <div class="history-card">
         <div>💵 ${w.amount}</div>
-        <span class="badge ${w.status}">${w.status}</span>
+        <span class="badge ${cls}">${txt}</span>
       </div>`;
   });
+}
+
+/* COPY */
+window.copyWallet=()=>{
+  navigator.clipboard.writeText(walletText.innerText);
+  toast.style.display="block";
+  setTimeout(()=>toast.style.display="none",2000);
 };
 
 /* LOGOUT */
-window.logout=async()=>{
+window.logout = async ()=>{
   await signOut(auth);
   location.reload();
-};
+}
 </script>
 
 </body>
