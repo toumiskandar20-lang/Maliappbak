@@ -269,51 +269,19 @@ window.submitWithdraw=async()=>{
   loadWithdrawHistory();
 };
 
-import { onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-function loadWithdrawHistory(){
-  const colRef = collection(db, "withdrawals");
-
-  onSnapshot(colRef, (snap) => {
-    withdrawHistory.innerHTML = "";
-
-    snap.forEach(d => {
-      const w = d.data();
-
-      // نعرض فقط طلبات المستخدم الحالي
-      if(w.userId !== auth.currentUser.uid) return;
-
-      let cls = "pending";
-      let txt = "قيد المراجعة";
-
-      if(w.status === "approved"){
-        cls = "approved";
-        txt = "تمت الموافقة";
-      }
-
-      if(w.status === "rejected"){
-        cls = "rejected";
-        txt = "مرفوض";
-      }
-
-      let dateStr = "";
-      if(w.createdAt){
-        const date = w.createdAt.toDate();
-        dateStr = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
-      }
-
-      withdrawHistory.innerHTML += `
-        <div class="history-card">
-          <div>
-            💵 ${w.amount} <br>
-            🕒 ${dateStr}
-          </div>
-          <span class="badge ${cls}">${txt}</span>
-        </div>
-      `;
-    });
+async function loadWithdrawHistory(){
+  const q=query(collection(db,"withdrawals"),where("userId","==",auth.currentUser.uid));
+  const s=await getDocs(q);
+  withdrawHistory.innerHTML="";
+  s.forEach(d=>{
+    withdrawHistory.innerHTML+=`
+      <div class="history-card">
+        <div>${d.data().amount} 💵</div>
+        <span class="badge pending">قيد المراجعة</span>
+      </div>`;
   });
 }
+
 /* NAV */
 window.openTopup=()=>{appBox.classList.add("hidden");topupBox.classList.remove("hidden");};
 window.openUpgrade=()=>{appBox.classList.add("hidden");upgradeBox.classList.remove("hidden");};
