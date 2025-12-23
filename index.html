@@ -269,36 +269,40 @@ window.submitWithdraw=async()=>{
   loadWithdrawHistory();
 };
 
-async function loadWithdrawHistory(){
-  const q=query(
+import { onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+function loadWithdrawHistory(){
+  const q = query(
     collection(db,"withdrawals"),
     where("userId","==",auth.currentUser.uid)
   );
-  const s=await getDocs(q);
-  withdrawHistory.innerHTML="";
 
-  s.forEach(d=>{
-    const w = d.data();
+  onSnapshot(q, (snap) => {
+    withdrawHistory.innerHTML = "";
 
-    let cls = "pending";
-    let txt = "قيد المراجعة";
+    snap.forEach(d => {
+      const w = d.data();
 
-    if(w.status === "approved"){
-      cls = "approved";
-      txt = "تمت الموافقة";
-    }
+      let cls = "pending";
+      let txt = "قيد المراجعة";
 
-    if(w.status === "rejected"){
-      cls = "rejected";
-      txt = "مرفوض";
-    }
+      if(w.status === "approved"){
+        cls = "approved";
+        txt = "تمت الموافقة";
+      }
 
-    withdrawHistory.innerHTML += `
-      <div class="history-card">
-        <div>${w.amount} 💵</div>
-        <span class="badge ${cls}">${txt}</span>
-      </div>
-    `;
+      if(w.status === "rejected"){
+        cls = "rejected";
+        txt = "مرفوض";
+      }
+
+      withdrawHistory.innerHTML += `
+        <div class="history-card">
+          <div>${w.amount} 💵</div>
+          <span class="badge ${cls}">${txt}</span>
+        </div>
+      `;
+    });
   });
 }
 
