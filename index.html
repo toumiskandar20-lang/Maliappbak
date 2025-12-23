@@ -296,16 +296,25 @@ function loadWithdrawHistory(){
         txt = "مرفوض";
       }
 
+      // تحويل timestamp إلى تاريخ ووقت
+      let dateStr = "";
+      if(w.createdAt){
+        const date = w.createdAt.toDate(); // من Firestore Timestamp إلى JS Date
+        dateStr = `${date.getDate()}/${date.getMonth()+1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
+      }
+
       withdrawHistory.innerHTML += `
         <div class="history-card">
-          <div>${w.amount} 💵</div>
+          <div>
+            💵 ${w.amount} <br>
+            🕒 ${dateStr}
+          </div>
           <span class="badge ${cls}">${txt}</span>
         </div>
       `;
     });
   });
 }
-
 /* NAV */
 window.openTopup=()=>{appBox.classList.add("hidden");topupBox.classList.remove("hidden");};
 window.openUpgrade=()=>{appBox.classList.add("hidden");upgradeBox.classList.remove("hidden");};
