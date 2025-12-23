@@ -110,7 +110,7 @@ button{
   <div id="tasksBox"></div>
 </div>
 
-<!-- WITHDRAW -->
+<!-- WITHDRAW PAGE -->
 <div class="box hidden" id="withdrawBox">
   <h3>💸 طلب سحب</h3>
 
@@ -269,8 +269,10 @@ window.submitWithdraw=async()=>{
   loadWithdrawHistory();
 };
 
-import { onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { collection, onSnapshot, addDoc, serverTimestamp, updateDoc, doc } 
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+// --- LOAD WITHDRAW HISTORY ---
 function loadWithdrawHistory(){
   const colRef = collection(db, "withdrawals");
 
@@ -296,6 +298,7 @@ function loadWithdrawHistory(){
         txt = "مرفوض";
       }
 
+      // تحويل timestamp إلى تاريخ ووقت
       let dateStr = "";
       if(w.createdAt){
         const date = w.createdAt.toDate();
@@ -313,6 +316,50 @@ function loadWithdrawHistory(){
       `;
     });
   });
+}
+
+// --- COPY WALLET ---
+window.copyWallet = () => {
+  if(!walletInput.value) return alert("❌ لا توجد محفظة");
+  navigator.clipboard.writeText(walletInput.value);
+  alert("✅ تم النسخ بنجاح");
+}
+
+// --- MAX ---
+window.setMax = () => {
+  withdrawAmount.value = userData.balance;
+}
+
+// --- SUBMIT WITHDRAW ---
+window.submitWithdraw = async () => {
+  const amount = Number(withdrawAmount.value);
+  if(amount <= 0) return alert("❌ مبلغ غير صالح");
+  if(amount > userData.balance) return alert("❌ الرصيد غير كاف");
+
+  userData.balance -= amount;
+
+  await addDoc(collection(db,"withdrawals"), {
+    userId: auth.currentUser.uid,
+    email: auth.currentUser.email,
+    wallet: walletInput.value,
+    amount,
+    status: "pending",
+    createdAt: serverTimestamp()
+  });
+
+  await updateDoc(doc(db,"users",auth.currentUser.uid),{
+    balance: userData.balance
+  });
+
+  withdrawAmount.value = "";
+  updateUI();
+}
+
+// --- BACK ---
+window.back = () => {
+  withdrawBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+}
 }
 /* NAV */
 window.openTopup=()=>{appBox.classList.add("hidden");topupBox.classList.remove("hidden");};
