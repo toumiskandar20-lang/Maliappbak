@@ -366,6 +366,26 @@ const LEVELS={
   2:{tasks:11,reward:15,price:230},
   3:{tasks:23,reward:20,price:590}
 };
+  // بيانات المباريات اليومية
+const matches = [
+  {
+    id: 1,
+    teamA: "تونس",
+    teamB: "المغرب",
+    startTime: "2025-12-25T18:00:00Z",
+    endTime: "2025-12-25T20:00:00Z",
+    result: null  // بعد المباراة: "1" أو "X" أو "2"
+  },
+  {
+    id: 2,
+    teamA: "المغرب",
+    teamB: "مصر",
+    startTime: "2025-12-25T21:00:00Z",
+    endTime: "2025-12-25T23:00:00Z",
+    result: null
+  },
+  // يمكن إضافة 6 مباريات أخرى...
+];
   const levelUpSound = document.getElementById("levelUpSound");
 
 /* AUTH */
