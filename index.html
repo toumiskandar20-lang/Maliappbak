@@ -134,6 +134,9 @@ button{
 <div class="toast" id="welcomeToast">
   🎉 مرحبًا بك في MaliApp!
 </div>
+  <div class="toast level-up-toast" id="levelUpToast">
+  🚀 تهانينا! وصلت إلى المستوى <span id="newLevel"></span>
+</div>
 
 <!-- APP -->
 <div class="box hidden" id="appBox">
@@ -506,6 +509,19 @@ window.submitRegister = async () => {
   }catch(err){
     alert("❌ " + err.message);
   }
+};
+  // 🎉 إشعار الترقية بالمستوى
+window.showLevelUp = (level) => {
+  const toast = document.getElementById("levelUpToast");
+  const levelSpan = document.getElementById("newLevel");
+
+  levelSpan.innerText = level;
+
+  toast.classList.add("show");
+
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
 };
   // فتح البروفايل
 window.openProfile = () => {
