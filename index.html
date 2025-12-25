@@ -366,6 +366,7 @@ const LEVELS={
   2:{tasks:11,reward:15,price:230},
   3:{tasks:23,reward:20,price:590}
 };
+  const levelUpSound = document.getElementById("levelUpSound");
 
 /* AUTH */
 window.register=async()=>{
@@ -582,6 +583,7 @@ window.submitRegister = async () => {
 };
 // 🌟 عرض Popup الترقية
 window.showLevelUp = (level) => {
+  levelUpSound.play();
   popupLevel.innerText = level;
   levelUpOverlay.classList.add("show");
 
@@ -655,6 +657,9 @@ window.changePassword = async () => {
   }
 };
 </script>
+  <audio id="levelUpSound" preload="auto">
+  <source src="level-up.mp3" type="audio/mpeg">
+</audio>
 
 </body>
 </html>
