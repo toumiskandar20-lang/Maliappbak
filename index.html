@@ -225,6 +225,8 @@ button{
   <h3>📋 المهام اليومية</h3>
   <div id="tasksBox"></div>
 </div>
+  <h3>⚽ المباريات اليومية</h3>
+<div id="matchesBox"></div>
 
 <!-- WITHDRAW -->
 <div class="box hidden" id="withdrawBox">
@@ -676,6 +678,47 @@ window.changePassword = async () => {
     alert("❌ أعد تسجيل الدخول ثم حاول مجددًا");
   }
 };
+  // 1️⃣ تعريف المباريات
+const matches = [
+  { id: 1, teamA: "تونس", teamB: "المغرب", startTime: "2025-12-25T18:00:00Z", endTime: "2025-12-25T20:00:00Z", result: null },
+  { id: 2, teamA: "المغرب", teamB: "مصر", startTime: "2025-12-25T21:00:00Z", endTime: "2025-12-25T23:00:00Z", result: null },
+  // ...6 مباريات أخرى
+];
+
+// 2️⃣ دالة عرض المباريات
+function loadMatches() {
+  matchesBox.innerHTML = ""; // تنظيف أي محتوى قديم
+  const now = new Date();
+
+  matches.forEach(match => {
+    const start = new Date(match.startTime);
+    const canBet = now < start;
+
+    matchesBox.innerHTML += `
+      <div class="task">
+        ${match.teamA} 🆚 ${match.teamB} 
+        <br>
+        <small>البداية: ${start.toLocaleString()}</small>
+        <div>
+          <button onclick="placeBet(${match.id}, '1')" ${!canBet ? 'disabled' : ''}>1</button>
+          <button onclick="placeBet(${match.id}, 'X')" ${!canBet ? 'disabled' : ''}>X</button>
+          <button onclick="placeBet(${match.id}, '2')" ${!canBet ? 'disabled' : ''}>2</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// 3️⃣ استدعاء الدالة عند فتح التطبيق
+onAuthStateChanged(auth, async u => {
+  if(!u) return;
+  userData = (await getDoc(doc(db,"users",u.uid))).data();
+  authBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+  updateUI();
+  loadTasks();
+  loadMatches(); // ✅ هنا
+});
 </script>
   <audio id="levelUpSound" preload="auto">
   <source src="level-up.mp3" type="audio/mpeg">
