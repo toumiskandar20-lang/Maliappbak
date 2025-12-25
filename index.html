@@ -145,6 +145,14 @@ button{
   from{transform:scale(.7);opacity:0}
   to{transform:scale(1);opacity:1}
 }
+  /* LEVEL UP FIX */
+.levelup-overlay{
+  display:none;
+}
+
+.levelup-overlay.show{
+  display:flex;
+}
 </style>
 </head>
 
@@ -177,7 +185,7 @@ button{
   🎉 مرحبًا بك في MaliApp!
 </div>
   <!-- LEVEL UP POPUP -->
-<div class="levelup-overlay hidden" id="levelUpOverlay">
+<div class="levelup-overlay" id="levelUpOverlay">
   <div class="levelup-popup">
     <div class="levelup-icon">
       <i class="fa-solid fa-trophy"></i>
@@ -572,14 +580,19 @@ window.submitRegister = async () => {
     alert("❌ " + err.message);
   }
 };
- window.showLevelUp = (level) => {
+// 🌟 عرض Popup الترقية
+window.showLevelUp = (level) => {
   popupLevel.innerText = level;
-  levelUpOverlay.classList.remove("hidden");
+  levelUpOverlay.classList.add("show");
 
-  // ⏱️ إخفاء تلقائي بعد 3 ثواني
   setTimeout(() => {
-    levelUpOverlay.classList.add("hidden");
+    levelUpOverlay.classList.remove("show");
   }, 3000);
+};
+
+// ❌ غلق Popup يدويًا
+window.closeLevelUp = () => {
+  levelUpOverlay.classList.remove("show");
 };
   // فتح البروفايل
 window.openProfile = () => {
