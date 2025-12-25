@@ -140,7 +140,7 @@ button{
   <h3>📋 المهام اليومية</h3>
   <div id="tasksBox"></div>
 </div>
-
+<button onclick="openProfile()">👤 بروفايلي</button>
 <!-- WITHDRAW -->
 <div class="box hidden" id="withdrawBox">
   <h3>💸 طلب سحب</h3>
@@ -157,7 +157,33 @@ button{
 
   <button onclick="back()">⬅ رجوع</button>
 </div>
+<!-- PROFILE -->
+<div class="box hidden" id="profileBox">
+  <h3>👤 البروفايل</h3>
 
+  <p>📧 الإيميل:</p>
+  <div class="task">
+    <span id="profileEmail"></span>
+  </div>
+
+  <p>💰 الرصيد:</p>
+  <div class="task">
+    <span id="profileBalance"></span>
+  </div>
+
+  <p>🆔 معرف الحساب (UID):</p>
+  <div class="task">
+    <span id="profileUID"></span>
+  </div>
+
+  <p>🔗 رابط الدعوة الخاص بك:</p>
+  <div class="task">
+    <span id="inviteLink" style="font-size:13px;word-break:break-all"></span>
+    <button class="copy-btn" onclick="copyInvite()">📋 نسخ</button>
+  </div>
+
+  <button onclick="backFromProfile()">⬅ رجوع</button>
+</div>
 <!-- TOPUP -->
 <div class="box hidden" id="topupBox">
   <h3>💳 تعبئة رصيد</h3>
@@ -425,6 +451,33 @@ window.submitRegister = async () => {
   }catch(err){
     alert("❌ " + err.message);
   }
+};
+  // فتح البروفايل
+window.openProfile = () => {
+  appBox.classList.add("hidden");
+  profileBox.classList.remove("hidden");
+
+  const user = auth.currentUser;
+
+  profileEmail.innerText = user.email;
+  profileBalance.innerText = userData.balance + " 💵";
+  profileUID.innerText = user.uid;
+
+  // رابط الدعوة
+  const inviteURL = `${location.origin}${location.pathname}?ref=${user.uid}`;
+  inviteLink.innerText = inviteURL;
+};
+
+// رجوع من البروفايل
+window.backFromProfile = () => {
+  profileBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+};
+
+// نسخ رابط الدعوة
+window.copyInvite = () => {
+  navigator.clipboard.writeText(inviteLink.innerText);
+  alert("✅ تم نسخ رابط الدعوة");
 };
 </script>
 
