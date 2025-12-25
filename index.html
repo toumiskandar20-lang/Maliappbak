@@ -572,27 +572,13 @@ window.submitRegister = async () => {
     alert("❌ " + err.message);
   }
 };
-  // 🌟 عرض Popup الترقية
-window.showLevelUp = (level) => {
+ window.showLevelUp = (level) => {
   popupLevel.innerText = level;
   levelUpOverlay.classList.remove("hidden");
-};
 
-// ❌ غلق Popup
-window.closeLevelUp = () => {
-  levelUpOverlay.classList.add("hidden");
-};
-  // 🎉 إشعار الترقية بالمستوى
-window.showLevelUp = (level) => {
-  const toast = document.getElementById("levelUpToast");
-  const levelSpan = document.getElementById("newLevel");
-
-  levelSpan.innerText = level;
-
-  toast.classList.add("show");
-
+  // ⏱️ إخفاء تلقائي بعد 3 ثواني
   setTimeout(() => {
-    toast.classList.remove("show");
+    levelUpOverlay.classList.add("hidden");
   }, 3000);
 };
   // فتح البروفايل
