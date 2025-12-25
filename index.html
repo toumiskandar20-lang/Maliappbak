@@ -5,7 +5,7 @@
 <title>MaliApp</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
 body{
@@ -33,7 +33,8 @@ button{
   font-weight:bold;
   cursor:pointer;
 }
-.task,.history-card,.level-card,.wallet-box{
+.hidden{display:none}
+.task,.history-card,.level-card{
   background:#222;
   padding:12px;
   border-radius:10px;
@@ -47,48 +48,10 @@ button{
   border-radius:12px;
   font-size:12px;
 }
-<span class="badge pending">
-  <i class="fa-solid fa-hourglass-half"></i> قيد المراجعة
-</span>
-<span class="badge approved">
-  <i class="fa-solid fa-circle-check"></i> تمت الموافقة
-</span>
-<span class="badge rejected">
-  <i class="fa-solid fa-circle-xmark"></i> مرفوض
-</span>
-  background:#333;
-  color:#fff;
-  padding:6px 10px;
-  border-radius:6px;
-  cursor:pointer;
-}
-.hidden{display:none}
+.pending{background:#fbc02d;color:#000}
+.approved{background:#00c853;color:#000}
+.rejected{background:#d50000}
 .toast{
-  position:fixed;
-  bottom:30px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#00c853;
-  color:#000;
-  padding:10px 18px;
-  border-radius:20px;
-  display:none;
-}
-.settings-btn{
-  position:fixed;
-  right:20px;
-  bottom:20px;
-  width:55px;
-  height:55px;
-  border-radius:50%;
-  background:#00c853;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  color:#000;
-}
-  .toast{
   position:fixed;
   bottom:30px;
   left:50%;
@@ -101,20 +64,7 @@ button{
   display:none;
   z-index:999;
 }
-  .level-card p{
-  font-size:14px;
-  opacity:.9;
-}
-.level-card h4{
-  margin-bottom:8px;
-}
-  i.fa-solid{
-  margin-left:6px;
-  opacity:.9;
-}
-button i{
-  margin-left:8px;
-}
+i{margin-left:6px}
 </style>
 </head>
 
@@ -122,179 +72,82 @@ button i{
 
 <!-- AUTH -->
 <div class="box" id="authBox">
-  <h2>🔐 MaliApp</h2>
+  <h2><i class="fa-solid fa-lock"></i> MaliApp</h2>
   <input id="email" placeholder="Email">
   <input id="password" type="password" placeholder="Password">
-  <button onclick="openRegister()">تسجيل حساب</button>
   <button onclick="login()">تسجيل دخول</button>
+  <button onclick="openRegister()">إنشاء حساب</button>
 </div>
-  <!-- REGISTER -->
+
+<!-- REGISTER -->
 <div class="box hidden" id="registerBox">
-  <h2>📝 إنشاء حساب جديد</h2>
-
-  <input id="regEmail" type="email" placeholder="📧 البريد الإلكتروني">
-  <input id="regPhone" type="tel" placeholder="📱 رقم الهاتف">
-  <input id="regPassword" type="password" placeholder="🔑 كلمة المرور">
-  <input id="regConfirm" type="password" placeholder="🔑 تأكيد كلمة المرور">
-  <input id="regInvite" placeholder="🆔 معرف صاحب الدعوة (اختياري)">
-
-  <button onclick="submitRegister()">✅ تسجيل</button>
-  <button onclick="backToLogin()">⬅ رجوع</button>
-</div>
-
-<!-- TOAST -->
-<div class="toast" id="welcomeToast">
-  🎉 مرحبًا بك في MaliApp!
+  <h2><i class="fa-solid fa-user-plus"></i> حساب جديد</h2>
+  <input id="regEmail" placeholder="البريد الإلكتروني">
+  <input id="regPhone" placeholder="رقم الهاتف">
+  <input id="regPassword" type="password" placeholder="كلمة المرور">
+  <input id="regConfirm" type="password" placeholder="تأكيد كلمة المرور">
+  <input id="regInvite" placeholder="معرف الدعوة (اختياري)">
+  <button onclick="submitRegister()">تسجيل</button>
+  <button onclick="backToLogin()">رجوع</button>
 </div>
 
 <!-- APP -->
 <div class="box hidden" id="appBox">
-  <h3><i class="fa-solid fa-wallet"></i> الرصيد: <span id="balance">0</span></h3>
-<h4><i class="fa-solid fa-layer-group"></i> المستوى: <span id="level">1</span></h4>
-<button onclick="openProfile()">
-  <i class="fa-solid fa-user"></i> بروفايلي
-</button>
-  <button onclick="openSettings()">
-  <i class="fa-solid fa-gear"></i> الإعدادات
-</button>
-  <button onclick="openWithdraw()">💸 طلب سحب</button>
-  <button onclick="openTopup()">💳 تعبئة رصيد</button>
-  <button onclick="openUpgrade()">🚀 ترقية مستوى</button>
+  <button onclick="openProfile()"><i class="fa-solid fa-user"></i> بروفايلي</button>
+  <h3>الرصيد: <span id="balance">0</span> 💵</h3>
+  <h4>المستوى: <span id="level">1</span></h4>
 
-  <h3>📋 المهام اليومية</h3>
+  <button onclick="openWithdraw()">طلب سحب</button>
+  <button onclick="openUpgrade()">ترقية مستوى</button>
+  <button onclick="openSettings()">الإعدادات</button>
+
+  <h3>المهام</h3>
   <div id="tasksBox"></div>
 </div>
 
 <!-- WITHDRAW -->
-<h3><i class="fa-solid fa-money-bill-transfer"></i> طلب سحب</h3>
-
-  <input id="walletInput" placeholder="Wallet address">
-  <button class="copy-btn" onclick="copyWallet()">📋 نسخ المحفظة</button>
-
+<div class="box hidden" id="withdrawBox">
+  <h3>طلب سحب</h3>
   <input id="withdrawAmount" type="number" placeholder="المبلغ">
-  <button onclick="setMax()">MAX</button>
-  <button onclick="submitWithdraw()">✅ تنفيذ</button>
+  <button onclick="submitWithdraw()">تنفيذ</button>
 
-  <h4><i class="fa-solid fa-clock-rotate-left"></i> سجل السحب</h4>
+  <h4>سجل السحب</h4>
+  <div id="withdrawHistory"></div>
 
-  <button onclick="back()">⬅ رجوع</button>
+  <button onclick="back()">رجوع</button>
 </div>
+
 <!-- PROFILE -->
 <div class="box hidden" id="profileBox">
-  <h3>👤 البروفايل</h3>
-
-  <p><i class="fa-solid fa-envelope"></i> الإيميل:</p>
-  <div class="task">
-    <span id="profileEmail"></span>
-  </div>
-
-  
-<p><i class="fa-solid fa-coins"></i> الرصيد:</p>
-
-  <div class="task">
-    <span id="profileBalance"></span>
-  </div>
-
-  <p><i class="fa-solid fa-id-card"></i> UID:</p>
-  <div class="task">
-    <span id="profileUID"></span>
-  </div>
-
-  <p><i class="fa-solid fa-link"></i> رابط الدعوة:</p>
-  <div class="task">
-    <span id="inviteLink" style="font-size:13px;word-break:break-all"></span>
-    <button class="copy-btn">
-  <i class="fa-solid fa-copy"></i> نسخ
-</button>
-  </div>
-
-  <button onclick="backFromProfile()">⬅ رجوع</button>
+  <h3>البروفايل</h3>
+  <p>Email: <span id="profileEmail"></span></p>
+  <p>الرصيد: <span id="profileBalance"></span></p>
+  <p>UID: <span id="profileUID"></span></p>
+  <p>رابط الدعوة:</p>
+  <small id="inviteLink"></small>
+  <button onclick="backFromProfile()">رجوع</button>
 </div>
-  <!-- SETTINGS -->
+
+<!-- SETTINGS -->
 <div class="box hidden" id="settingsBox">
-  <h3>⚙️ الإعدادات</h3>
-
-  <div class="level-card">
-    <h4><i class="fa-solid fa-user-shield"></i> الحساب</h4>
-    <p>📧 الإيميل: <span id="setEmail"></span></p>
-    <p>📱 الهاتف: <span id="setPhone"></span></p>
-    <p>🆔 UID: <span id="setUID"></span></p>
-  </div>
-
-  <div class="level-card">
-    <h4><i class="fa-solid fa-lock"></i> الأمان</h4>
-    <input id="newPassword" type="password" placeholder="كلمة مرور جديدة">
-    <button onclick="changePassword()">🔑 تغيير كلمة المرور</button>
-    <button onclick="logout()" style="background:#d50000;color:#fff">
-  <i class="fa-solid fa-right-from-bracket"></i> تسجيل الخروج
-</button>
-  </div>
-
-  <div class="level-card">
-    <h4><i class="fa-solid fa-palette"></i> التطبيق</h4>
-    <label>
-      <input type="checkbox" id="notifyToggle"> تفعيل الإشعارات
-    </label>
-    <br><br>
-    <label>
-      <input type="checkbox" id="darkToggle"> الوضع الداكن
-    </label>
-  </div>
-
-  <div class="level-card">
-    <h4><i class="fa-solid fa-circle-info"></i> معلومات</h4>
-    <p>MaliApp</p>
-    <p>الإصدار: 1.0.0</p>
-  </div>
-
-  <button onclick="backFromSettings()">⬅ رجوع</button>
-</div>
-<!-- TOPUP -->
-<div class="box hidden" id="topupBox">
-  <h3>💳 تعبئة رصيد</h3>
-  <div class="wallet-box">
-    <span id="walletText">TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW</span>
-    <span class="copy-btn" onclick="copyTopup()">📋</span>
-  </div>
-  <button onclick="back()">⬅ رجوع</button>
+  <h3>الإعدادات</h3>
+  <p>Email: <span id="setEmail"></span></p>
+  <p>UID: <span id="setUID"></span></p>
+  <button onclick="logout()">تسجيل الخروج</button>
+  <button onclick="backFromSettings()">رجوع</button>
 </div>
 
-<!-- UPGRADE -->
-<div class="box hidden" id="upgradeBox">
-  <h3>🚀 ترقية المستوى</h3>
+<div class="toast" id="toast">🎉 مرحبًا بك في MaliApp</div>
 
-  <div class="level-card">
-    <div>المستوى 2 — 230 مالي</div>
-    <button onclick="upgradeLevel(2)">ترقية</button>
-  </div>
-
-  <div class="level-card">
-    <div>المستوى 3 — 590 مالي</div>
-    <button onclick="upgradeLevel(3)">ترقية</button>
-  </div>
-
-  <button onclick="back()">⬅ رجوع</button>
-</div>
-
-<div class="toast" id="toast">✅ تم النسخ</div>
-
-<div class="settings-btn" onclick="logout()">
-  <i class="fa fa-sign-out"></i>
-</div><script type="module">
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth,createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,onAuthStateChanged,signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore,doc,setDoc,getDoc,updateDoc,
-  addDoc,collection,query,where,getDocs,serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore,doc,setDoc,getDoc,updateDoc,addDoc,collection,query,where,onSnapshot,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig={
-  apiKey:"AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
-  authDomain:"maliapp-63f91.firebaseapp.com",
-  projectId:"maliapp-63f91"
+  apiKey:"API_KEY",
+  authDomain:"PROJECT.firebaseapp.com",
+  projectId:"PROJECT"
 };
 
 const app=initializeApp(firebaseConfig);
@@ -302,83 +155,75 @@ const auth=getAuth(app);
 const db=getFirestore(app);
 
 let userData={};
-let currentTask=false;
 
 const LEVELS={
   1:{tasks:5,reward:10},
-  2:{tasks:11,reward:15,price:230},
-  3:{tasks:23,reward:20,price:590}
+  2:{tasks:10,reward:15,price:200}
 };
 
-/* AUTH */
-window.register=async()=>{
-  const c=await createUserWithEmailAndPassword(auth,email.value,password.value);
-  await setDoc(doc(db,"users",c.user.uid),{
+window.login=()=>signInWithEmailAndPassword(auth,email.value,password.value);
+
+window.openRegister=()=>{
+  authBox.classList.add("hidden");
+  registerBox.classList.remove("hidden");
+};
+window.backToLogin=()=>{
+  registerBox.classList.add("hidden");
+  authBox.classList.remove("hidden");
+};
+
+window.submitRegister=async()=>{
+  const cred=await createUserWithEmailAndPassword(auth,regEmail.value,regPassword.value);
+  await setDoc(doc(db,"users",cred.user.uid),{
+    email:regEmail.value,
+    phone:regPhone.value,
     balance:0,
-    level:1
+    level:1,
+    createdAt:serverTimestamp()
   });
 };
-
-window.login=async()=>signInWithEmailAndPassword(auth,email.value,password.value);
 
 onAuthStateChanged(auth,async u=>{
   if(!u)return;
   userData=(await getDoc(doc(db,"users",u.uid))).data();
   authBox.classList.add("hidden");
+  registerBox.classList.add("hidden");
   appBox.classList.remove("hidden");
   updateUI();
   loadTasks();
 });
 
-/* UI */
 function updateUI(){
   balance.innerText=userData.balance;
   level.innerText=userData.level;
 }
 
-/* TASKS */
 function loadTasks(){
   tasksBox.innerHTML="";
   for(let i=1;i<=LEVELS[userData.level].tasks;i++){
     tasksBox.innerHTML+=`
       <div class="task">
         مهمة ${i}
-        <button onclick="startTask(this)">ابدأ</button>
+        <button onclick="completeTask()">ابدأ</button>
       </div>`;
   }
 }
 
-window.startTask=async(btn)=>{
-  if(currentTask)return alert("❌ توجد مهمة قيد التنفيذ");
-  currentTask=true;
-  let t=20;
-  btn.disabled=true;
-
-  const timer=setInterval(async()=>{
-    btn.innerText=t--;
-    if(t<0){
-      clearInterval(timer);
-      btn.innerText="✔ تمت";
-      currentTask=false;
-      userData.balance+=LEVELS[userData.level].reward;
-      await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
-      updateUI();
-    }
-  },1000);
+window.completeTask=async()=>{
+  userData.balance+=LEVELS[userData.level].reward;
+  await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
+  updateUI();
 };
 
-/* WITHDRAW */
 window.openWithdraw=()=>{
   appBox.classList.add("hidden");
   withdrawBox.classList.remove("hidden");
-  loadWithdrawHistory();
+  loadWithdraws();
 };
-
-window.setMax=()=>withdrawAmount.value=userData.balance;
 
 window.submitWithdraw=async()=>{
   const a=Number(withdrawAmount.value);
-  if(a<=0||a>userData.balance)return alert("❌ مبلغ غير صالح");
+  if(a<=0||a>userData.balance)return alert("مبلغ غير صالح");
   userData.balance-=a;
   await addDoc(collection(db,"withdrawals"),{
     userId:auth.currentUser.uid,
@@ -388,195 +233,44 @@ window.submitWithdraw=async()=>{
   });
   await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
   updateUI();
-  loadWithdrawHistory();
 };
 
-import { onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-function loadWithdrawHistory(){
-  const q = query(
-    collection(db,"withdrawals"),
-    where("userId","==",auth.currentUser.uid)
-  );
-
-  onSnapshot(q, (snap) => {
-    withdrawHistory.innerHTML = "";
-
-    snap.forEach(d => {
-      const w = d.data();
-
-      let cls = "pending";
-      let txt = "قيد المراجعة";
-
-      if(w.status === "approved"){
-        cls = "approved";
-        txt = "تمت الموافقة";
-      }
-
-      if(w.status === "rejected"){
-        cls = "rejected";
-        txt = "مرفوض";
-      }
-
-      withdrawHistory.innerHTML += `
+function loadWithdraws(){
+  const q=query(collection(db,"withdrawals"),where("userId","==",auth.currentUser.uid));
+  onSnapshot(q,s=>{
+    withdrawHistory.innerHTML="";
+    s.forEach(d=>{
+      const w=d.data();
+      withdrawHistory.innerHTML+=`
         <div class="history-card">
-          <div>${w.amount} 💵</div>
-          <span class="badge ${cls}">${txt}</span>
-        </div>
-      `;
+          ${w.amount} 💵
+          <span class="badge ${w.status}">${w.status}</span>
+        </div>`;
     });
   });
 }
 
-/* NAV */
-window.openTopup=()=>{appBox.classList.add("hidden");topupBox.classList.remove("hidden");};
-window.openUpgrade=()=>{appBox.classList.add("hidden");upgradeBox.classList.remove("hidden");};
-window.back=()=>{
-  withdrawBox.classList.add("hidden");
-  topupBox.classList.add("hidden");
-  upgradeBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
-};
-
-/* COPY */
-window.copyWallet=()=>navigator.clipboard.writeText(walletInput.value||"");
-window.copyTopup=()=>{
-  navigator.clipboard.writeText(walletText.innerText);
-  toast.style.display="block";
-  setTimeout(()=>toast.style.display="none",2000);
-};
-
-/* UPGRADE */
-window.upgradeLevel=async(lvl)=>{
-  const p=LEVELS[lvl].price;
-  if(userData.balance<p)return alert("❌ رصيد غير كاف");
-  userData.balance-=p;
-  userData.level=lvl;
-  await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
-  updateUI();
-  loadTasks();
-  back();
-};
-
-/* LOGOUT */
-window.logout=async()=>{
-  await signOut(auth);
-  location.reload();
-};
-  // فتح واجهة التسجيل
-window.openRegister = () => {
-  authBox.classList.add("hidden");
-  registerBox.classList.remove("hidden");
-};
-
-// رجوع لتسجيل الدخول
-window.backToLogin = () => {
-  registerBox.classList.add("hidden");
-  authBox.classList.remove("hidden");
-};
-
-// تنفيذ التسجيل
-window.submitRegister = async () => {
-  const email = regEmail.value.trim();
-  const phone = regPhone.value.trim();
-  const pass = regPassword.value;
-  const confirm = regConfirm.value;
-  const invite = regInvite.value.trim();
-
-  if(!email || !phone || !pass || !confirm){
-    return alert("❌ الرجاء ملء جميع الحقول");
-  }
-
-  if(pass !== confirm){
-    return alert("❌ كلمات المرور غير متطابقة");
-  }
-
-  try{
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-
-    await setDoc(doc(db,"users",cred.user.uid),{
-      email,
-      phone,
-      inviteCode: invite || null,
-      balance: 0,
-      level: 1,
-      tasks: {},
-      createdAt: serverTimestamp()
-    });
-
-    // إشعار ترحيب
-    welcomeToast.style.display = "block";
-    setTimeout(()=>{
-      welcomeToast.style.display = "none";
-    },3000);
-
-    registerBox.classList.add("hidden");
-    appBox.classList.remove("hidden");
-
-  }catch(err){
-    alert("❌ " + err.message);
-  }
-};
-  // فتح البروفايل
-window.openProfile = () => {
+window.openProfile=()=>{
   appBox.classList.add("hidden");
   profileBox.classList.remove("hidden");
-
-  const user = auth.currentUser;
-
-  profileEmail.innerText = user.email;
-  profileBalance.innerText = userData.balance + " 💵";
-  profileUID.innerText = user.uid;
-
-  // رابط الدعوة
-  const inviteURL = `${location.origin}${location.pathname}?ref=${user.uid}`;
-  inviteLink.innerText = inviteURL;
+  profileEmail.innerText=auth.currentUser.email;
+  profileBalance.innerText=userData.balance;
+  profileUID.innerText=auth.currentUser.uid;
+  inviteLink.innerText=location.href+"?ref="+auth.currentUser.uid;
 };
 
-// رجوع من البروفايل
-window.backFromProfile = () => {
-  profileBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
-};
-
-// نسخ رابط الدعوة
-window.copyInvite = () => {
-  navigator.clipboard.writeText(inviteLink.innerText);
-  alert("✅ تم نسخ رابط الدعوة");
-};
-  // فتح الإعدادات
-window.openSettings = () => {
+window.openSettings=()=>{
   appBox.classList.add("hidden");
   settingsBox.classList.remove("hidden");
-
-  const user = auth.currentUser;
-
-  setEmail.innerText = user.email;
-  setUID.innerText = user.uid;
-  setPhone.innerText = userData.phone || "غير متوفر";
+  setEmail.innerText=auth.currentUser.email;
+  setUID.innerText=auth.currentUser.uid;
 };
 
-// رجوع
-window.backFromSettings = () => {
-  settingsBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
-};
+window.back=()=>{withdrawBox.classList.add("hidden");appBox.classList.remove("hidden");}
+window.backFromProfile=()=>{profileBox.classList.add("hidden");appBox.classList.remove("hidden");}
+window.backFromSettings=()=>{settingsBox.classList.add("hidden");appBox.classList.remove("hidden");}
 
-// تغيير كلمة المرور
-window.changePassword = async () => {
-  const pass = newPassword.value;
-  if(pass.length < 6){
-    return alert("❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل");
-  }
-
-  try{
-    await auth.currentUser.updatePassword(pass);
-    alert("✅ تم تغيير كلمة المرور بنجاح");
-    newPassword.value = "";
-  }catch(err){
-    alert("❌ أعد تسجيل الدخول ثم حاول مجددًا");
-  }
-};
+window.logout=async()=>{await signOut(auth);location.reload();}
 </script>
 
 </body>
