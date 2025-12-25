@@ -103,6 +103,48 @@ button{
 .level-card h4{
   margin-bottom:8px;
 }
+  /* LEVEL UP POPUP */
+.levelup-overlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,.75);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.levelup-popup{
+  background:#111;
+  width:90%;
+  max-width:360px;
+  padding:30px 20px;
+  border-radius:18px;
+  text-align:center;
+  animation:popupScale .4s ease;
+}
+
+.levelup-icon{
+  width:80px;
+  height:80px;
+  margin:auto;
+  background:linear-gradient(135deg,#00c853,#b2ff59);
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:34px;
+  color:#000;
+  margin-bottom:15px;
+}
+
+@keyframes popupScale{
+  from{transform:scale(.7);opacity:0}
+  to{transform:scale(1);opacity:1}
+}
 </style>
 </head>
 
@@ -133,6 +175,20 @@ button{
 <!-- TOAST -->
 <div class="toast" id="welcomeToast">
   🎉 مرحبًا بك في MaliApp!
+</div>
+  <!-- LEVEL UP POPUP -->
+<div class="levelup-overlay hidden" id="levelUpOverlay">
+  <div class="levelup-popup">
+    <div class="levelup-icon">
+      <i class="fa-solid fa-trophy"></i>
+    </div>
+    <h2>تمت الترقية 🎉</h2>
+    <p>
+      تهانينا! لقد وصلت إلى<br>
+      <strong>المستوى <span id="popupLevel"></span></strong>
+    </p>
+    <button onclick="closeLevelUp()">متابعة</button>
+  </div>
 </div>
   <div class="toast level-up-toast" id="levelUpToast">
   🚀 تهانينا! وصلت إلى المستوى <span id="newLevel"></span>
@@ -440,15 +496,21 @@ window.copyTopup=()=>{
 };
 
 /* UPGRADE */
-window.upgradeLevel=async(lvl)=>{
-  const p=LEVELS[lvl].price;
-  if(userData.balance<p)return alert("❌ رصيد غير كاف");
-  userData.balance-=p;
-  userData.level=lvl;
+window.upgradeLevel = async (lvl) => {
+  const p = LEVELS[lvl].price;
+  if (userData.balance < p) return alert("❌ رصيد غير كاف");
+
+  userData.balance -= p;
+  userData.level = lvl;
+
   await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
+
   updateUI();
   loadTasks();
   back();
+
+  // 🔥 عرض Popup الترقية
+  showLevelUp(lvl);
 };
 
 /* LOGOUT */
@@ -509,6 +571,16 @@ window.submitRegister = async () => {
   }catch(err){
     alert("❌ " + err.message);
   }
+};
+  // 🌟 عرض Popup الترقية
+window.showLevelUp = (level) => {
+  popupLevel.innerText = level;
+  levelUpOverlay.classList.remove("hidden");
+};
+
+// ❌ غلق Popup
+window.closeLevelUp = () => {
+  levelUpOverlay.classList.add("hidden");
 };
   // 🎉 إشعار الترقية بالمستوى
 window.showLevelUp = (level) => {
