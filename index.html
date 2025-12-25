@@ -96,6 +96,13 @@ button{
   display:none;
   z-index:999;
 }
+  .level-card p{
+  font-size:14px;
+  opacity:.9;
+}
+.level-card h4{
+  margin-bottom:8px;
+}
 </style>
 </head>
 
@@ -133,6 +140,7 @@ button{
   <h3>💰 الرصيد: <span id="balance">0</span></h3>
   <h4>⭐ المستوى: <span id="level">1</span></h4>
 <button onclick="openProfile()">👤 بروفايلي</button>
+  <button onclick="openSettings()">⚙️ الإعدادات</button>
   <button onclick="openWithdraw()">💸 طلب سحب</button>
   <button onclick="openTopup()">💳 تعبئة رصيد</button>
   <button onclick="openUpgrade()">🚀 ترقية مستوى</button>
@@ -183,6 +191,43 @@ button{
   </div>
 
   <button onclick="backFromProfile()">⬅ رجوع</button>
+</div>
+  <!-- SETTINGS -->
+<div class="box hidden" id="settingsBox">
+  <h3>⚙️ الإعدادات</h3>
+
+  <div class="level-card">
+    <h4>👤 الحساب</h4>
+    <p>📧 الإيميل: <span id="setEmail"></span></p>
+    <p>📱 الهاتف: <span id="setPhone"></span></p>
+    <p>🆔 UID: <span id="setUID"></span></p>
+  </div>
+
+  <div class="level-card">
+    <h4>🔐 الأمان</h4>
+    <input id="newPassword" type="password" placeholder="كلمة مرور جديدة">
+    <button onclick="changePassword()">🔑 تغيير كلمة المرور</button>
+    <button style="background:#d50000;color:#fff" onclick="logout()">🚪 تسجيل الخروج</button>
+  </div>
+
+  <div class="level-card">
+    <h4>🎨 التطبيق</h4>
+    <label>
+      <input type="checkbox" id="notifyToggle"> تفعيل الإشعارات
+    </label>
+    <br><br>
+    <label>
+      <input type="checkbox" id="darkToggle"> الوضع الداكن
+    </label>
+  </div>
+
+  <div class="level-card">
+    <h4>ℹ️ معلومات</h4>
+    <p>MaliApp</p>
+    <p>الإصدار: 1.0.0</p>
+  </div>
+
+  <button onclick="backFromSettings()">⬅ رجوع</button>
 </div>
 <!-- TOPUP -->
 <div class="box hidden" id="topupBox">
@@ -478,6 +523,39 @@ window.backFromProfile = () => {
 window.copyInvite = () => {
   navigator.clipboard.writeText(inviteLink.innerText);
   alert("✅ تم نسخ رابط الدعوة");
+};
+  // فتح الإعدادات
+window.openSettings = () => {
+  appBox.classList.add("hidden");
+  settingsBox.classList.remove("hidden");
+
+  const user = auth.currentUser;
+
+  setEmail.innerText = user.email;
+  setUID.innerText = user.uid;
+  setPhone.innerText = userData.phone || "غير متوفر";
+};
+
+// رجوع
+window.backFromSettings = () => {
+  settingsBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+};
+
+// تغيير كلمة المرور
+window.changePassword = async () => {
+  const pass = newPassword.value;
+  if(pass.length < 6){
+    return alert("❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+  }
+
+  try{
+    await auth.currentUser.updatePassword(pass);
+    alert("✅ تم تغيير كلمة المرور بنجاح");
+    newPassword.value = "";
+  }catch(err){
+    alert("❌ أعد تسجيل الدخول ثم حاول مجددًا");
+  }
 };
 </script>
 
