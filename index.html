@@ -165,7 +165,9 @@ button{
 <!-- LEVEL UP POPUP -->
 <div class="levelup-overlay" id="levelUpOverlay">
   <div class="levelup-popup">
-    <div class="levelup-icon"><i class="fa-solid fa-trophy"></i></div>
+    <div class="levelup-icon">
+      <i class="fa-solid fa-trophy"></i>
+    </div>
     <h2>تمت الترقية 🎉</h2>
     <p>تهانينا! لقد وصلت إلى<br><strong>المستوى <span id="popupLevel"></span></strong></p>
     <button onclick="closeLevelUp()">متابعة</button>
@@ -174,7 +176,7 @@ button{
 
 <!-- APP -->
 <div class="box hidden" id="appBox">
-  <h3><i class="fa-solid fa-wallet" style="color:#00c853;font-size:22px;margin-right:8px;"></i> الرصيد: <span id="balance">0</span></h3>
+  <h3><i class="fa-solid fa-wallet" style="color:#00c853;margin-right:8px;"></i> الرصيد: <span id="balance">0</span></h3>
   <h4><i class="fa-solid fa-layer-group" style="color:#ffd700;margin-right:8px;"></i> المستوى: <span id="level">1</span></h4>
 
   <button onclick="openProfile()"><i class="fa-solid fa-user" style="color:#00c853;font-size:18px;"></i> بروفايلي</button>
@@ -210,8 +212,7 @@ button{
   <p>💰 الرصيد:</p><div class="task"><span id="profileBalance"></span></div>
   <p>🆔 معرف الحساب (UID):</p><div class="task"><span id="profileUID"></span></div>
   <p>🔗 رابط الدعوة الخاص بك:</p>
-  <div class="task"><span id="inviteLink" style="font-size:13px;word-break:break-all"></span>
-  <button class="copy-btn" onclick="copyInvite()">📋 نسخ</button></div>
+  <div class="task"><span id="inviteLink" style="font-size:13px;word-break:break-all"></span><button class="copy-btn" onclick="copyInvite()">📋 نسخ</button></div>
   <button onclick="backFromProfile()">⬅ رجوع</button>
 </div>
 
@@ -256,32 +257,21 @@ button{
 <!-- UPGRADE -->
 <div class="box hidden" id="upgradeBox">
   <h3>🚀 ترقية المستوى</h3>
-  <div class="level-card">
-    <div>المستوى 2 — 230 مالي</div>
-    <button onclick="upgradeLevel(2)">ترقية</button>
-  </div>
-  <div class="level-card">
-    <div>المستوى 3 — 590 مالي</div>
-    <button onclick="upgradeLevel(3)">ترقية</button>
-  </div>
+  <div class="level-card"><div>المستوى 2 — 230 مالي</div><button onclick="upgradeLevel(2)">ترقية</button></div>
+  <div class="level-card"><div>المستوى 3 — 590 مالي</div><button onclick="upgradeLevel(3)">ترقية</button></div>
   <button onclick="back()">⬅ رجوع</button>
 </div>
 
 <!-- LEVEL UP SOUND -->
 <audio id="levelUpSound" preload="auto"><source src="level-up.mp3" type="audio/mpeg"></audio>
 
+<div class="toast" id="toast">✅ تم النسخ</div>
 <div class="settings-btn" onclick="logout()"><i class="fa fa-sign-out"></i></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth,createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,onAuthStateChanged,signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore,doc,setDoc,getDoc,updateDoc,
-  addDoc,collection,query,where,serverTimestamp,onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, query, where, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
@@ -293,8 +283,8 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 const db=getFirestore(app);
 
-let userData={};
-let currentTask=false;
+let userData={}, currentTask=false, userBets={};
+const levelUpSound = document.getElementById("levelUpSound");
 
 const LEVELS={
   1:{tasks:5,reward:10},
@@ -304,19 +294,34 @@ const LEVELS={
 
 // بيانات المباريات اليومية
 const matches = [
-  { id: 1, teamA: "تونس", teamB: "المغرب", startTime: "2025-12-25T18:00:00Z", endTime: "2025-12-25T20:00:00Z", result: null },
-  { id: 2, teamA: "المغرب", teamB: "مصر", startTime: "2025-12-25T21:00:00Z", endTime: "2025-12-25T23:00:00Z", result: null },
-  // يمكن إضافة 6 مباريات أخرى
+  {id:1, teamA:"تونس", teamB:"المغرب", startTime:"2025-12-25T18:00:00Z", endTime:"2025-12-25T20:00:00Z", result:null},
+  {id:2, teamA:"المغرب", teamB:"مصر", startTime:"2025-12-25T21:00:00Z", endTime:"2025-12-25T23:00:00Z", result:null},
+  // 6 مباريات إضافية يمكن إضافتها بنفس الطريقة
 ];
 
-const levelUpSound = document.getElementById("levelUpSound");
-
 /* AUTH */
-window.login=async()=>signInWithEmailAndPassword(auth,email.value,password.value);
-window.register=async()=>{ /* استخدم submitRegister بدلًا من هذا */ }
+window.register = async ()=>{
+  const c = await createUserWithEmailAndPassword(auth,email.value,password.value);
+  await setDoc(doc(db,"users",c.user.uid),{balance:0,level:1});
+};
+
+window.login = async ()=> signInWithEmailAndPassword(auth,email.value,password.value);
+
+onAuthStateChanged(auth,async u=>{
+  if(!u) return;
+  userData = (await getDoc(doc(db,"users",u.uid))).data();
+  authBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+  updateUI();
+  loadTasks();
+  loadMatches();
+});
 
 /* UI */
-function updateUI(){ balance.innerText=userData.balance; level.innerText=userData.level; }
+function updateUI(){
+  balance.innerText=userData.balance;
+  level.innerText=userData.level;
+}
 
 /* TASKS */
 function loadTasks(){
@@ -331,6 +336,7 @@ window.startTask=async(btn)=>{
   currentTask=true;
   let t=20;
   btn.disabled=true;
+
   const timer=setInterval(async()=>{
     btn.innerText=t--;
     if(t<0){
@@ -345,11 +351,17 @@ window.startTask=async(btn)=>{
 };
 
 /* WITHDRAW */
-window.openWithdraw=()=>{appBox.classList.add("hidden");withdrawBox.classList.remove("hidden");loadWithdrawHistory();}
+window.openWithdraw=()=>{
+  appBox.classList.add("hidden");
+  withdrawBox.classList.remove("hidden");
+  loadWithdrawHistory();
+};
+
 window.setMax=()=>withdrawAmount.value=userData.balance;
+
 window.submitWithdraw=async()=>{
   const a=Number(withdrawAmount.value);
-  if(a<=0||a>userData.balance)return alert("❌ مبلغ غير صالح");
+  if(a<=0||a>userData.balance) return alert("❌ مبلغ غير صالح");
   userData.balance-=a;
   await addDoc(collection(db,"withdrawals"),{userId:auth.currentUser.uid,amount:a,status:"pending",createdAt:serverTimestamp()});
   await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
@@ -363,110 +375,55 @@ function loadWithdrawHistory(){
     withdrawHistory.innerHTML="";
     snap.forEach(d=>{
       const w=d.data();
-      let cls="pending",txt="قيد المراجعة";
-      if(w.status==="approved"){cls="approved";txt="تمت الموافقة";}
-      if(w.status==="rejected"){cls="rejected";txt="مرفوض";}
+      let cls="pending", txt="قيد المراجعة";
+      if(w.status==="approved"){cls="approved"; txt="تمت الموافقة";}
+      if(w.status==="rejected"){cls="rejected"; txt="مرفوض";}
       withdrawHistory.innerHTML+=`<div class="history-card"><div>${w.amount} 💵</div><span class="badge ${cls}">${txt}</span></div>`;
     });
   });
 }
 
-/* NAVIGATION */
+/* NAV */
 window.openTopup=()=>{appBox.classList.add("hidden");topupBox.classList.remove("hidden");};
 window.openUpgrade=()=>{appBox.classList.add("hidden");upgradeBox.classList.remove("hidden");};
-window.back=()=>{withdrawBox.classList.add("hidden");topupBox.classList.add("hidden");upgradeBox.classList.add("hidden");appBox.classList.remove("hidden");};
+window.back=()=>{
+  withdrawBox.classList.add("hidden"); topupBox.classList.add("hidden"); upgradeBox.classList.add("hidden"); appBox.classList.remove("hidden");
+};
 
 /* COPY */
 window.copyWallet=()=>navigator.clipboard.writeText(walletInput.value||"");
-window.copyTopup=()=>{navigator.clipboard.writeText(walletText.innerText);toast.style.display="block";setTimeout(()=>toast.style.display="none",2000);}
-window.copyInvite=()=>{navigator.clipboard.writeText(inviteLink.innerText);alert("✅ تم نسخ رابط الدعوة");}
+window.copyTopup=()=>{
+  navigator.clipboard.writeText(walletText.innerText);
+  toast.style.display="block";
+  setTimeout(()=>toast.style.display="none",2000);
+};
 
 /* UPGRADE */
-window.upgradeLevel=async(lvl)=>{
-  const p=LEVELS[lvl].price;
-  if(userData.balance<p)return alert("❌ رصيد غير كاف");
-  userData.balance-=p;
-  userData.level=lvl;
+window.upgradeLevel = async (lvl)=>{
+  const p = LEVELS[lvl].price;
+  if(userData.balance<p) return alert("❌ رصيد غير كاف");
+  userData.balance -= p; userData.level = lvl;
   await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
-  updateUI();
-  loadTasks();
-  back();
+  updateUI(); loadTasks(); back();
   showLevelUp(lvl);
 };
 
-/* LEVEL UP */
-window.showLevelUp=(level)=>{
-  levelUpSound.play();
-  popupLevel.innerText=level;
-  levelUpOverlay.classList.add("show");
-  setTimeout(()=>{levelUpOverlay.classList.remove("show");},3000);
-};
-window.closeLevelUp=()=>{levelUpOverlay.classList.remove("show");};
-
-/* PROFILE */
-window.openProfile=()=>{
-  appBox.classList.add("hidden");
-  profileBox.classList.remove("hidden");
-  const user=auth.currentUser;
-  profileEmail.innerText=user.email;
-  profileBalance.innerText=userData.balance + " 💵";
-  profileUID.innerText=user.uid;
-  inviteLink.innerText=`${location.origin}${location.pathname}?ref=${user.uid}`;
-};
-window.backFromProfile=()=>{profileBox.classList.add("hidden");appBox.classList.remove("hidden");}
-
-/* SETTINGS */
-window.openSettings=()=>{appBox.classList.add("hidden");settingsBox.classList.remove("hidden");setEmail.innerText=auth.currentUser.email;setUID.innerText=auth.currentUser.uid;setPhone.innerText=userData.phone||"غير متوفر";}
-window.backFromSettings=()=>{settingsBox.classList.add("hidden");appBox.classList.remove("hidden");}
-window.changePassword=async()=>{
-  const pass=newPassword.value;
-  if(pass.length<6)return alert("❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل");
-  try{await auth.currentUser.updatePassword(pass);alert("✅ تم تغيير كلمة المرور بنجاح");newPassword.value="";}
-  catch(err){alert("❌ أعد تسجيل الدخول ثم حاول مجددًا");}
-}
-
-/* MATCHES */
-function loadMatches(){
-  matchesBox.innerHTML="";
-  const now=new Date();
-  matches.forEach(match=>{
-    const start=new Date(match.startTime);
-    const canBet=now<start;
-    matchesBox.innerHTML+=`
-      <div class="task">
-        ${match.teamA} 🆚 ${match.teamB} <br>
-        <small>البداية: ${start.toLocaleString()}</small>
-        <div>
-          <button onclick="placeBet(${match.id},'1')" ${!canBet?'disabled':''}>1</button>
-          <button onclick="placeBet(${match.id},'X')" ${!canBet?'disabled':''}>X</button>
-          <button onclick="placeBet(${match.id},'2')" ${!canBet?'disabled':''}>2</button>
-        </div>
-      </div>
-    `;
-  });
-}
-
-/* AUTH STATE */
-onAuthStateChanged(auth,async u=>{
-  if(!u)return;
-  userData=(await getDoc(doc(db,"users",u.uid))).data();
-  authBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
-  updateUI();
-  loadTasks();
-  loadMatches();
-});
+/* LOGOUT */
+window.logout=async()=>{await signOut(auth); location.reload();};
 
 /* REGISTRATION */
-window.openRegister=()=>{authBox.classList.add("hidden");registerBox.classList.remove("hidden");}
-window.backToLogin=()=>{registerBox.classList.add("hidden");authBox.classList.remove("hidden");}
-
-window.submitRegister=async()=>{
-  const email=regEmail.value.trim(), phone=regPhone.value.trim(), pass=regPassword.value, confirm=regConfirm.value, invite=regInvite.value.trim();
-  if(!email||!phone||!pass||!confirm)return alert("❌ الرجاء ملء جميع الحقول");
-  if(pass!==confirm)return alert("❌ كلمات المرور غير متطابقة");
+window.openRegister = ()=>{authBox.classList.add("hidden"); registerBox.classList.remove("hidden");};
+window.backToLogin = ()=>{registerBox.classList.add("hidden"); authBox.classList.remove("hidden");};
+window.submitRegister = async ()=>{
+  const email = regEmail.value.trim();
+  const phone = regPhone.value.trim();
+  const pass = regPassword.value;
+  const confirm = regConfirm.value;
+  const invite = regInvite.value.trim();
+  if(!email||!phone||!pass||!confirm) return alert("❌ الرجاء ملء جميع الحقول");
+  if(pass!==confirm) return alert("❌ كلمات المرور غير متطابقة");
   try{
-    const cred=await createUserWithEmailAndPassword(auth,email,pass);
+    const cred = await createUserWithEmailAndPassword(auth,email,pass);
     await setDoc(doc(db,"users",cred.user.uid),{
       email, phone, inviteCode:invite||null, balance:0, level:1, tasks:{}, createdAt:serverTimestamp()
     });
@@ -477,9 +434,91 @@ window.submitRegister=async()=>{
   }catch(err){alert("❌ "+err.message);}
 };
 
-/* LOGOUT */
-window.logout=async()=>{await signOut(auth);location.reload();}
-</script>
+/* LEVEL UP POPUP */
+window.showLevelUp = (level)=>{
+  levelUpSound.play();
+  popupLevel.innerText=level;
+  levelUpOverlay.classList.add("show");
+  setTimeout(()=>{levelUpOverlay.classList.remove("show");},3000);
+};
+window.closeLevelUp = ()=>{levelUpOverlay.classList.remove("show");};
 
+/* PROFILE */
+window.openProfile=()=>{
+  appBox.classList.add("hidden"); profileBox.classList.remove("hidden");
+  const user = auth.currentUser;
+  profileEmail.innerText = user.email;
+  profileBalance.innerText = userData.balance + " 💵";
+  profileUID.innerText = user.uid;
+  const inviteURL = `${location.origin}${location.pathname}?ref=${user.uid}`;
+  inviteLink.innerText = inviteURL;
+};
+window.backFromProfile=()=>{profileBox.classList.add("hidden"); appBox.classList.remove("hidden");};
+window.copyInvite=()=>{navigator.clipboard.writeText(inviteLink.innerText); alert("✅ تم نسخ رابط الدعوة");};
+
+/* SETTINGS */
+window.openSettings=()=>{
+  appBox.classList.add("hidden"); settingsBox.classList.remove("hidden");
+  const user = auth.currentUser;
+  setEmail.innerText=user.email;
+  setUID.innerText=user.uid;
+  setPhone.innerText=userData.phone||"غير متوفر";
+};
+window.backFromSettings=()=>{settingsBox.classList.add("hidden"); appBox.classList.remove("hidden");};
+window.changePassword=async()=>{
+  const pass=newPassword.value;
+  if(pass.length<6) return alert("❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+  try{await auth.currentUser.updatePassword(pass); alert("✅ تم تغيير كلمة المرور"); newPassword.value="";}catch(err){alert("❌ أعد تسجيل الدخول ثم حاول مجددًا");}
+};
+
+/* MATCHES + BETS */
+function loadMatches(){
+  matchesBox.innerHTML="";
+  const now = new Date();
+  matches.forEach(match=>{
+    const start=new Date(match.startTime);
+    const canBet = now<start;
+    matchesBox.innerHTML += `
+      <div class="task">
+        ${match.teamA} 🆚 ${match.teamB} 
+        <br><small>البداية: ${start.toLocaleString()}</small>
+        <div>
+          <button onclick="placeBet(${match.id},'1')" ${!canBet?'disabled':''} ${userBets[match.id]==='1'?'style="background:#ffd700"':''}>1</button>
+          <button onclick="placeBet(${match.id},'X')" ${!canBet?'disabled':''} ${userBets[match.id]==='X'?'style="background:#ffd700"':''}>X</button>
+          <button onclick="placeBet(${match.id},'2')" ${!canBet?'disabled':''} ${userBets[match.id]==='2'?'style="background:#ffd700"':''}>2</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+window.placeBet=async(matchId,bet)=>{
+  const match=matches.find(m=>m.id===matchId);
+  const now=new Date();
+  if(now>=new Date(match.startTime)) return alert("❌ لا يمكن التكهن بعد بداية المباراة");
+  userBets[matchId]=bet;
+  alert(`✅ تم تسجيل تكهنك: ${bet}`);
+};
+
+// فحص نتائج المباريات كل دقيقة
+async function checkMatchResults(){
+  const now=new Date();
+  for(const match of matches){
+    const end = new Date(match.endTime);
+    if(!match.result || now<end) continue;
+    if(userBets[match.id] && userBets[match.id]===match.result){
+      let reward = 0;
+      if(userData.level===1) reward=0.5;
+      else if(userData.level===2) reward=1.5;
+      else if(userData.level===3) reward=3;
+      userData.balance += reward;
+      await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
+      updateUI();
+      alert(`🏆 مبروك! ربحك ${reward} مالي من المباراة: ${match.teamA} vs ${match.teamB}`);
+    }
+  }
+}
+setInterval(checkMatchResults,60*1000);
+</script>
 </body>
 </html>
