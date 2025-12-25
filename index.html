@@ -103,6 +103,35 @@ button{
 .level-card h4{
   margin-bottom:8px;
 }
+  .levelup-toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  color: #fff;
+  padding: 25px 40px;
+  border-radius: 20px;
+  text-align: center;
+  z-index: 9999;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  transition: transform 0.5s ease;
+}
+.levelup-toast.show {
+  transform: translate(-50%, -50%) scale(1);
+}
+.levelup-toast h2 {
+  margin: 10px 0;
+  font-size: 24px;
+}
+.levelup-toast p {
+  font-size: 18px;
+  margin: 0;
+}
+.levelup-toast i {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
 </style>
 </head>
 
@@ -239,6 +268,10 @@ button{
 
   <button onclick="backFromSettings()">⬅ رجوع</button>
 </div>
+  <h4>
+  <i class="fa-solid fa-layer-group" style="color:#ffd700;margin-right:8px;"></i>
+  المستوى: <span id="level">1</span>
+</h4>
 <!-- TOPUP -->
 <div class="box hidden" id="topupBox">
   <h3>💳 تعبئة رصيد</h3>
@@ -435,6 +468,21 @@ window.copyTopup=()=>{
   toast.style.display="block";
   setTimeout(()=>toast.style.display="none",2000);
 };
+  window.upgradeLevel = async (lvl) => {
+  const p = LEVELS[lvl].price;
+  if (userData.balance < p) return alert("❌ رصيد غير كاف");
+
+  userData.balance -= p;
+  userData.level = lvl;
+
+  await updateDoc(doc(db, "users", auth.currentUser.uid), userData);
+  updateUI();
+  loadTasks();
+  back();
+
+  // عرض إشعار الترقية
+  showLevelUp(lvl);
+};
 
 /* UPGRADE */
 window.upgradeLevel=async(lvl)=>{
@@ -506,6 +554,18 @@ window.submitRegister = async () => {
   }catch(err){
     alert("❌ " + err.message);
   }
+};
+  window.showLevelUp = (level) => {
+  const toast = document.getElementById("levelUpToast");
+  const levelSpan = document.getElementById("newLevel");
+  levelSpan.innerText = level;
+
+  toast.classList.add("show");
+  
+  // إخفاء الإشعار بعد 3 ثواني
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 3000);
 };
   // فتح البروفايل
 window.openProfile = () => {
