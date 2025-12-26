@@ -291,53 +291,7 @@ const LEVELS={
   2:{tasks:11,reward:15,price:230},
   3:{tasks:23,reward:20,price:590}
 };
-// جلب المباريات اليومية من Firestore
-import { collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-function loadMatchesFromFirebase() {
-  matchesBox.innerHTML = ""; // تنظيف أي محتوى قديم
-
-  // تحديد تاريخ اليوم فقط
-  const today = new Date();
-  today.setHours(0,0,0,0);
-
-  const matchesRef = collection(db, "matches");
-  const q = query(matchesRef, where("startTime", ">=", today));
-
-  onSnapshot(q, snap => {
-    matchesBox.innerHTML = ""; // تنظيف المحتوى كل مرة
-
-    snap.forEach(doc => {
-      const match = doc.data();
-      const start = match.startTime.toDate();
-      const canBet = new Date() < start; // يمكن التكهن قبل بداية المباراة
-
-      matchesBox.innerHTML += `
-        <div class="task">
-          ${match.teamA} 🆚 ${match.teamB} 
-          <br>
-          <small>البداية: ${start.toLocaleString()}</small>
-          <div>
-            <button onclick="placeBet('${doc.id}', '1')" ${!canBet ? 'disabled' : ''}>1</button>
-            <button onclick="placeBet('${doc.id}', 'X')" ${!canBet ? 'disabled' : ''}>X</button>
-            <button onclick="placeBet('${doc.id}', '2')" ${!canBet ? 'disabled' : ''}>2</button>
-          </div>
-        </div>
-      `;
-    });
-  });
-}
-
-// استدعاء الدالة عند تسجيل الدخول
-onAuthStateChanged(auth, async u => {
-  if(!u) return;
-  userData = (await getDoc(doc(db,"users",u.uid))).data();
-  authBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
-  updateUI();
-  loadTasks();
-  loadMatchesFromFirebase(); // ✅ هنا
-});
 // بيانات المباريات اليومية
 const matches = [
   {id:1, teamA:"تونس", teamB:"المغرب", startTime:"2025-12-25T18:00:00Z", endTime:"2025-12-25T20:00:00Z", result:null},
