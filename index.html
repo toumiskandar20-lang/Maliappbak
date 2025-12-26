@@ -185,9 +185,7 @@ button{
   <button onclick="openTopup()">💳 تعبئة رصيد</button>
   <button onclick="openUpgrade()">🚀 ترقية مستوى</button>
 
-  <h3>📋 المهام اليومية</h3>
-  <div id="tasksBox"></div>
-
+  
   <h3>⚽ المباريات اليومية</h3>
   <div id="matchesBox"></div>
 </div>
@@ -323,32 +321,6 @@ function updateUI(){
   level.innerText=userData.level;
 }
 
-/* TASKS */
-function loadTasks(){
-  tasksBox.innerHTML="";
-  for(let i=1;i<=LEVELS[userData.level].tasks;i++){
-    tasksBox.innerHTML+=`<div class="task">مهمة ${i}<button onclick="startTask(this)">ابدأ</button></div>`;
-  }
-}
-
-window.startTask=async(btn)=>{
-  if(currentTask)return alert("❌ توجد مهمة قيد التنفيذ");
-  currentTask=true;
-  let t=20;
-  btn.disabled=true;
-
-  const timer=setInterval(async()=>{
-    btn.innerText=t--;
-    if(t<0){
-      clearInterval(timer);
-      btn.innerText="✔ تمت";
-      currentTask=false;
-      userData.balance+=LEVELS[userData.level].reward;
-      await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
-      updateUI();
-    }
-  },1000);
-};
 
 /* WITHDRAW */
 window.openWithdraw=()=>{
