@@ -449,21 +449,26 @@ function loadMatches(){
         ${match.teamA} 🆚 ${match.teamB} 
         <br><small>البداية: ${start.toLocaleString()}</small>
         <div>
-        <button onclick="placeBet(${match.id}, '1')" ${!canBet ? 'disabled' : ''}>1</button>
+       <button onclick="placeBet(${match.id}, '1')" ${!canBet ? 'disabled' : ''}>1</button>
 <button onclick="placeBet(${match.id}, 'X')" ${!canBet ? 'disabled' : ''}>X</button>
-<button onclick="placeBet(${match.id}, '2')" ${!canBet ? 'disabled' : ''}>2</button> 
+<button onclick="placeBet(${match.id}, '2')" ${!canBet ? 'disabled' : ''}>2</button>
         </div>
       </div>
     `;
   });
 }
 
-window.placeBet=async(matchId,bet)=>{
-  const match=matches.find(m=>m.id===matchId);
-  const now=new Date();
-  if(now>=new Date(match.startTime)) return alert("❌ لا يمكن التكهن بعد بداية المباراة");
-  userBets[matchId]=bet;
-  alert(`✅ تم تسجيل تكهنك: ${bet}`);
+window.placeBet = function(matchId, bet){
+  const match = matches.find(m => m.id === matchId);
+  const now = new Date();
+
+  if(now >= new Date(match.startTime)){
+    alert("❌ لا يمكن التكهن بعد بداية المباراة");
+    return;
+  }
+
+  userBets[matchId] = bet;
+  loadMatches(); // تحديث الأزرار
 };
 
 // فحص نتائج المباريات كل دقيقة
