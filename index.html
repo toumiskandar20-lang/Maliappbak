@@ -271,123 +271,52 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, addDoc, collection, query, where, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig={
+// 10-15: إعداد Firebase
+const firebaseConfig = {
   apiKey:"AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
   authDomain:"maliapp-63f91.firebaseapp.com",
   projectId:"maliapp-63f91"
 };
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getFirestore(app);
-
-let userData={}, currentTask=false, userBets={};
+// 20-23: متغيرات عامة
+let userData = {}, userBets = {};
 const levelUpSound = document.getElementById("levelUpSound");
 
-const LEVELS={
+// 26-30: المستويات
+const LEVELS = {
   1:{tasks:5,reward:10},
   2:{tasks:11,reward:15,price:230},
   3:{tasks:23,reward:20,price:590}
 };
 
+// 33-41: المباريات اليومية
 const matches = [
-  {
-    id:1,
-    teamA:"تونس",
-    teamB:"المغرب",
-    startTime:"2025-12-25T18:00:00+01:00",
-    endTime:"2025-12-25T20:00:00+01:00",
-    result:null
-  },
-  {
-    id:2,
-    teamA:"المغرب",
-    teamB:"مصر",
-    startTime:"2025-12-25T21:00:00+01:00",
-    endTime:"2025-12-25T23:00:00+01:00",
-    result:null
-  }
+  {id:1, teamA:"تونس", teamB:"المغرب", startTime:"2025-12-25T18:00:00+01:00", endTime:"2025-12-25T20:00:00+01:00", result:null},
+  {id:2, teamA:"المغرب", teamB:"مصر", startTime:"2025-12-25T21:00:00+01:00", endTime:"2025-12-25T23:00:00+01:00", result:null}
 ];
 
-/* UI */
+// 45-48: تحديث واجهة المستخدم
 function updateUI(){
-  balance.innerText=userData.balance;
-  level.innerText=userData.level;
+  balance.innerText = userData.balance;
+  level.innerText = userData.level;
 }
 
+// ==================== AUTH ====================
 
-/* WITHDRAW */
-window.openWithdraw=()=>{
-  appBox.classList.add("hidden");
-  withdrawBox.classList.remove("hidden");
-  loadWithdrawHistory();
-};
-
-window.setMax=()=>withdrawAmount.value=userData.balance;
-
-window.submitWithdraw=async()=>{
-  const a=Number(withdrawAmount.value);
-  if(a<=0||a>userData.balance) return alert("❌ مبلغ غير صالح");
-  userData.balance-=a;
-  await addDoc(collection(db,"withdrawals"),{userId:auth.currentUser.uid,amount:a,status:"pending",createdAt:serverTimestamp()});
-  await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
-  updateUI();
-  loadWithdrawHistory();
-};
-
-function loadWithdrawHistory(){
-  const q=query(collection(db,"withdrawals"),where("userId","==",auth.currentUser.uid));
-  onSnapshot(q,snap=>{
-    withdrawHistory.innerHTML="";
-    snap.forEach(d=>{
-      const w=d.data();
-      let cls="pending", txt="قيد المراجعة";
-      if(w.status==="approved"){cls="approved"; txt="تمت الموافقة";}
-      if(w.status==="rejected"){cls="rejected"; txt="مرفوض";}
-      withdrawHistory.innerHTML+=`<div class="history-card"><div>${w.amount} 💵</div><span class="badge ${cls}">${txt}</span></div>`;
-    });
-  });
-}
-
-/* NAV */
-window.openTopup=()=>{appBox.classList.add("hidden");topupBox.classList.remove("hidden");};
-window.openUpgrade=()=>{appBox.classList.add("hidden");upgradeBox.classList.remove("hidden");};
-window.back=()=>{
-  withdrawBox.classList.add("hidden"); topupBox.classList.add("hidden"); upgradeBox.classList.add("hidden"); appBox.classList.remove("hidden");
-};
-
-/* COPY */
-window.copyWallet=()=>navigator.clipboard.writeText(walletInput.value||"");
-window.copyTopup=()=>{
-  navigator.clipboard.writeText(walletText.innerText);
-  toast.style.display="block";
-  setTimeout(()=>toast.style.display="none",2000);
-};
-
-/* UPGRADE */
-window.upgradeLevel = async (lvl)=>{
-  const p = LEVELS[lvl].price;
-  if(userData.balance<p) return alert("❌ رصيد غير كاف");
-  userData.balance -= p; userData.level = lvl;
-  await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
-  updateUI(); loadTasks(); back();
-  showLevelUp(lvl);
-};
-
-/* LOGOUT */
-window.logout=async()=>{await signOut(auth); location.reload();};
-
-/* REGISTRATION */
-window.openRegister = ()=>{authBox.classList.add("hidden"); registerBox.classList.remove("hidden");};
-window.backToLogin = ()=>{registerBox.classList.add("hidden"); authBox.classList.remove("hidden");};
-window.submitRegister = async ()=>{
+// 53-60: تسجيل مستخدم جديد
+window.submitRegister = async () => {
   const email = regEmail.value.trim();
   const phone = regPhone.value.trim();
   const pass = regPassword.value;
   const confirm = regConfirm.value;
   const invite = regInvite.value.trim();
+
   if(!email||!phone||!pass||!confirm) return alert("❌ الرجاء ملء جميع الحقول");
   if(pass!==confirm) return alert("❌ كلمات المرور غير متطابقة");
+
   try{
     const cred = await createUserWithEmailAndPassword(auth,email,pass);
     await setDoc(doc(db,"users",cred.user.uid),{
@@ -400,90 +329,197 @@ window.submitRegister = async ()=>{
   }catch(err){alert("❌ "+err.message);}
 };
 
-/* LEVEL UP POPUP */
+// 63-64: فتح صفحة التسجيل والعودة
+window.openRegister = ()=>{authBox.classList.add("hidden"); registerBox.classList.remove("hidden");};
+window.backToLogin = ()=>{registerBox.classList.add("hidden"); authBox.classList.remove("hidden");};
+
+// 67-68: تسجيل دخول
+window.login = async ()=> signInWithEmailAndPassword(auth,email.value,password.value);
+
+// 71-77: حالة تسجيل الدخول
+onAuthStateChanged(auth, async u=>{
+  if(!u) return;
+  userData = (await getDoc(doc(db,"users",u.uid))).data();
+  authBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+  updateUI();
+  loadMatches();
+});
+
+// ==================== WITHDRAW ====================
+
+// 83-87: فتح صندوق السحب
+window.openWithdraw = ()=> {
+  appBox.classList.add("hidden");
+  withdrawBox.classList.remove("hidden");
+  loadWithdrawHistory();
+};
+
+// 88: تعيين MAX
+window.setMax = ()=> withdrawAmount.value = userData.balance;
+
+// 89-96: إرسال طلب سحب
+window.submitWithdraw = async ()=>{
+  const a = Number(withdrawAmount.value);
+  if(a<=0||a>userData.balance) return alert("❌ مبلغ غير صالح");
+  userData.balance -= a;
+  await addDoc(collection(db,"withdrawals"), {userId:auth.currentUser.uid, amount:a, status:"pending", createdAt:serverTimestamp()});
+  await updateDoc(doc(db,"users",auth.currentUser.uid), userData);
+  updateUI();
+  loadWithdrawHistory();
+};
+
+// 97-106: تحميل سجل السحب
+function loadWithdrawHistory(){
+  const q = query(collection(db,"withdrawals"), where("userId","==",auth.currentUser.uid));
+  onSnapshot(q,snap=>{
+    withdrawHistory.innerHTML="";
+    snap.forEach(d=>{
+      const w = d.data();
+      let cls="pending", txt="قيد المراجعة";
+      if(w.status==="approved"){cls="approved"; txt="تمت الموافقة";}
+      if(w.status==="rejected"){cls="rejected"; txt="مرفوض";}
+      withdrawHistory.innerHTML += `<div class="history-card"><div>${w.amount} 💵</div><span class="badge ${cls}">${txt}</span></div>`;
+    });
+  });
+}
+
+// ==================== NAV ====================
+
+// 110-115: التنقل بين الصفحات
+window.openTopup = ()=>{appBox.classList.add("hidden"); topupBox.classList.remove("hidden");};
+window.openUpgrade = ()=>{appBox.classList.add("hidden"); upgradeBox.classList.remove("hidden");};
+window.back = ()=>{
+  withdrawBox.classList.add("hidden"); topupBox.classList.add("hidden"); upgradeBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+};
+
+// ==================== COPY ====================
+
+// 120-127
+window.copyWallet = ()=> navigator.clipboard.writeText(walletInput.value||"");
+window.copyTopup = ()=>{
+  navigator.clipboard.writeText(walletText.innerText);
+  toast.style.display="block";
+  setTimeout(()=>toast.style.display="none",2000);
+};
+window.copyInvite = ()=>{navigator.clipboard.writeText(inviteLink.innerText); alert("✅ تم نسخ رابط الدعوة");};
+
+// ==================== UPGRADE ====================
+
+// 131-137
+window.upgradeLevel = async (lvl)=>{
+  const p = LEVELS[lvl].price;
+  if(userData.balance < p) return alert("❌ رصيد غير كاف");
+  userData.balance -= p;
+  userData.level = lvl;
+  await updateDoc(doc(db,"users",auth.currentUser.uid), userData);
+  updateUI(); 
+  loadMatches(); 
+  back();
+  showLevelUp(lvl);
+};
+
+// ==================== LOGOUT ====================
+
+// 139
+window.logout = async ()=>{await signOut(auth); location.reload();};
+
+// ==================== PASSWORD ====================
+
+// 142-148
+window.changePassword = async ()=>{
+  const pass = newPassword.value;
+  if(pass.length < 6) return alert("❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+  try{
+    await auth.currentUser.updatePassword(pass);
+    alert("✅ تم تغيير كلمة المرور");
+    newPassword.value="";
+  }catch(err){alert("❌ أعد تسجيل الدخول ثم حاول مجددًا");}
+};
+
+// ==================== SETTINGS ====================
+
+// 151-155
+window.openSettings = ()=>{
+  appBox.classList.add("hidden");
+  settingsBox.classList.remove("hidden");
+  setEmail.innerText = auth.currentUser.email;
+  setUID.innerText = auth.currentUser.uid;
+  setPhone.innerText = userData.phone || "غير متوفر";
+};
+window.backFromSettings = ()=>{settingsBox.classList.add("hidden"); appBox.classList.remove("hidden");};
+
+// ==================== LEVEL UP ====================
+
+// 160-165
 window.showLevelUp = (level)=>{
   levelUpSound.play();
-  popupLevel.innerText=level;
+  popupLevel.innerText = level;
   levelUpOverlay.classList.add("show");
   setTimeout(()=>{levelUpOverlay.classList.remove("show");},3000);
 };
 window.closeLevelUp = ()=>{levelUpOverlay.classList.remove("show");};
 
-/* PROFILE */
-window.openProfile=()=>{
-  appBox.classList.add("hidden"); profileBox.classList.remove("hidden");
+// ==================== PROFILE ====================
+
+// 169-176
+window.openProfile = ()=>{
+  appBox.classList.add("hidden"); 
+  profileBox.classList.remove("hidden");
   const user = auth.currentUser;
   profileEmail.innerText = user.email;
   profileBalance.innerText = userData.balance + " 💵";
   profileUID.innerText = user.uid;
-  const inviteURL = `${location.origin}${location.pathname}?ref=${user.uid}`;
-  inviteLink.innerText = inviteURL;
+  inviteLink.innerText = `${location.origin}${location.pathname}?ref=${user.uid}`;
 };
-window.backFromProfile=()=>{profileBox.classList.add("hidden"); appBox.classList.remove("hidden");};
-window.copyInvite=()=>{navigator.clipboard.writeText(inviteLink.innerText); alert("✅ تم نسخ رابط الدعوة");};
+window.backFromProfile = ()=>{profileBox.classList.add("hidden"); appBox.classList.remove("hidden");};
 
-/* SETTINGS */
-window.openSettings=()=>{
-  appBox.classList.add("hidden"); settingsBox.classList.remove("hidden");
-  const user = auth.currentUser;
-  setEmail.innerText=user.email;
-  setUID.innerText=user.uid;
-  setPhone.innerText=userData.phone||"غير متوفر";
-};
-window.backFromSettings=()=>{settingsBox.classList.add("hidden"); appBox.classList.remove("hidden");};
-window.changePassword=async()=>{
-  const pass=newPassword.value;
-  if(pass.length<6) return alert("❌ كلمة المرور يجب أن تكون 6 أحرف على الأقل");
-  try{await auth.currentUser.updatePassword(pass); alert("✅ تم تغيير كلمة المرور"); newPassword.value="";}catch(err){alert("❌ أعد تسجيل الدخول ثم حاول مجددًا");}
+// ==================== MATCHES & BET ====================
+
+// 181-194
+window.placeBet = (matchId, bet)=>{
+  const match = matches.find(m => m.id===matchId);
+  const now = new Date();
+  if(now >= new Date(match.startTime)){ alert("❌ لا يمكن التكهن بعد بداية المباراة"); return; }
+  userBets[matchId] = bet;
+  loadMatches();
 };
 
-/* MATCHES + BETS */
+// 196-205
 function loadMatches(){
   matchesBox.innerHTML="";
   const now = new Date();
   matches.forEach(match=>{
-    const start=new Date(match.startTime);
-    const canBet = true;
+    const start = new Date(match.startTime);
+    const canBet = now < start;
     matchesBox.innerHTML += `
       <div class="task">
         ${match.teamA} 🆚 ${match.teamB} 
         <br><small>البداية: ${start.toLocaleString()}</small>
         <div>
-       <button onclick="placeBet(${match.id}, '1')" ${!canBet ? 'disabled' : ''}>1</button>
-<button onclick="placeBet(${match.id}, 'X')" ${!canBet ? 'disabled' : ''}>X</button>
-<button onclick="placeBet(${match.id}, '2')" ${!canBet ? 'disabled' : ''}>2</button>
+          <button onclick="placeBet(${match.id}, '1')" ${!canBet?'':'disabled'}>1</button>
+          <button onclick="placeBet(${match.id}, 'X')" ${!canBet?'':'disabled'}>X</button>
+          <button onclick="placeBet(${match.id}, '2')" ${!canBet?'':'disabled'}>2</button>
         </div>
       </div>
     `;
   });
 }
 
-window.placeBet = function(matchId, bet){
-  const match = matches.find(m => m.id === matchId);
-  const now = new Date();
-
-  if(now >= new Date(match.startTime)){
-    alert("❌ لا يمكن التكهن بعد بداية المباراة");
-    return;
-  }
-
-  userBets[matchId] = bet;
-  loadMatches(); // تحديث الأزرار
-};
-
-// فحص نتائج المباريات كل دقيقة
+// 208-221: فحص النتائج كل دقيقة
 async function checkMatchResults(){
-  const now=new Date();
+  const now = new Date();
   for(const match of matches){
     const end = new Date(match.endTime);
     if(!match.result || now<end) continue;
-    if(userBets[match.id] && userBets[match.id]===match.result){
+    if(userBets[match.id] && userBets[match.id] === match.result){
       let reward = 0;
       if(userData.level===1) reward=0.5;
       else if(userData.level===2) reward=1.5;
       else if(userData.level===3) reward=3;
       userData.balance += reward;
-      await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
+      await updateDoc(doc(db,"users",auth.currentUser.uid), userData);
       updateUI();
       alert(`🏆 مبروك! ربحك ${reward} مالي من المباراة: ${match.teamA} vs ${match.teamB}`);
     }
