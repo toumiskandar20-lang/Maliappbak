@@ -290,29 +290,24 @@ const LEVELS={
   3:{tasks:23,reward:20,price:590}
 };
 
-// بيانات المباريات اليومية
 const matches = [
-  {id:1, teamA:"تونس", teamB:"المغرب", startTime:"2025-12-25T18:00:00Z", endTime:"2025-12-25T20:00:00Z", result:null},
-  {id:2, teamA:"المغرب", teamB:"مصر", startTime:"2025-12-25T21:00:00Z", endTime:"2025-12-25T23:00:00Z", result:null},
-  // 6 مباريات إضافية يمكن إضافتها بنفس الطريقة
+  {
+    id:1,
+    teamA:"تونس",
+    teamB:"المغرب",
+    startTime:"2025-12-25T18:00:00+01:00",
+    endTime:"2025-12-25T20:00:00+01:00",
+    result:null
+  },
+  {
+    id:2,
+    teamA:"المغرب",
+    teamB:"مصر",
+    startTime:"2025-12-25T21:00:00+01:00",
+    endTime:"2025-12-25T23:00:00+01:00",
+    result:null
+  }
 ];
-
-/* AUTH */
-window.register = async ()=>{
-  const c = await createUserWithEmailAndPassword(auth,email.value,password.value);
-  await setDoc(doc(db,"users",c.user.uid),{balance:0,level:1});
-};
-
-window.login = async ()=> signInWithEmailAndPassword(auth,email.value,password.value);
-
-onAuthStateChanged(auth,async u=>{
-  if(!u) return;
-  userData = (await getDoc(doc(db,"users",u.uid))).data();
-  authBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
-  updateUI();
-  loadMatches();
-});
 
 /* UI */
 function updateUI(){
