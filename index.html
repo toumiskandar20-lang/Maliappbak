@@ -443,7 +443,7 @@ function loadMatches(){
   const now = new Date();
   matches.forEach(match=>{
     const start=new Date(match.startTime);
-    const canBet = now<start;
+    const canBet = true;
     matchesBox.innerHTML += `
       <div class="task">
         ${match.teamA} 🆚 ${match.teamB} 
