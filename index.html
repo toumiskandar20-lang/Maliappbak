@@ -449,9 +449,9 @@ function loadMatches(){
         ${match.teamA} 🆚 ${match.teamB} 
         <br><small>البداية: ${start.toLocaleString()}</small>
         <div>
-          <button onclick="placeBet(${match.id},'1')" ${!canBet?'disabled':''} ${userBets[match.id]==='1'?'style="background:#ffd700"':''}>1</button>
-          <button onclick="placeBet(${match.id},'X')" ${!canBet?'disabled':''} ${userBets[match.id]==='X'?'style="background:#ffd700"':''}>X</button>
-          <button onclick="placeBet(${match.id},'2')" ${!canBet?'disabled':''} ${userBets[match.id]==='2'?'style="background:#ffd700"':''}>2</button>
+        <button onclick="placeBet(${match.id}, '1')" ${!canBet ? 'disabled' : ''}>1</button>
+<button onclick="placeBet(${match.id}, 'X')" ${!canBet ? 'disabled' : ''}>X</button>
+<button onclick="placeBet(${match.id}, '2')" ${!canBet ? 'disabled' : ''}>2</button> 
         </div>
       </div>
     `;
