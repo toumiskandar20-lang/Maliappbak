@@ -358,7 +358,9 @@ onAuthStateChanged(auth, async (user) => {
 
     // ✅ تحديث الرصيد والمستوى
     updateUI();
-
+await fetchMatches();
+loadMatches();
+}
     // 🔥 تحميل المباريات (هذا هو سبب اختفاء 1X2 سابقًا)
     loadMatches();
 
@@ -520,9 +522,9 @@ function loadMatches(){
         ${match.teamA} 🆚 ${match.teamB} 
         <br><small>البداية: ${start.toLocaleString()}</small>
         <div>
-          <button onclick="placeBet(${match.id}, '1')" ${!canBet?'':'disabled'}>1</button>
-          <button onclick="placeBet(${match.id}, 'X')" ${!canBet?'':'disabled'}>X</button>
-          <button onclick="placeBet(${match.id}, '2')" ${!canBet?'':'disabled'}>2</button>
+          <button onclick="placeBet('${match.id}', '1')" ${canBet ? '' : 'disabled'}>1</button>
+<button onclick="placeBet('${match.id}', 'X')" ${canBet ? '' : 'disabled'}>X</button>
+<button onclick="placeBet('${match.id}', '2')" ${canBet ? '' : 'disabled'}>2</button>
         </div>
       </div>
     `;
