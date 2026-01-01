@@ -46,131 +46,196 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
 </div>
 
 <script type="module">
+/* ================= IMPORTS ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  query,
+  where,
+  serverTimestamp,
+  onSnapshot,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ==================== Firebase Config ====================
+/* ================= FIREBASE ================= */
 const firebaseConfig = {
-  apiKey:"AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
-  authDomain:"maliapp-63f91.firebaseapp.com",
-  projectId:"maliapp-63f91"
+  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
+  authDomain: "maliapp-63f91.firebaseapp.com",
+  projectId: "maliapp-63f91"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ==================== متغيرات ====================
-let userData = {}, userBets = {}, matches = [];
+/* ================= GLOBAL ================= */
+let userData = {};
+let userBets = {};
+let matches = {};
 
-// ==================== تحديث الواجهة ====================
+/* ================= LEVELS ================= */
+const LEVELS = {
+  1: { reward: 0.5 },
+  2: { reward: 1.5 },
+  3: { reward: 3 }
+};
+
+/* ================= UI ================= */
 function updateUI(){
-  balance.innerText = userData.balance || 0;
-  level.innerText = userData.level || 1;
+  balance.innerText = userData.balance ?? 0;
+  level.innerText = userData.level ?? 1;
 }
 
-// ==================== تسجيل حساب جديد ====================
-window.submitRegister = async () => {
+/* ================= AUTH ================= */
+window.openRegister = ()=>{
+  authBox.classList.add("hidden");
+  registerBox.classList.remove("hidden");
+};
+
+window.backToLogin = ()=>{
+  registerBox.classList.add("hidden");
+  authBox.classList.remove("hidden");
+};
+
+window.submitRegister = async ()=>{
   const email = regEmail.value.trim();
   const phone = regPhone.value.trim();
   const pass = regPassword.value;
   const confirm = regConfirm.value;
 
-  if(!email||!phone||!pass||!confirm) return alert("❌ الرجاء ملء جميع الحقول");
-  if(pass!==confirm) return alert("❌ كلمات المرور غير متطابقة");
+  if(!email || !phone || !pass || pass !== confirm){
+    alert("❌ تحقق من البيانات");
+    return;
+  }
 
-  try{
-    const cred = await createUserWithEmailAndPassword(auth,email,pass);
-    await setDoc(doc(db,"users",cred.user.uid),{
-      email, phone, balance:0, level:1, createdAt:serverTimestamp()
-    });
-    registerBox.classList.add("hidden");
-    appBox.classList.remove("hidden");
-    await fetchMatches();
-  }catch(err){alert("❌ "+err.message);}
+  const cred = await createUserWithEmailAndPassword(auth,email,pass);
+
+  await setDoc(doc(db,"users",cred.user.uid),{
+    email,
+    phone,
+    balance: 1000,
+    level: 1,
+    createdAt: serverTimestamp()
+  });
+
+  registerBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
 };
 
-// ==================== فتح وإغلاق التسجيل ====================
-window.openRegister = ()=>{authBox.classList.add("hidden"); registerBox.classList.remove("hidden");};
-window.backToLogin = ()=>{registerBox.classList.add("hidden"); authBox.classList.remove("hidden");};
-
-// ==================== تسجيل دخول ====================
-window.login = async ()=> {
-  try {
-    await signInWithEmailAndPassword(auth,email.value,password.value);
-  } catch(err){ alert("❌ "+err.message); }
+window.login = async ()=>{
+  await signInWithEmailAndPassword(auth,email.value,password.value);
 };
 
-// ==================== حالة المستخدم ====================
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
+/* ================= AUTH STATE ================= */
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){
     authBox.classList.remove("hidden");
     appBox.classList.add("hidden");
     return;
   }
 
-  const snap = await getDoc(doc(db, "users", user.uid));
-  if (!snap.exists()) return alert("❌ بيانات المستخدم غير موجود");
-
+  const snap = await getDoc(doc(db,"users",user.uid));
   userData = snap.data();
+
   authBox.classList.add("hidden");
   appBox.classList.remove("hidden");
+
   updateUI();
-  await fetchMatches();
+  await fetchMatches(); // 🔥 مهم
 });
 
-// ==================== جلب المباريات ====================
-async function fetchMatches() {
+/* ================= MATCHES ================= */
+async function fetchMatches(){
+  matchesBox.innerHTML = "⏳ تحميل المباريات...";
   matches = [];
-  try {
-    const q = query(collection(db, "matches"));
-    const snap = await getDocs(q);
-    snap.forEach(docu => {
-      const d = docu.data();
-      matches.push({
-        id: docu.id,
-        teamA: d.teamA,
-        teamB: d.teamB,
-        startTime: d.startTime.toDate(),
-        endTime: d.endTime.toDate(),
-        result: d.result || null
-      });
+
+  const q = query(collection(db,"matches"));
+  const snap = await getDocs(q);
+
+  snap.forEach(docu=>{
+    const d = docu.data();
+    matches.push({
+      id: docu.id,
+      teamA: d.teamA,
+      teamB: d.teamB,
+      startTime: d.startTime.toDate(),
+      endTime: d.endTime.toDate(),
+      result: d.result ?? null
     });
-    loadMatches();
-  } catch (err) {
-    console.error("خطأ في جلب المباريات:", err);
-  }
+  });
+
+  loadMatches();
 }
 
-// ==================== عرض المباريات ====================
-function loadMatches() {
+function loadMatches(){
   matchesBox.innerHTML = "";
+
+  if(matches.length === 0){
+    matchesBox.innerHTML = "<p>❌ لا توجد مباريات</p>";
+    return;
+  }
+
   const now = new Date();
 
-  matches.forEach(match => {
-    const start = new Date(match.startTime);
-    const canBet = now < start;
+  matches.forEach(m=>{
+    const canBet = now < m.startTime;
+
     matchesBox.innerHTML += `
       <div class="task">
-        ${match.teamA} 🆚 ${match.teamB}
-        <br><small>البداية: ${start.toLocaleString()}</small>
+        ${m.teamA} 🆚 ${m.teamB}<br>
+        <small>🕒 ${m.startTime.toLocaleString()}</small>
         <div>
-          <button onclick="placeBet('${match.id}', '1')" ${canBet ? '' : 'disabled'}>1</button>
-          <button onclick="placeBet('${match.id}', 'X')" ${canBet ? '' : 'disabled'}>X</button>
-          <button onclick="placeBet('${match.id}', '2')" ${canBet ? '' : 'disabled'}>2</button>
+          <button ${canBet?"":"disabled"} onclick="placeBet('${m.id}','1')">1</button>
+          <button ${canBet?"":"disabled"} onclick="placeBet('${m.id}','X')">X</button>
+          <button ${canBet?"":"disabled"} onclick="placeBet('${m.id}','2')">2</button>
         </div>
       </div>
     `;
   });
 }
 
-// ==================== وضع الرهان ====================
-window.placeBet = (matchId, bet)=>{
-  const match = matches.find(m => m.id===matchId);
-  const now = new Date();
-  if(now >= new Date(match.startTime)){ alert("❌ لا يمكن التكهن بعد بداية المباراة"); return; }
+/* ================= BET ================= */
+window.placeBet = (matchId,bet)=>{
   userBets[matchId] = bet;
-  loadMatches();
+  alert("✅ تم اختيار " + bet);
+};
+
+/* ================= CHECK RESULTS ================= */
+async function checkResults(){
+  const now = new Date();
+
+  for(const m of matches){
+    if(m.result && now > m.endTime){
+      if(userBets[m.id] === m.result){
+        const reward = LEVELS[userData.level].reward;
+        userData.balance += reward;
+        await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
+        updateUI();
+        alert(`🏆 ربحت ${reward} مالي`);
+      }
+    }
+  }
+}
+
+setInterval(checkResults,60000);
+
+/* ================= LOGOUT ================= */
+window.logout = async ()=>{
+  await signOut(auth);
+  location.reload();
 };
 </script>
 
