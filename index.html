@@ -209,45 +209,40 @@ function loadMatches(){
 
 /* ================= BET ================= */
 window.placeBet = async (matchId, bet) => {
-  const user = auth.currentUser;
-  if (!user) return alert("❌ يجب تسجيل الدخول");
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("❌ لازم تسجل دخول");
+      return;
+    }
 
-  const betId = `${user.uid}_${matchId}`;
-  const betRef = doc(db, "bets", betId);
+    // 🔒 منع المراهنة المزدوجة
+    const q = query(
+      collection(db, "bets"),
+      where("userId", "==", user.uid),
+      where("matchId", "==", matchId)
+    );
 
-  // 1️⃣ تأكد ما راهنش قبل
-  const betSnap = await getDoc(betRef);
-  if (betSnap.exists()) {
-    alert("❌ راهنت بالفعل على هذه المباراة");
-    return;
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      alert("❌ قمت بالمراهنة مسبقًا على هذه المباراة");
+      return;
+    }
+
+    // ✅ تخزين التكهن
+    await addDoc(collection(db, "bets"), {
+      userId: user.uid,
+      matchId: matchId,
+      bet: bet,
+      createdAt: serverTimestamp()
+    });
+
+    alert("✅ تم تسجيل التكهن: " + bet);
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ خطأ أثناء حفظ التكهن");
   }
-
-  // 2️⃣ جلب المباراة
-  const matchRef = doc(db, "matches", matchId);
-  const matchSnap = await getDoc(matchRef);
-  if (!matchSnap.exists()) {
-    alert("❌ المباراة غير موجودة");
-    return;
-  }
-
-  const match = matchSnap.data();
-  const now = new Date();
-
-  // 3️⃣ منع المراهنة بعد البداية
-  if (now >= match.startTime.toDate()) {
-    alert("⏱️ انتهى وقت المراهنة");
-    return;
-  }
-
-  // 4️⃣ حفظ المراهنة
-  await setDoc(betRef, {
-    userId: user.uid,
-    matchId,
-    bet,
-    createdAt: serverTimestamp()
-  });
-
-  alert("✅ تم تسجيل المراهنة بنجاح");
 };
 
 /* ================= CHECK RESULTS ================= */
