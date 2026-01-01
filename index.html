@@ -282,7 +282,26 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 // 20-23: متغيرات عامة
-let userData = {}, userBets = {}, matches = [];
+let userData = {}, userBets = {};
+
+let matches = [
+  {
+    id: "m1",
+    teamA: "Barcelona",
+    teamB: "Real Madrid",
+    startTime: new Date(Date.now() + 60 * 60 * 1000), // بعد ساعة
+    endTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // بعد ساعتين
+    result: null
+  },
+  {
+    id: "m2",
+    teamA: "Man City",
+    teamB: "Arsenal",
+    startTime: new Date(Date.now() + 30 * 60 * 1000), // بعد 30 دقيقة
+    endTime: new Date(Date.now() + 90 * 60 * 1000),
+    result: null
+  }
+];
 const levelUpSound = document.getElementById("levelUpSound");
 
 // 26-30: المستويات
@@ -334,14 +353,12 @@ window.login = async ()=> signInWithEmailAndPassword(auth,email.value,password.v
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // ❌ غير مسجل → نرجّع لصفحة الدخول
     authBox.classList.remove("hidden");
     appBox.classList.add("hidden");
     return;
   }
 
   try {
-    // ✅ جلب بيانات المستخدم من Firestore
     const ref = doc(db, "users", user.uid);
     const snap = await getDoc(ref);
 
@@ -352,16 +369,12 @@ onAuthStateChanged(auth, async (user) => {
 
     userData = snap.data();
 
-    // ✅ إظهار التطبيق
     authBox.classList.add("hidden");
     appBox.classList.remove("hidden");
 
-    // ✅ تحديث الرصيد والمستوى
     updateUI();
-await fetchMatches();
-loadMatches();
-}
-    // 🔥 تحميل المباريات (هذا هو سبب اختفاء 1X2 سابقًا)
+
+    // ⚠️ مؤقتًا: فقط اعرض المباريات الموجودة في المتغير
     loadMatches();
 
   } catch (err) {
