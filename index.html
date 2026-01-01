@@ -280,28 +280,28 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+async function fetchMatches(){
+  matches = [];
 
+  const q = query(collection(db, "matches"));
+  const snap = await getDocs(q);
+
+  snap.forEach(docu=>{
+    const d = docu.data();
+    matches.push({
+      id: docu.id,
+      teamA: d.teamA,
+      teamB: d.teamB,
+      startTime: d.startTime.toDate(),
+      endTime: d.endTime.toDate(),
+      result: d.result || null
+    });
+  });
+}
 // 20-23: متغيرات عامة
 let userData = {}, userBets = {};
 
-let matches = [
-  {
-    id: "m1",
-    teamA: "Barcelona",
-    teamB: "Real Madrid",
-    startTime: new Date(Date.now() + 60 * 60 * 1000), // بعد ساعة
-    endTime: new Date(Date.now() + 2 * 60 * 60 * 1000), // بعد ساعتين
-    result: null
-  },
-  {
-    id: "m2",
-    teamA: "Man City",
-    teamB: "Arsenal",
-    startTime: new Date(Date.now() + 30 * 60 * 1000), // بعد 30 دقيقة
-    endTime: new Date(Date.now() + 90 * 60 * 1000),
-    result: null
-  }
-];
+
 const levelUpSound = document.getElementById("levelUpSound");
 
 // 26-30: المستويات
@@ -358,29 +358,23 @@ onAuthStateChanged(auth, async (user) => {
     return;
   }
 
-  try {
-    const ref = doc(db, "users", user.uid);
-    const snap = await getDoc(ref);
+  const ref = doc(db, "users", user.uid);
+  const snap = await getDoc(ref);
 
-    if (!snap.exists()) {
-      alert("❌ بيانات المستخدم غير موجودة");
-      return;
-    }
-
-    userData = snap.data();
-
-    authBox.classList.add("hidden");
-    appBox.classList.remove("hidden");
-
-    updateUI();
-
-    // ⚠️ مؤقتًا: فقط اعرض المباريات الموجودة في المتغير
-    loadMatches();
-
-  } catch (err) {
-    console.error(err);
-    alert("❌ خطأ أثناء تحميل الحساب");
+  if (!snap.exists()) {
+    alert("❌ بيانات المستخدم غير موجودة");
+    return;
   }
+
+  userData = snap.data();
+
+  authBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+
+  updateUI();
+
+  await fetchMatches(); // 🔥 جلب المباريات
+  loadMatches();        // 🔥 عرضها
 });
 
 // ==================== WITHDRAW ====================
