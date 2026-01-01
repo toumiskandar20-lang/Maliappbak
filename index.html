@@ -2,140 +2,18 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>MaliApp</title>
+<title>MaliApp Test</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
-  color:#fff;
-}
-.box{
-  max-width:420px;
-  margin:25px auto;
-  background:#111;
-  border-radius:16px;
-  padding:20px;
-}
-input,button{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border-radius:8px;
-  border:none;
-}
-button{
-  background:#00c853;
-  font-weight:bold;
-  cursor:pointer;
-}
-.task,.history-card,.level-card,.wallet-box{
-  background:#222;
-  padding:12px;
-  border-radius:10px;
-  margin:8px 0;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.badge{
-  padding:4px 10px;
-  border-radius:12px;
-  font-size:12px;
-}
-.pending{background:#ff9800}
-.approved{background:#00c853}
-.rejected{background:#d50000}
-.copy-btn{
-  background:#333;
-  color:#fff;
-  padding:6px 10px;
-  border-radius:6px;
-  cursor:pointer;
-}
-.hidden{display:none}
-.toast{
-  position:fixed;
-  bottom:30px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#00c853;
-  color:#000;
-  padding:14px 22px;
-  border-radius:30px;
-  font-weight:bold;
-  display:none;
-  z-index:999;
-}
-.settings-btn{
-  position:fixed;
-  right:20px;
-  bottom:20px;
-  width:55px;
-  height:55px;
-  border-radius:50%;
-  background:#00c853;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:22px;
-  color:#000;
-}
-.level-card p{
-  font-size:14px;
-  opacity:.9;
-}
-.level-card h4{
-  margin-bottom:8px;
-}
-/* LEVEL UP POPUP */
-.levelup-overlay{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:rgba(0,0,0,.75);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
-}
-.levelup-popup{
-  background:#111;
-  width:90%;
-  max-width:360px;
-  padding:30px 20px;
-  border-radius:18px;
-  text-align:center;
-  animation:popupScale .4s ease;
-}
-.levelup-icon{
-  width:80px;
-  height:80px;
-  margin:auto;
-  background:linear-gradient(135deg,#00c853,#b2ff59);
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:34px;
-  color:#000;
-  margin-bottom:15px;
-}
-@keyframes popupScale{
-  from{transform:scale(.7);opacity:0}
-  to{transform:scale(1);opacity:1}
-}
-.levelup-overlay{display:none;}
-.levelup-overlay.show{display:flex;}
+body{margin:0;font-family:Arial;background:#111;color:#fff;}
+.box{max-width:420px;margin:25px auto;background:#222;border-radius:16px;padding:20px;}
+input,button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:none;}
+button{background:#00c853;font-weight:bold;cursor:pointer;}
+.task{background:#333;padding:12px;border-radius:10px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;}
+.hidden{display:none;}
 </style>
 </head>
-
 <body>
 
 <!-- AUTH -->
@@ -154,117 +32,18 @@ button{
   <input id="regPhone" type="tel" placeholder="📱 رقم الهاتف">
   <input id="regPassword" type="password" placeholder="🔑 كلمة المرور">
   <input id="regConfirm" type="password" placeholder="🔑 تأكيد كلمة المرور">
-  <input id="regInvite" placeholder="🆔 معرف صاحب الدعوة (اختياري)">
   <button onclick="submitRegister()">✅ تسجيل</button>
   <button onclick="backToLogin()">⬅ رجوع</button>
 </div>
 
-<!-- TOAST -->
-<div class="toast" id="welcomeToast">🎉 مرحبًا بك في MaliApp!</div>
-
-<!-- LEVEL UP POPUP -->
-<div class="levelup-overlay" id="levelUpOverlay">
-  <div class="levelup-popup">
-    <div class="levelup-icon">
-      <i class="fa-solid fa-trophy"></i>
-    </div>
-    <h2>تمت الترقية 🎉</h2>
-    <p>تهانينا! لقد وصلت إلى<br><strong>المستوى <span id="popupLevel"></span></strong></p>
-    <button onclick="closeLevelUp()">متابعة</button>
-  </div>
-</div>
-
 <!-- APP -->
 <div class="box hidden" id="appBox">
-  <h3><i class="fa-solid fa-wallet" style="color:#00c853;margin-right:8px;"></i> الرصيد: <span id="balance">0</span></h3>
-  <h4><i class="fa-solid fa-layer-group" style="color:#ffd700;margin-right:8px;"></i> المستوى: <span id="level">1</span></h4>
+  <h3>💰 الرصيد: <span id="balance">0</span></h3>
+  <h4>🏆 المستوى: <span id="level">1</span></h4>
 
-  <button onclick="openProfile()"><i class="fa-solid fa-user" style="color:#00c853;font-size:18px;"></i> بروفايلي</button>
-  <button onclick="openSettings()">⚙️ الإعدادات</button>
-  <button onclick="openWithdraw()">💸 طلب سحب</button>
-  <button onclick="openTopup()">💳 تعبئة رصيد</button>
-  <button onclick="openUpgrade()">🚀 ترقية مستوى</button>
-
-  
   <h3>⚽ المباريات اليومية</h3>
   <div id="matchesBox"></div>
 </div>
-
-<!-- WITHDRAW -->
-<div class="box hidden" id="withdrawBox">
-  <h3>💸 طلب سحب</h3>
-  <input id="walletInput" placeholder="Wallet address">
-  <button class="copy-btn" onclick="copyWallet()">📋 نسخ المحفظة</button>
-  <input id="withdrawAmount" type="number" placeholder="المبلغ">
-  <button onclick="setMax()">MAX</button>
-  <button onclick="submitWithdraw()">✅ تنفيذ</button>
-  <h4>📜 سجل السحب</h4>
-  <div id="withdrawHistory"></div>
-  <button onclick="back()">⬅ رجوع</button>
-</div>
-
-<!-- PROFILE -->
-<div class="box hidden" id="profileBox">
-  <h3>👤 البروفايل</h3>
-  <p>📧 الإيميل:</p><div class="task"><span id="profileEmail"></span></div>
-  <p>💰 الرصيد:</p><div class="task"><span id="profileBalance"></span></div>
-  <p>🆔 معرف الحساب (UID):</p><div class="task"><span id="profileUID"></span></div>
-  <p>🔗 رابط الدعوة الخاص بك:</p>
-  <div class="task"><span id="inviteLink" style="font-size:13px;word-break:break-all"></span><button class="copy-btn" onclick="copyInvite()">📋 نسخ</button></div>
-  <button onclick="backFromProfile()">⬅ رجوع</button>
-</div>
-
-<!-- SETTINGS -->
-<div class="box hidden" id="settingsBox">
-  <h3>⚙️ الإعدادات</h3>
-  <div class="level-card">
-    <h4>👤 الحساب</h4>
-    <p>📧 الإيميل: <span id="setEmail"></span></p>
-    <p>📱 الهاتف: <span id="setPhone"></span></p>
-    <p>🆔 UID: <span id="setUID"></span></p>
-  </div>
-  <div class="level-card">
-    <h4>🔐 الأمان</h4>
-    <input id="newPassword" type="password" placeholder="كلمة مرور جديدة">
-    <button onclick="changePassword()">🔑 تغيير كلمة المرور</button>
-    <button style="background:#d50000;color:#fff" onclick="logout()">🚪 تسجيل الخروج</button>
-  </div>
-  <div class="level-card">
-    <h4>🎨 التطبيق</h4>
-    <label><input type="checkbox" id="notifyToggle"> تفعيل الإشعارات</label><br><br>
-    <label><input type="checkbox" id="darkToggle"> الوضع الداكن</label>
-  </div>
-  <div class="level-card">
-    <h4>ℹ️ معلومات</h4>
-    <p>MaliApp</p>
-    <p>الإصدار: 1.0.0</p>
-  </div>
-  <button onclick="backFromSettings()">⬅ رجوع</button>
-</div>
-
-<!-- TOPUP -->
-<div class="box hidden" id="topupBox">
-  <h3>💳 تعبئة رصيد</h3>
-  <div class="wallet-box">
-    <span id="walletText">TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW</span>
-    <span class="copy-btn" onclick="copyTopup()">📋</span>
-  </div>
-  <button onclick="back()">⬅ رجوع</button>
-</div>
-
-<!-- UPGRADE -->
-<div class="box hidden" id="upgradeBox">
-  <h3>🚀 ترقية المستوى</h3>
-  <div class="level-card"><div>المستوى 2 — 230 مالي</div><button onclick="upgradeLevel(2)">ترقية</button></div>
-  <div class="level-card"><div>المستوى 3 — 590 مالي</div><button onclick="upgradeLevel(3)">ترقية</button></div>
-  <button onclick="back()">⬅ رجوع</button>
-</div>
-
-<!-- LEVEL UP SOUND -->
-<audio id="levelUpSound" preload="auto"><source src="level-up.mp3" type="audio/mpeg"></audio>
-
-<div class="toast" id="toast">✅ تم النسخ</div>
-<div class="settings-btn" onclick="logout()"><i class="fa fa-sign-out"></i></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -281,9 +60,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// ==================== متغيرات عامة ====================
+// ==================== متغيرات ====================
 let userData = {}, userBets = {}, matches = [];
-const levelUpSound = document.getElementById("levelUpSound");
 
 // ==================== تحديث الواجهة ====================
 function updateUI(){
@@ -304,10 +82,8 @@ window.submitRegister = async () => {
   try{
     const cred = await createUserWithEmailAndPassword(auth,email,pass);
     await setDoc(doc(db,"users",cred.user.uid),{
-      email, phone, balance:0, level:1, tasks:{}, createdAt:serverTimestamp()
+      email, phone, balance:0, level:1, createdAt:serverTimestamp()
     });
-    welcomeToast.style.display="block";
-    setTimeout(()=>{welcomeToast.style.display="none";},3000);
     registerBox.classList.add("hidden");
     appBox.classList.remove("hidden");
     await fetchMatches();
@@ -340,8 +116,7 @@ onAuthStateChanged(auth, async (user) => {
   authBox.classList.add("hidden");
   appBox.classList.remove("hidden");
   updateUI();
-
-  await fetchMatches(); // جلب المباريات
+  await fetchMatches();
 });
 
 // ==================== جلب المباريات ====================
@@ -350,7 +125,6 @@ async function fetchMatches() {
   try {
     const q = query(collection(db, "matches"));
     const snap = await getDocs(q);
-
     snap.forEach(docu => {
       const d = docu.data();
       matches.push({
@@ -362,14 +136,13 @@ async function fetchMatches() {
         result: d.result || null
       });
     });
-
-    loadMatches(); // عرض المباريات بعد جلبها
+    loadMatches();
   } catch (err) {
     console.error("خطأ في جلب المباريات:", err);
   }
 }
 
-// ==================== عرض المباريات + أزرار 1X2 ====================
+// ==================== عرض المباريات ====================
 function loadMatches() {
   matchesBox.innerHTML = "";
   const now = new Date();
@@ -377,7 +150,6 @@ function loadMatches() {
   matches.forEach(match => {
     const start = new Date(match.startTime);
     const canBet = now < start;
-
     matchesBox.innerHTML += `
       <div class="task">
         ${match.teamA} 🆚 ${match.teamB}
@@ -401,5 +173,6 @@ window.placeBet = (matchId, bet)=>{
   loadMatches();
 };
 </script>
+
 </body>
 </html>
