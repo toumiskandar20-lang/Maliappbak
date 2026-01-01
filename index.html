@@ -208,9 +208,46 @@ function loadMatches(){
 }
 
 /* ================= BET ================= */
-window.placeBet = (matchId,bet)=>{
-  userBets[matchId] = bet;
-  alert("✅ تم اختيار " + bet);
+window.placeBet = async (matchId, bet) => {
+  const user = auth.currentUser;
+  if (!user) return alert("❌ يجب تسجيل الدخول");
+
+  const betId = `${user.uid}_${matchId}`;
+  const betRef = doc(db, "bets", betId);
+
+  // 1️⃣ تأكد ما راهنش قبل
+  const betSnap = await getDoc(betRef);
+  if (betSnap.exists()) {
+    alert("❌ راهنت بالفعل على هذه المباراة");
+    return;
+  }
+
+  // 2️⃣ جلب المباراة
+  const matchRef = doc(db, "matches", matchId);
+  const matchSnap = await getDoc(matchRef);
+  if (!matchSnap.exists()) {
+    alert("❌ المباراة غير موجودة");
+    return;
+  }
+
+  const match = matchSnap.data();
+  const now = new Date();
+
+  // 3️⃣ منع المراهنة بعد البداية
+  if (now >= match.startTime.toDate()) {
+    alert("⏱️ انتهى وقت المراهنة");
+    return;
+  }
+
+  // 4️⃣ حفظ المراهنة
+  await setDoc(betRef, {
+    userId: user.uid,
+    matchId,
+    bet,
+    createdAt: serverTimestamp()
+  });
+
+  alert("✅ تم تسجيل المراهنة بنجاح");
 };
 
 /* ================= CHECK RESULTS ================= */
