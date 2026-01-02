@@ -79,6 +79,10 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   opacity:.4;
   cursor:not-allowed;
 }
+  .bet-btn.selected{
+  background:#00e676;
+  color:#000;
+}
 </style>
 </head>
 <body>
@@ -315,7 +319,7 @@ window.placeBet = async (matchId, choice)=>{
       settled: false,
       createdAt: serverTimestamp()
     });
-
+event.target.classList.add("selected");
     alert("✅ تم تسجيل التكهن: " + choice);
 
   }catch(e){
