@@ -12,6 +12,73 @@ input,button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:none;
 button{background:#00c853;font-weight:bold;cursor:pointer;}
 .task{background:#333;padding:12px;border-radius:10px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;}
 .hidden{display:none;}
+  .match-card{
+  background: linear-gradient(145deg,#1e1e1e,#2a2a2a);
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:14px;
+  box-shadow:0 6px 16px rgba(0,0,0,.4);
+}
+
+.match-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.team{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:bold;
+}
+
+.team i{
+  font-size:20px;
+  color:#00e676;
+}
+
+.vs{
+  font-size:13px;
+  opacity:.7;
+}
+
+.match-time{
+  font-size:12px;
+  background:#111;
+  padding:4px 8px;
+  border-radius:6px;
+  opacity:.8;
+}
+
+.bet-buttons{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:10px;
+}
+
+.bet-btn{
+  background:#111;
+  border:1px solid #333;
+  border-radius:10px;
+  padding:10px;
+  font-size:16px;
+  font-weight:bold;
+  color:#fff;
+  transition:.2s;
+}
+
+.bet-btn:hover{
+  background:#00c853;
+  color:#000;
+}
+
+.bet-btn:disabled{
+  opacity:.4;
+  cursor:not-allowed;
+}
 </style>
 </head>
 <body>
@@ -198,13 +265,29 @@ function loadMatches(){
     const canBet = now < m.startTime;
 
     matchesBox.innerHTML += `
-      <div class="task">
-        ${m.teamA} 🆚 ${m.teamB}<br>
-        <small>🕒 ${m.startTime.toLocaleString()}</small>
-        <div>
-          <button ${canBet?"":"disabled"} onclick="placeBet('${m.id}','1')">1</button>
-          <button ${canBet?"":"disabled"} onclick="placeBet('${m.id}','X')">X</button>
-          <button ${canBet?"":"disabled"} onclick="placeBet('${m.id}','2')">2</button>
+      <div class="match-card">
+        <div class="match-header">
+          <div class="team">
+            <i class="fa-solid fa-shield"></i>
+            ${m.teamA}
+          </div>
+
+          <span class="vs">VS</span>
+
+          <div class="team">
+            <i class="fa-solid fa-shield"></i>
+            ${m.teamB}
+          </div>
+        </div>
+
+        <div class="match-time">
+          🕒 ${m.startTime.toLocaleString()}
+        </div>
+
+        <div class="bet-buttons">
+          <button class="bet-btn" ${canBet?"":"disabled"} onclick="placeBet('${m.id}','1')">1</button>
+          <button class="bet-btn" ${canBet?"":"disabled"} onclick="placeBet('${m.id}','X')">X</button>
+          <button class="bet-btn" ${canBet?"":"disabled"} onclick="placeBet('${m.id}','2')">2</button>
         </div>
       </div>
     `;
