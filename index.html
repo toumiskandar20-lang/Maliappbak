@@ -296,6 +296,13 @@ function loadMatches(){
       </div>
     `;
   });
+  document.querySelectorAll(".bet-btn").forEach(btn=>{
+  btn.addEventListener("click", async (e)=>{
+    const matchId = e.target.dataset.id;
+    const choice  = e.target.dataset.choice;
+    await placeBet(matchId, choice);
+  });
+});
 }
 
 /* ================= BET ================= */
