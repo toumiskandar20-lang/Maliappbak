@@ -329,10 +329,10 @@ window.placeBet = async (matchId, choice)=>{
 event.target.classList.add("selected");
     alert("✅ تم تسجيل التكهن: " + choice);
 
-  }catch(e){
-    console.error(e);
-    alert("❌ خطأ أثناء التخزين");
-  }
+ }catch(e){
+  console.error("FIRESTORE ERROR 👉", e);
+  alert(e.message);
+}
 };
 
 /* ================= SETTLE MATCH ================= */
