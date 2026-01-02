@@ -323,7 +323,7 @@ function loadMatches(){
 }
 
 /* ================= BET ================= */
-window.placeBet = async (matchId, choice)=>{
+window.placeBet = async (matchId, choice, btn)=>{
   try{
     const user = auth.currentUser;
     if(!user) return alert("❌ يجب تسجيل الدخول");
@@ -343,13 +343,21 @@ window.placeBet = async (matchId, choice)=>{
       settled: false,
       createdAt: serverTimestamp()
     });
-event.target.classList.add("selected");
+
+    // ✅ تلوين الزر المختار
+    btn.classList.add("selected");
+
+    // ❌ تعطيل بقية الأزرار لنفس المباراة
+    btn.parentElement.querySelectorAll(".bet-btn").forEach(b=>{
+      b.disabled = true;
+    });
+
     alert("✅ تم تسجيل التكهن: " + choice);
 
- }catch(e){
-  console.error("FIRESTORE ERROR 👉", e);
-  alert(e.message);
-}
+  }catch(e){
+    console.error("FIRESTORE ERROR 👉", e);
+    alert(e.message);
+  }
 };
 
 /* ================= SETTLE MATCH ================= */
