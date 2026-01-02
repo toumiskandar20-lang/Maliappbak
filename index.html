@@ -213,43 +213,35 @@ matches.forEach(match => {
   }
 });
 /* ================= BET ================= */
-window.placeBet = async (matchId, bet) => {
+window.placeBet = async (matchId, choice) => {
   try {
     const user = auth.currentUser;
-    if (!user) {
-      alert("❌ لازم تسجل دخول");
+    if (!user) return alert("❌ يجب تسجيل الدخول");
+
+    const betRef = doc(db, "bets", `${user.uid}_${matchId}`);
+
+    // منع التلاعب: إذا راهن سابقًا لا نسمح بالتغيير
+    const snap = await getDoc(betRef);
+    if (snap.exists()) {
+      alert("❌ لا يمكنك تغيير التكهن");
       return;
     }
 
-    // 🔒 منع المراهنة المزدوجة
-    const q = query(
-      collection(db, "bets"),
-      where("userId", "==", user.uid),
-      where("matchId", "==", matchId)
-    );
-
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-      alert("❌ قمت بالمراهنة مسبقًا على هذه المباراة");
-      return;
-    }
-
-    // ✅ تخزين التكهن
-    await addDoc(collection(db, "bets"), {
+    await setDoc(betRef, {
       userId: user.uid,
       matchId: matchId,
-      bet: bet,
-      createdAt: serverTimestamp()
+      choice: choice,
+      createdAt: serverTimestamp(),
+      settled: false
     });
 
-    alert("✅ تم تسجيل التكهن: " + bet);
+    alert("✅ تم تسجيل التكهن: " + choice);
 
-  } catch (err) {
-    console.error(err);
-    alert("❌ خطأ أثناء حفظ التكهن");
+  } catch (e) {
+    console.error(e);
+    alert("❌ خطأ أثناء التخزين");
   }
 };
-
 /* ================= CHECK RESULTS ================= */
 async function checkResults(){
   const now = new Date();
