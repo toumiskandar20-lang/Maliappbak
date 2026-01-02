@@ -176,8 +176,14 @@ async function fetchMatches(){
   });
 
   loadMatches();
-}
 
+  // 🔥 🔥 🔥 هذا هو السطر المهم
+  matches.forEach(match=>{
+    if(match.result && !match.settled){
+      settleMatch(match);
+    }
+  });
+}
 function loadMatches(){
   matchesBox.innerHTML = "";
 
