@@ -61,12 +61,10 @@ import {
   setDoc,
   getDoc,
   updateDoc,
-  addDoc,
   collection,
   query,
   where,
   serverTimestamp,
-  onSnapshot,
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -83,8 +81,7 @@ const db = getFirestore(app);
 
 /* ================= GLOBAL ================= */
 let userData = {};
-let userBets = {};
-let matches = {};
+let matches = []; // ✅ لازم array
 
 /* ================= LEVELS ================= */
 const LEVELS = {
@@ -154,7 +151,7 @@ onAuthStateChanged(auth, async(user)=>{
   appBox.classList.remove("hidden");
 
   updateUI();
-  await fetchMatches(); // 🔥 مهم
+  await fetchMatches();
 });
 
 /* ================= MATCHES ================= */
@@ -173,11 +170,19 @@ async function fetchMatches(){
       teamB: d.teamB,
       startTime: d.startTime.toDate(),
       endTime: d.endTime.toDate(),
-      result: d.result ?? null
+      result: d.result ?? null,
+      settled: d.settled ?? false
     });
   });
 
   loadMatches();
+
+  // ✅ التسوية في المكان الصحيح
+  matches.forEach(match=>{
+    if(match.result && !match.settled){
+      settleMatch(match);
+    }
+  });
 }
 
 function loadMatches(){
@@ -206,105 +211,76 @@ function loadMatches(){
     `;
   });
 }
-// 🔥 مراقبة المباريات للتسوية
-matches.forEach(match => {
-  if (match.result && !match.settled) {
-    settleMatch(match);
-  }
-});
+
 /* ================= BET ================= */
-window.placeBet = async (matchId, choice) => {
-  try {
+window.placeBet = async (matchId, choice)=>{
+  try{
     const user = auth.currentUser;
-    if (!user) return alert("❌ يجب تسجيل الدخول");
+    if(!user) return alert("❌ يجب تسجيل الدخول");
 
-    const betRef = doc(db, "bets", `${user.uid}_${matchId}`);
-
-    // منع التلاعب: إذا راهن سابقًا لا نسمح بالتغيير
+    const betRef = doc(db,"bets",`${user.uid}_${matchId}`);
     const snap = await getDoc(betRef);
-    if (snap.exists()) {
+
+    if(snap.exists()){
       alert("❌ لا يمكنك تغيير التكهن");
       return;
     }
 
-    await setDoc(betRef, {
+    await setDoc(betRef,{
       userId: user.uid,
-      matchId: matchId,
-      choice: choice,
-      createdAt: serverTimestamp(),
-      settled: false
+      matchId,
+      choice,
+      settled: false,
+      createdAt: serverTimestamp()
     });
 
     alert("✅ تم تسجيل التكهن: " + choice);
 
-  } catch (e) {
+  }catch(e){
     console.error(e);
     alert("❌ خطأ أثناء التخزين");
   }
 };
-/* ================= CHECK RESULTS ================= */
-async function checkResults(){
-  const now = new Date();
 
-  for(const m of matches){
-    if(m.result && now > m.endTime){
-      if(userBets[m.id] === m.result){
-        const reward = LEVELS[userData.level].reward;
-        userData.balance += reward;
-        await updateDoc(doc(db,"users",auth.currentUser.uid),userData);
-        updateUI();
-        alert(`🏆 ربحت ${reward} مالي`);
+/* ================= SETTLE MATCH ================= */
+async function settleMatch(match){
+  const betsQ = query(
+    collection(db,"bets"),
+    where("matchId","==",match.id),
+    where("settled","==",false)
+  );
+
+  const betsSnap = await getDocs(betsQ);
+
+  for(const betDoc of betsSnap.docs){
+    const bet = betDoc.data();
+
+    if(bet.choice === match.result){
+      const userRef = doc(db,"users",bet.userId);
+      const userSnap = await getDoc(userRef);
+
+      if(userSnap.exists()){
+        const lvl = userSnap.data().level || 1;
+        const reward = LEVELS[lvl].reward;
+
+        await updateDoc(userRef,{
+          balance: (userSnap.data().balance || 0) + reward
+        });
       }
     }
-  }
-}
 
-setInterval(checkResults,60000);
+    await updateDoc(betDoc.ref,{ settled:true });
+  }
+
+  await updateDoc(doc(db,"matches",match.id),{ settled:true });
+  console.log("✅ تمت تسوية المباراة:",match.id);
+}
 
 /* ================= LOGOUT ================= */
 window.logout = async ()=>{
   await signOut(auth);
   location.reload();
 };
-  async function settleMatch(match) {
-  if (match.settled || !match.result) return;
-
-  const betsQ = query(
-    collection(db, "bets"),
-    where("matchId", "==", match.id),
-    where("settled", "==", false)
-  );
-
-  const betsSnap = await getDocs(betsQ);
-
-  for (const betDoc of betsSnap.docs) {
-    const betData = betDoc.data();
-
-    if (betData.bet === match.result) {
-      const userRef = doc(db, "users", betData.userId);
-      const userSnap = await getDoc(userRef);
-
-      if (userSnap.exists()) {
-        const balance = userSnap.data().balance || 0;
-        const reward = 10; // ← عدّلها لاحقًا
-
-        await updateDoc(userRef, {
-          balance: balance + reward
-        });
-      }
-    }
-
-    await updateDoc(doc(db, "bets", betDoc.id), {
-      settled: true
-    });
-  }
-
-  await updateDoc(doc(db, "matches", match.id), {
-    settled: true
-  });
-
-  console.log("✅ تمت تسوية المباراة:", match.id);
-}
 </script>
 
 </body>
