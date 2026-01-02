@@ -81,7 +81,7 @@ const db = getFirestore(app);
 
 /* ================= GLOBAL ================= */
 let userData = {};
-let matches = []; // ✅ لازم array
+let matches = [];
 
 /* ================= LEVELS ================= */
 const LEVELS = {
@@ -176,13 +176,6 @@ async function fetchMatches(){
   });
 
   loadMatches();
-
-  // ✅ التسوية في المكان الصحيح
-  matches.forEach(match=>{
-    if(match.result && !match.settled){
-      settleMatch(match);
-    }
-  });
 }
 
 function loadMatches(){
