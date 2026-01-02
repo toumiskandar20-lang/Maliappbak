@@ -206,7 +206,12 @@ function loadMatches(){
     `;
   });
 }
-
+// 🔥 مراقبة المباريات للتسوية
+matches.forEach(match => {
+  if (match.result && !match.settled) {
+    settleMatch(match);
+  }
+});
 /* ================= BET ================= */
 window.placeBet = async (matchId, bet) => {
   try {
@@ -269,6 +274,45 @@ window.logout = async ()=>{
   await signOut(auth);
   location.reload();
 };
+  async function settleMatch(match) {
+  if (match.settled || !match.result) return;
+
+  const betsQ = query(
+    collection(db, "bets"),
+    where("matchId", "==", match.id),
+    where("settled", "==", false)
+  );
+
+  const betsSnap = await getDocs(betsQ);
+
+  for (const betDoc of betsSnap.docs) {
+    const betData = betDoc.data();
+
+    if (betData.bet === match.result) {
+      const userRef = doc(db, "users", betData.userId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const balance = userSnap.data().balance || 0;
+        const reward = 10; // ← عدّلها لاحقًا
+
+        await updateDoc(userRef, {
+          balance: balance + reward
+        });
+      }
+    }
+
+    await updateDoc(doc(db, "bets", betDoc.id), {
+      settled: true
+    });
+  }
+
+  await updateDoc(doc(db, "matches", match.id), {
+    settled: true
+  });
+
+  console.log("✅ تمت تسوية المباراة:", match.id);
+}
 </script>
 
 </body>
