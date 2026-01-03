@@ -319,7 +319,14 @@ function loadMatches(){
 window.placeBet = async (matchId, choice, btn)=>{
   try{
     const user = auth.currentUser;
-    if(!user) return alert("❌ يجب تسجيل الدخول");
+
+    // 🔍 هذا السطر هنا بالضبط
+    console.log("USER:", user?.uid);
+
+    if(!user){
+      alert("❌ يجب تسجيل الدخول");
+      return;
+    }
 
     const betRef = doc(db,"bets",`${user.uid}_${matchId}`);
     const snap = await getDoc(betRef);
@@ -337,10 +344,10 @@ window.placeBet = async (matchId, choice, btn)=>{
       createdAt: serverTimestamp()
     });
 
-    // ✅ تلوين الزر المختار
+    // تلوين الزر
     btn.classList.add("selected");
 
-    // ❌ تعطيل بقية الأزرار لنفس المباراة
+    // تعطيل بقية الأزرار
     btn.parentElement.querySelectorAll(".bet-btn").forEach(b=>{
       b.disabled = true;
     });
