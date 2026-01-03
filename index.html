@@ -111,9 +111,12 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
 <div class="box hidden" id="appBox">
   <h3>💰 الرصيد: <span id="balance">0</span></h3>
   <h4>🏆 المستوى: <span id="level">1</span></h4>
-
+<button onclick="openMyBets()" style="margin-top:10px">
+  🎫 تكهناتي
+</button>
   <h3>⚽ المباريات اليومية</h3>
   <div id="matchesBox"></div>
+  <h3>🎫 تكهناتي</h3>
 </div>
 
 <script type="module">
@@ -392,6 +395,10 @@ async function settleMatch(match){
 window.logout = async ()=>{
   await signOut(auth);
   location.reload();
+};
+  window.backToMatches = ()=>{
+  myBetsBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
 };
 </script>
 
