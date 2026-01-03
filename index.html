@@ -237,7 +237,16 @@ onAuthStateChanged(auth, async(user)=>{
   updateUI();
   await fetchMatches();
 });
+window.openMyBets = ()=>{
+  // إخفاء المباريات
+  appBox.classList.add("hidden");
 
+  // إظهار تكهناتي
+  myBetsBox.classList.remove("hidden");
+
+  // مؤقتًا
+  document.getElementById("myBetsList").innerHTML = "⏳ تحميل تكهناتك...";
+};
 /* ================= MATCHES ================= */
 async function fetchMatches(){
   matchesBox.innerHTML = "⏳ تحميل المباريات...";
