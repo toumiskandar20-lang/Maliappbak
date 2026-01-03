@@ -116,9 +116,19 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
 </button>
   <h3>⚽ المباريات اليومية</h3>
   <div id="matchesBox"></div>
-  <h3>🎫 تكهناتي</h3>
 </div>
+<!-- MY BETS -->
+<div class="box hidden" id="myBetsBox">
+  <h3>🎫 تكهناتي</h3>
 
+  <div id="myBetsList">
+    <!-- التكهنات تظهر هنا -->
+  </div>
+
+  <button onclick="backToMatches()" style="margin-top:10px">
+    ⬅ الرجوع
+  </button>
+</div>
 <script type="module">
 /* ================= IMPORTS ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
