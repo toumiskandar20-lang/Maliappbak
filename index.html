@@ -324,28 +324,33 @@ window.openMyBets = ()=>{
       }
     }
 
-    myBetsList.innerHTML += `
-      <div class="match-card">
-        <div style="display:flex;justify-content:space-between">
-          <strong>${match?.teamA ?? "؟"} 🆚 ${match?.teamB ?? "؟"}</strong>
-          <span class="badge ${statusClass}">
-            ${statusText}
-          </span>
-        </div>
+myBetsList.innerHTML += `
+  <div class="match-card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong class="teams-line">
+        ${match?.teamA ?? "؟"}
+        <i class="fa-solid fa-bolt vs-icon"></i>
+        ${match?.teamB ?? "؟"}
+      </strong>
 
-        <div style="margin-top:8px">
-          🎯 اختيارك:
-          <strong style="font-size:18px">${b.choice}</strong>
-        </div>
+      <span class="badge ${statusClass}">
+        ${statusText}
+      </span>
+    </div>
 
-        <div class="bet-status ${statusClass}">
-          🏁 النتيجة:
-          ${match?.result ?? "لم تُحدد بعد"}
-        </div>
-      </div>
-    `;
-  });
-}
+    <div style="margin-top:8px">
+      <i class="fa-solid fa-crosshairs"></i>
+      اختيارك:
+      <strong style="font-size:18px">${b.choice}</strong>
+    </div>
+
+    <div class="bet-status ${statusClass}">
+      <i class="fa-solid fa-flag-checkered"></i>
+      النتيجة:
+      ${match?.result ?? "لم تُحدد بعد"}
+    </div>
+  </div>
+`;
 /* ================= MATCHES ================= */
 async function fetchMatches(){
   matchesBox.innerHTML = "⏳ تحميل المباريات...";
