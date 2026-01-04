@@ -1,384 +1,524 @@
-  <div id="myBetsList">
+‏<!DOCTYPE html>
+‏<html lang="ar">
+‏<head>
+‏<meta charset="UTF-8">
+‏<title>MaliApp Test</title>
+‏<meta name="viewport" content="width=device-width, initial-scale=1.0">
+‏<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+‏<style>
+‏body{margin:0;font-family:Arial;background:#111;color:#fff;}
+‏.box{max-width:420px;margin:25px auto;background:#222;border-radius:16px;padding:20px;}
+‏input,button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:none;}
+‏button{background:#00c853;font-weight:bold;cursor:pointer;}
+‏.task{background:#333;padding:12px;border-radius:10px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;}
+‏.hidden{display:none;}
+‏  .match-card{
+‏  background: linear-gradient(145deg,#1e1e1e,#2a2a2a);
+‏  border-radius:14px;
+‏  padding:14px;
+‏  margin-bottom:14px;
+‏  box-shadow:0 6px 16px rgba(0,0,0,.4);
+}
+
+‏.match-header{
+‏  display:flex;
+‏  justify-content:space-between;
+‏  align-items:center;
+‏  margin-bottom:10px;
+}
+
+‏.team{
+‏  display:flex;
+‏  align-items:center;
+‏  gap:8px;
+‏  font-weight:bold;
+}
+
+‏.team i{
+‏  font-size:20px;
+‏  color:#00e676;
+}
+
+‏.vs{
+‏  font-size:13px;
+‏  opacity:.7;
+}
+
+‏.match-time{
+‏  font-size:12px;
+‏  background:#111;
+‏  padding:4px 8px;
+‏  border-radius:6px;
+‏  opacity:.8;
+}
+
+‏.bet-buttons{
+‏  display:grid;
+‏  grid-template-columns:repeat(3,1fr);
+‏  gap:10px;
+‏  margin-top:10px;
+}
+
+‏.bet-btn{
+‏  background:#111;
+‏  border:1px solid #333;
+‏  border-radius:10px;
+‏  padding:10px;
+‏  font-size:16px;
+‏  font-weight:bold;
+‏  color:#fff;
+‏  transition:.2s;
+}
+
+‏.bet-btn:hover{
+‏  background:#00c853;
+‏  color:#000;
+}
+
+‏.bet-btn:disabled{
+‏  opacity:.4;
+‏  cursor:not-allowed;
+}
+‏  .bet-btn.selected{
+‏  background:#00e676;
+‏  color:#000;
+}
+‏  .bet-status{
+‏  margin-top:6px;
+‏  font-weight:bold;
+‏  font-size:14px;
+}
+
+‏.bet-win{
+‏  color:#00e676;
+}
+
+‏.bet-lose{
+‏  color:#ff5252;
+}
+
+‏.bet-pending{
+‏  color:#ffc107;
+}
+
+‏.badge{
+‏  padding:4px 8px;
+‏  border-radius:6px;
+‏  font-size:12px;
+}
+‏</style>
+‏</head>
+‏<body>
+
+‏<!-- AUTH -->
+‏<div class="box" id="authBox">
+‏  <h2>🔐 MaliApp</h2>
+‏  <input id="email" placeholder="Email">
+‏  <input id="password" type="password" placeholder="Password">
+‏  <button onclick="openRegister()">تسجيل حساب</button>
+‏  <button onclick="login()">تسجيل دخول</button>
+‏</div>
+
+‏<!-- REGISTER -->
+‏<div class="box hidden" id="registerBox">
+‏  <h2>📝 إنشاء حساب جديد</h2>
+‏  <input id="regEmail" type="email" placeholder="📧 البريد الإلكتروني">
+‏  <input id="regPhone" type="tel" placeholder="📱 رقم الهاتف">
+‏  <input id="regPassword" type="password" placeholder="🔑 كلمة المرور">
+‏  <input id="regConfirm" type="password" placeholder="🔑 تأكيد كلمة المرور">
+‏  <button onclick="submitRegister()">✅ تسجيل</button>
+‏  <button onclick="backToLogin()">⬅ رجوع</button>
+‏</div>
+
+‏<!-- APP -->
+‏<div class="box hidden" id="appBox">
+‏  <h3>💰 الرصيد: <span id="balance">0</span></h3>
+‏  <h4>🏆 المستوى: <span id="level">1</span></h4>
+‏<button onclick="openMyBets()" style="margin-top:10px">
+  🎫 تكهناتي
+‏</button>
+‏  <h3>⚽ المباريات اليومية</h3>
+‏  <div id="matchesBox"></div>
+‏</div>
+‏<!-- MY BETS -->
+‏<div class="box hidden" id="myBetsBox">
+‏  <h3>🎫 تكهناتي</h3>
+
+‏  <div id="myBetsList">
     <!-- التكهنات تظهر هنا -->
-  </div>
+‏  </div>
 
-  <button onclick="backToMatches()" style="margin-top:10px">
+‏  <button onclick="backToMatches()" style="margin-top:10px">
     ⬅ الرجوع
-  </button>
-</div>
-<script type="module">
-/* ================= IMPORTS ================= */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  onAuthStateChanged,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  updateDoc,
-  collection,
-  query,
-  where,
-  serverTimestamp,
-  getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+‏  </button>
+‏</div>
+‏<script type="module">
+‏/* ================= IMPORTS ================= */
+‏import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+‏import {
+‏  getAuth,
+‏  createUserWithEmailAndPassword,
+‏  signInWithEmailAndPassword,
+‏  onAuthStateChanged,
+‏  signOut
+‏} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+‏import {
+‏  getFirestore,
+‏  doc,
+‏  setDoc,
+‏  getDoc,
+‏  updateDoc,
+‏  collection,
+‏  query,
+‏  where,
+‏  serverTimestamp,
+‏  getDocs
+‏} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-/* ================= FIREBASE ================= */
-const firebaseConfig = {
-  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
-  authDomain: "maliapp-63f91.firebaseapp.com",
-  projectId: "maliapp-63f91"
+‏/* ================= FIREBASE ================= */
+‏const firebaseConfig = {
+‏  apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
+‏  authDomain: "maliapp-63f91.firebaseapp.com",
+‏  projectId: "maliapp-63f91"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-async function getMatchesMap(){
-  const map = {};
-  const snap = await getDocs(collection(db,"matches"));
+‏const app = initializeApp(firebaseConfig);
+‏const auth = getAuth(app);
+‏const db = getFirestore(app);
+‏async function getMatchesMap(){
+‏  const map = {};
+‏  const snap = await getDocs(collection(db,"matches"));
 
-  snap.forEach(docu=>{
-    map[docu.id] = docu.data();
+‏  snap.forEach(docu=>{
+‏    map[docu.id] = docu.data();
   });
 
-  return map;
+‏  return map;
 }
-/* ================= GLOBAL ================= */
-let userData = {};
-let matches = [];
+‏/* ================= GLOBAL ================= */
+‏let userData = {};
+‏let matches = [];
 
-/* ================= LEVELS ================= */
-const LEVELS = {
-  1: { reward: 0.5 },
-  2: { reward: 1.5 },
-  3: { reward: 3 }
+‏/* ================= LEVELS ================= */
+‏const LEVELS = {
+‏  1: { reward: 0.5 },
+‏  2: { reward: 1.5 },
+‏  3: { reward: 3 }
 };
 
-/* ================= UI ================= */
-function updateUI(){
-  balance.innerText = userData.balance ?? 0;
-  level.innerText = userData.level ?? 1;
+‏/* ================= UI ================= */
+‏function updateUI(){
+‏  balance.innerText = userData.balance ?? 0;
+‏  level.innerText = userData.level ?? 1;
 }
 
-/* ================= AUTH ================= */
-window.openRegister = ()=>{
-  authBox.classList.add("hidden");
-  registerBox.classList.remove("hidden");
+‏/* ================= AUTH ================= */
+‏window.openRegister = ()=>{
+‏  authBox.classList.add("hidden");
+‏  registerBox.classList.remove("hidden");
 };
 
-window.backToLogin = ()=>{
-  registerBox.classList.add("hidden");
-  authBox.classList.remove("hidden");
+‏window.backToLogin = ()=>{
+‏  registerBox.classList.add("hidden");
+‏  authBox.classList.remove("hidden");
 };
 
-window.submitRegister = async ()=>{
-  const email = regEmail.value.trim();
-  const phone = regPhone.value.trim();
-  const pass = regPassword.value;
-  const confirm = regConfirm.value;
+‏window.submitRegister = async ()=>{
+‏  const email = regEmail.value.trim();
+‏  const phone = regPhone.value.trim();
+‏  const pass = regPassword.value;
+‏  const confirm = regConfirm.value;
 
-  if(!email || !phone || !pass || pass !== confirm){
-    alert("❌ تحقق من البيانات");
-    return;
+‏  if(!email || !phone || !pass || pass !== confirm){
+‏    alert("❌ تحقق من البيانات");
+‏    return;
   }
 
-  const cred = await createUserWithEmailAndPassword(auth,email,pass);
+‏  const cred = await createUserWithEmailAndPassword(auth,email,pass);
 
-  await setDoc(doc(db,"users",cred.user.uid),{
-    email,
-    phone,
-    balance: 1000,
-    level: 1,
-    createdAt: serverTimestamp()
+‏  await setDoc(doc(db,"users",cred.user.uid),{
+‏    email,
+‏    phone,
+‏    balance: 1000,
+‏    level: 1,
+‏    createdAt: serverTimestamp()
   });
 
-  registerBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
+‏  registerBox.classList.add("hidden");
+‏  appBox.classList.remove("hidden");
 };
 
-window.login = async ()=>{
-  await signInWithEmailAndPassword(auth,email.value,password.value);
+‏window.login = async ()=>{
+‏  await signInWithEmailAndPassword(auth,email.value,password.value);
 };
 
-/* ================= AUTH STATE ================= */
-onAuthStateChanged(auth, async(user)=>{
-  if(!user){
-    authBox.classList.remove("hidden");
-    appBox.classList.add("hidden");
-    return;
+‏/* ================= AUTH STATE ================= */
+‏onAuthStateChanged(auth, async(user)=>{
+‏  if(!user){
+‏    authBox.classList.remove("hidden");
+‏    appBox.classList.add("hidden");
+‏    return;
   }
 
-  const snap = await getDoc(doc(db,"users",user.uid));
-  userData = snap.data();
+‏  const snap = await getDoc(doc(db,"users",user.uid));
+‏  userData = snap.data();
 
-  authBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
+‏  authBox.classList.add("hidden");
+‏  appBox.classList.remove("hidden");
 
-  updateUI();
-  await fetchMatches();
+‏  updateUI();
+‏  await fetchMatches();
 });
-window.openMyBets = ()=>{
-  appBox.classList.add("hidden");
-  myBetsBox.classList.remove("hidden");
+‏window.openMyBets = ()=>{
+‏  appBox.classList.add("hidden");
+‏  myBetsBox.classList.remove("hidden");
 
   // تعريف العنصر هنا
-  const myBetsList = document.getElementById("myBetsList");
-  myBetsList.innerHTML = "⏳ تحميل تكهناتك...";
+‏  const myBetsList = document.getElementById("myBetsList");
+‏  myBetsList.innerHTML = "⏳ تحميل تكهناتك...";
 
-  loadMyBets();
+‏  loadMyBets();
 };
 
- async function loadMyBets(){
-  const myBetsList = document.getElementById("myBetsList");
-  const user = auth.currentUser;
+‏ async function loadMyBets(){
+‏  const myBetsList = document.getElementById("myBetsList");
+‏  const user = auth.currentUser;
 
-  if(!user){
-    myBetsList.innerHTML = "❌ غير مسجل الدخول";
-    return;
+‏  if(!user){
+‏    myBetsList.innerHTML = "❌ غير مسجل الدخول";
+‏    return;
   }
 
-  myBetsList.innerHTML = "⏳ تحميل تكهناتك...";
+‏  myBetsList.innerHTML = "⏳ تحميل تكهناتك...";
 
-  const matchesMap = await getMatchesMap();
+‏  const matchesMap = await getMatchesMap();
 
-  const q = query(
-    collection(db,"bets"),
-    where("userId","==",user.uid)
+‏  const q = query(
+‏    collection(db,"bets"),
+‏    where("userId","==",user.uid)
   );
 
-  const snap = await getDocs(q);
+‏  const snap = await getDocs(q);
 
-  if(snap.empty){
-    myBetsList.innerHTML = "❌ لا توجد تكهنات";
-    return;
+‏  if(snap.empty){
+‏    myBetsList.innerHTML = "❌ لا توجد تكهنات";
+‏    return;
   }
 
-  myBetsList.innerHTML = "";
+‏  myBetsList.innerHTML = "";
 
-  snap.forEach(docu=>{
-    const b = docu.data();
-    const match = matchesMap[b.matchId];
+‏  snap.forEach(docu=>{
+‏    const b = docu.data();
+‏    const match = matchesMap[b.matchId];
 
-    let statusClass = "bet-pending";
-    let statusText  = "⏳ قيد الإنتظار";
+‏    let statusClass = "bet-pending";
+‏    let statusText  = "⏳ قيد الإنتظار";
 
-    if(match?.result){
-      if(b.choice === match.result){
-        statusClass = "bet-win";
-        statusText  = "✅ ربحت";
-      }else{
-        statusClass = "bet-lose";
-        statusText  = "❌ خسرت";
+‏    if(match?.result){
+‏      if(b.choice === match.result){
+‏        statusClass = "bet-win";
+‏        statusText  = "✅ ربحت";
+‏      }else{
+‏        statusClass = "bet-lose";
+‏        statusText  = "❌ خسرت";
       }
     }
 
-myBetsList.innerHTML += `
-  <div class="match-card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <strong class="teams-line">
-        ${match?.teamA ?? "؟"}
-        <i class="fa-solid fa-bolt vs-icon"></i>
-        ${match?.teamB ?? "؟"}
-      </strong>
+‏    myBetsList.innerHTML += `
+‏      <div class="match-card">
+‏        <div style="display:flex;justify-content:space-between">
+‏          <strong>${match?.teamA ?? "؟"} 🆚 ${match?.teamB ?? "؟"}</strong>
+‏          <span class="badge ${statusClass}">
+‏            ${statusText}
+‏          </span>
+‏        </div>
 
-      <span class="badge ${statusClass}">
-        ${statusText}
-      </span>
-    </div>
+‏        <div style="margin-top:8px">
+          🎯 اختيارك:
+‏          <strong style="font-size:18px">${b.choice}</strong>
+‏        </div>
 
-    <div style="margin-top:8px">
-      <i class="fa-solid fa-crosshairs"></i>
-      اختيارك:
-      <strong style="font-size:18px">${b.choice}</strong>
-    </div>
+‏        <div class="bet-status ${statusClass}">
+          🏁 النتيجة:
+‏          ${match?.result ?? "لم تُحدد بعد"}
+‏        </div>
+‏      </div>
+    `;
+  });
+}
+‏/* ================= MATCHES ================= */
+‏async function fetchMatches(){
+‏  matchesBox.innerHTML = "⏳ تحميل المباريات...";
+‏  matches = [];
 
-    <div class="bet-status ${statusClass}">
-      <i class="fa-solid fa-flag-checkered"></i>
-      النتيجة:
-      ${match?.result ?? "لم تُحدد بعد"}
-    </div>
-  </div>
-`;
-/* ================= MATCHES ================= */
-async function fetchMatches(){
-  matchesBox.innerHTML = "⏳ تحميل المباريات...";
-  matches = [];
+‏  const q = query(collection(db,"matches"));
+‏  const snap = await getDocs(q);
 
-  const q = query(collection(db,"matches"));
-  const snap = await getDocs(q);
-
-  snap.forEach(docu=>{
-    const d = docu.data();
-    matches.push({
-      id: docu.id,
-      teamA: d.teamA,
-      teamB: d.teamB,
-      startTime: d.startTime.toDate(),
-      endTime: d.endTime.toDate(),
-      result: d.result ?? null,
-      settled: d.settled ?? false
+‏  snap.forEach(docu=>{
+‏    const d = docu.data();
+‏    matches.push({
+‏      id: docu.id,
+‏      teamA: d.teamA,
+‏      teamB: d.teamB,
+‏      startTime: d.startTime.toDate(),
+‏      endTime: d.endTime.toDate(),
+‏      result: d.result ?? null,
+‏      settled: d.settled ?? false
     });
   });
 
-  loadMatches(); 
+‏  loadMatches(); 
 }
-function loadMatches(){
-  matchesBox.innerHTML = "";
+‏function loadMatches(){
+‏  matchesBox.innerHTML = "";
 
-  if(matches.length === 0){
-    matchesBox.innerHTML = "<p>❌ لا توجد مباريات</p>";
-    return;
+‏  if(matches.length === 0){
+‏    matchesBox.innerHTML = "<p>❌ لا توجد مباريات</p>";
+‏    return;
   }
 
-  const now = new Date();
+‏  const now = new Date();
 
-  matches.forEach(m=>{
-    const canBet = now < m.startTime;
+‏  matches.forEach(m=>{
+‏    const canBet = now < m.startTime;
 
-    matchesBox.innerHTML += `
-      <div class="match-card">
-        <div class="match-header">
-          <div class="team">
-            <i class="fa-solid fa-shield"></i>
-            ${m.teamA}
-          </div>
+‏    matchesBox.innerHTML += `
+‏      <div class="match-card">
+‏        <div class="match-header">
+‏          <div class="team">
+‏            <i class="fa-solid fa-shield"></i>
+‏            ${m.teamA}
+‏          </div>
 
-          <span class="vs">VS</span>
+‏          <span class="vs">VS</span>
 
-          <div class="team">
-            <i class="fa-solid fa-shield"></i>
-            ${m.teamB}
-          </div>
-        </div>
+‏          <div class="team">
+‏            <i class="fa-solid fa-shield"></i>
+‏            ${m.teamB}
+‏          </div>
+‏        </div>
 
-        <div class="match-time">
-          🕒 ${m.startTime.toLocaleString()}
-        </div>
+‏        <div class="match-time">
+‏          🕒 ${m.startTime.toLocaleString()}
+‏        </div>
 
-        <div class="bet-buttons">
-   <button class="bet-btn"
-        data-id="${m.id}"
-        data-choice="1"
-        onclick="placeBet('${m.id}','1', this)">
+‏        <div class="bet-buttons">
+‏   <button class="bet-btn"
+‏        data-id="${m.id}"
+‏        data-choice="1"
+‏        onclick="placeBet('${m.id}','1', this)">
   1
-</button>
+‏</button>
 
-<button class="bet-btn"
-        data-id="${m.id}"
-        data-choice="X"
-        onclick="placeBet('${m.id}','X', this)">
-  X
-</button>
+‏<button class="bet-btn"
+‏        data-id="${m.id}"
+‏        data-choice="X"
+‏        onclick="placeBet('${m.id}','X', this)">
+‏  X
+‏</button>
 
-<button class="bet-btn"
-        data-id="${m.id}"
-        data-choice="2"
-        onclick="placeBet('${m.id}','2', this)">
+‏<button class="bet-btn"
+‏        data-id="${m.id}"
+‏        data-choice="2"
+‏        onclick="placeBet('${m.id}','2', this)">
   2
-</button>
-        </div>
-      </div>
+‏</button>
+‏        </div>
+‏      </div>
     `;
   });
  
 }
 
-/* ================= BET ================= */
-window.placeBet = async (matchId, choice, btn)=>{
-  try{
-    const user = auth.currentUser;
+‏/* ================= BET ================= */
+‏window.placeBet = async (matchId, choice, btn)=>{
+‏  try{
+‏    const user = auth.currentUser;
 
     // 🔍 هذا السطر هنا بالضبط
-    console.log("USER:", user?.uid);
+‏    console.log("USER:", user?.uid);
 
-    if(!user){
-      alert("❌ يجب تسجيل الدخول");
-      return;
+‏    if(!user){
+‏      alert("❌ يجب تسجيل الدخول");
+‏      return;
     }
 
-    const betRef = doc(db,"bets",`${user.uid}_${matchId}`);
-    const snap = await getDoc(betRef);
+‏    const betRef = doc(db,"bets",`${user.uid}_${matchId}`);
+‏    const snap = await getDoc(betRef);
 
-    if(snap.exists()){
-      alert("❌ لا يمكنك تغيير التكهن");
-      return;
+‏    if(snap.exists()){
+‏      alert("❌ لا يمكنك تغيير التكهن");
+‏      return;
     }
 
-    await setDoc(betRef,{
-      userId: user.uid,
-      matchId,
-      choice,
-      settled: false,
-      createdAt: serverTimestamp()
+‏    await setDoc(betRef,{
+‏      userId: user.uid,
+‏      matchId,
+‏      choice,
+‏      settled: false,
+‏      createdAt: serverTimestamp()
     });
 
     // تلوين الزر
-    btn.classList.add("selected");
+‏    btn.classList.add("selected");
 
     // تعطيل بقية الأزرار
-    btn.parentElement.querySelectorAll(".bet-btn").forEach(b=>{
-      b.disabled = true;
+‏    btn.parentElement.querySelectorAll(".bet-btn").forEach(b=>{
+‏      b.disabled = true;
     });
 
-    alert("✅ تم تسجيل التكهن: " + choice);
+‏    alert("✅ تم تسجيل التكهن: " + choice);
 
-  }catch(e){
-    console.error("FIRESTORE ERROR 👉", e);
-    alert(e.message);
+‏  }catch(e){
+‏    console.error("FIRESTORE ERROR 👉", e);
+‏    alert(e.message);
   }
 };
 
-/* ================= SETTLE MATCH ================= */
-async function settleMatch(match){
-  const betsQ = query(
-    collection(db,"bets"),
-    where("matchId","==",match.id),
-    where("settled","==",false)
+‏/* ================= SETTLE MATCH ================= */
+‏async function settleMatch(match){
+‏  const betsQ = query(
+‏    collection(db,"bets"),
+‏    where("matchId","==",match.id),
+‏    where("settled","==",false)
   );
 
-  const betsSnap = await getDocs(betsQ);
+‏  const betsSnap = await getDocs(betsQ);
 
-  for(const betDoc of betsSnap.docs){
-    const bet = betDoc.data();
+‏  for(const betDoc of betsSnap.docs){
+‏    const bet = betDoc.data();
 
-    if(bet.choice === match.result){
-      const userRef = doc(db,"users",bet.userId);
-      const userSnap = await getDoc(userRef);
+‏    if(bet.choice === match.result){
+‏      const userRef = doc(db,"users",bet.userId);
+‏      const userSnap = await getDoc(userRef);
 
-      if(userSnap.exists()){
-        const lvl = userSnap.data().level || 1;
-        const reward = LEVELS[lvl].reward;
+‏      if(userSnap.exists()){
+‏        const lvl = userSnap.data().level || 1;
+‏        const reward = LEVELS[lvl].reward;
 
-        await updateDoc(userRef,{
-          balance: (userSnap.data().balance || 0) + reward
+‏        await updateDoc(userRef,{
+‏          balance: (userSnap.data().balance || 0) + reward
         });
       }
     }
 
-    await updateDoc(betDoc.ref,{ settled:true });
+‏    await updateDoc(betDoc.ref,{ settled:true });
   }
 
-  await updateDoc(doc(db,"matches",match.id),{ settled:true });
-  console.log("✅ تمت تسوية المباراة:",match.id);
+‏  await updateDoc(doc(db,"matches",match.id),{ settled:true });
+‏  console.log("✅ تمت تسوية المباراة:",match.id);
 }
 
-/* ================= LOGOUT ================= */
-window.logout = async ()=>{
-  await signOut(auth);
-  location.reload();
+‏/* ================= LOGOUT ================= */
+‏window.logout = async ()=>{
+‏  await signOut(auth);
+‏  location.reload();
 };
-  window.backToMatches = ()=>{
-  myBetsBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
+‏  window.backToMatches = ()=>{
+‏  myBetsBox.classList.add("hidden");
+‏  appBox.classList.remove("hidden");
 };
-</script>
+‏</script>
 
-</body>
-</html>
-
+‏</body>
+‏</html>
