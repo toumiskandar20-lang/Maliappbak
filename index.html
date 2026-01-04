@@ -83,6 +83,29 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   background:#00e676;
   color:#000;
 }
+  .bet-status{
+  margin-top:6px;
+  font-weight:bold;
+  font-size:14px;
+}
+
+.bet-win{
+  color:#00e676;
+}
+
+.bet-lose{
+  color:#ff5252;
+}
+
+.bet-pending{
+  color:#ffc107;
+}
+
+.badge{
+  padding:4px 8px;
+  border-radius:6px;
+  font-size:12px;
+}
 </style>
 </head>
 <body>
@@ -162,7 +185,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+async function getMatchesMap(){
+  const map = {};
+  const snap = await getDocs(collection(db,"matches"));
 
+  snap.forEach(docu=>{
+    map[docu.id] = docu.data();
+  });
+
+  return map;
+}
 /* ================= GLOBAL ================= */
 let userData = {};
 let matches = [];
@@ -248,16 +280,18 @@ window.openMyBets = ()=>{
   loadMyBets();
 };
 
-  async function loadMyBets(){
+ async function loadMyBets(){
   const myBetsList = document.getElementById("myBetsList");
   const user = auth.currentUser;
-
-  console.log("🧪 loadMyBets user:", user?.uid);
 
   if(!user){
     myBetsList.innerHTML = "❌ غير مسجل الدخول";
     return;
   }
+
+  myBetsList.innerHTML = "⏳ تحميل تكهناتك...";
+
+  const matchesMap = await getMatchesMap();
 
   const q = query(
     collection(db,"bets"),
@@ -267,7 +301,7 @@ window.openMyBets = ()=>{
   const snap = await getDocs(q);
 
   if(snap.empty){
-    myBetsList.innerHTML = "❌ لا توجد تكهنات مسجلة";
+    myBetsList.innerHTML = "❌ لا توجد تكهنات";
     return;
   }
 
@@ -275,19 +309,38 @@ window.openMyBets = ()=>{
 
   snap.forEach(docu=>{
     const b = docu.data();
+    const match = matchesMap[b.matchId];
+
+    let statusClass = "bet-pending";
+    let statusText  = "⏳ قيد الإنتظار";
+
+    if(match?.result){
+      if(b.choice === match.result){
+        statusClass = "bet-win";
+        statusText  = "✅ ربحت";
+      }else{
+        statusClass = "bet-lose";
+        statusText  = "❌ خسرت";
+      }
+    }
 
     myBetsList.innerHTML += `
       <div class="match-card">
         <div style="display:flex;justify-content:space-between">
-          <strong>🎫 تكهن</strong>
-          <span>${b.settled ? "✅ محسوم" : "⏳ قيد الإنتظار"}</span>
+          <strong>${match?.teamA ?? "؟"} 🆚 ${match?.teamB ?? "؟"}</strong>
+          <span class="badge ${statusClass}">
+            ${statusText}
+          </span>
         </div>
 
         <div style="margin-top:8px">
-          اختيارك:
-          <strong style="color:#00e676;font-size:18px">
-            ${b.choice}
-          </strong>
+          🎯 اختيارك:
+          <strong style="font-size:18px">${b.choice}</strong>
+        </div>
+
+        <div class="bet-status ${statusClass}">
+          🏁 النتيجة:
+          ${match?.result ?? "لم تُحدد بعد"}
         </div>
       </div>
     `;
