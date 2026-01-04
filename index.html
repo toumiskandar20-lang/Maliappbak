@@ -247,33 +247,7 @@ window.openMyBets = ()=>{
 
   loadMyBets();
 };
-  const snap = await getDocs(q);
 
-  if(snap.empty){
-    myBetsList.innerHTML = "❌ لا توجد تكهنات";
-    return;
-  }
-
-  myBetsList.innerHTML = "";
-
-  snap.forEach(docu=>{
-    const b = docu.data();
-
-    myBetsList.innerHTML += `
-      <div class="match-card">
-        <div style="display:flex;justify-content:space-between">
-          <strong>⚽ مباراة</strong>
-          <span>${b.settled ? "✅ محسومة" : "⏳ قيد الإنتظار"}</span>
-        </div>
-
-        <div style="margin-top:6px">
-          🎯 اختيارك:
-          <strong style="color:#00e676">${b.choice}</strong>
-        </div>
-      </div>
-    `;
-  });
-}
   async function loadMyBets(){
   const myBetsList = document.getElementById("myBetsList");
   const user = auth.currentUser;
