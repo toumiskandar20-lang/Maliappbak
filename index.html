@@ -238,24 +238,15 @@ onAuthStateChanged(auth, async(user)=>{
   await fetchMatches();
 });
 window.openMyBets = ()=>{
-  // إخفاء المباريات
   appBox.classList.add("hidden");
-
-  // إظهار تكهناتي
   myBetsBox.classList.remove("hidden");
 
-  // مؤقتًا
-  document.getElementById("myBetsList").innerHTML = "⏳ تحميل تكهناتك...";
+  // تعريف العنصر هنا
+  const myBetsList = document.getElementById("myBetsList");
+  myBetsList.innerHTML = "⏳ تحميل تكهناتك...";
+
+  loadMyBets();
 };
-  async function loadMyBets(){
-  const user = auth.currentUser;
-  if(!user) return;
-
-  const q = query(
-    collection(db,"bets"),
-    where("userId","==",user.uid)
-  );
-
   const snap = await getDocs(q);
 
   if(snap.empty){
@@ -278,6 +269,51 @@ window.openMyBets = ()=>{
         <div style="margin-top:6px">
           🎯 اختيارك:
           <strong style="color:#00e676">${b.choice}</strong>
+        </div>
+      </div>
+    `;
+  });
+}
+  async function loadMyBets(){
+  const myBetsList = document.getElementById("myBetsList");
+  const user = auth.currentUser;
+
+  console.log("🧪 loadMyBets user:", user?.uid);
+
+  if(!user){
+    myBetsList.innerHTML = "❌ غير مسجل الدخول";
+    return;
+  }
+
+  const q = query(
+    collection(db,"bets"),
+    where("userId","==",user.uid)
+  );
+
+  const snap = await getDocs(q);
+
+  if(snap.empty){
+    myBetsList.innerHTML = "❌ لا توجد تكهنات مسجلة";
+    return;
+  }
+
+  myBetsList.innerHTML = "";
+
+  snap.forEach(docu=>{
+    const b = docu.data();
+
+    myBetsList.innerHTML += `
+      <div class="match-card">
+        <div style="display:flex;justify-content:space-between">
+          <strong>🎫 تكهن</strong>
+          <span>${b.settled ? "✅ محسوم" : "⏳ قيد الإنتظار"}</span>
+        </div>
+
+        <div style="margin-top:8px">
+          اختيارك:
+          <strong style="color:#00e676;font-size:18px">
+            ${b.choice}
+          </strong>
         </div>
       </div>
     `;
