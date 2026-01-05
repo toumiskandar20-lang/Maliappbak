@@ -312,7 +312,7 @@ window.openMyBets = ()=>{
     const match = matchesMap[b.matchId];
 
     let statusClass = "bet-pending";
-    let statusText  = "⏳ قيد الإنتظار";
+    let statusText  = '<i class="fa-solid fa-hourglass-half"></i> قيد المراجعة';
 
     if(match?.result){
       if(b.choice === match.result){
