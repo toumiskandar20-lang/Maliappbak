@@ -529,19 +529,26 @@ function loadMatches(){
 
   <!-- TEAMS -->
   <div class="pro-teams">
-  <div class="pro-team left">
-    <img src="${m.logoA}" class="team-logo">
-    <span>${m.teamA}</span>
-  </div>
+<div class="pro-team left">
+  <img 
+    src="${m.logoA || 'https://via.placeholder.com/40'}"
+    class="team-logo"
+    onerror="this.src='https://via.placeholder.com/40'"
+  >
+  <span>${m.teamA}</span>
+</div>
 
   <div class="pro-vs">
     <i class="fa-solid fa-bolt"></i>
   </div>
 
-  <div class="pro-team right">
-    <span>${m.teamB}</span>
-    <img src="${m.logoB}" class="team-logo">
-  </div>
+<div class="pro-team right">
+  <span>${m.teamB}</span>
+  <img 
+    src="${m.logoB || 'https://via.placeholder.com/40'}"
+    class="team-logo"
+    onerror="this.src='https://via.placeholder.com/40'"
+  >
 </div>
   <!-- DATE -->
   <div class="pro-date">
