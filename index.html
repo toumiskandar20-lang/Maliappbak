@@ -215,6 +215,12 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   text-align:center;
   margin-bottom:10px;
 }
+  .team-logo{
+  width:28px;
+  height:28px;
+  object-fit:contain;
+  filter: drop-shadow(0 0 4px rgba(0,0,0,.6));
+}
 </style>
 </head>
 <body>
@@ -523,21 +529,20 @@ function loadMatches(){
 
   <!-- TEAMS -->
   <div class="pro-teams">
-    <div class="pro-team left">
-      <i class="fa-solid fa-shield-halved"></i>
-      <span>${m.teamA}</span>
-    </div>
-
-    <div class="pro-vs">
-      <i class="fa-solid fa-bolt"></i>
-    </div>
-
-    <div class="pro-team right">
-      <span>${m.teamB}</span>
-      <i class="fa-solid fa-shield-halved"></i>
-    </div>
+  <div class="pro-team left">
+    <img src="${m.logoA}" class="team-logo">
+    <span>${m.teamA}</span>
   </div>
 
+  <div class="pro-vs">
+    <i class="fa-solid fa-bolt"></i>
+  </div>
+
+  <div class="pro-team right">
+    <span>${m.teamB}</span>
+    <img src="${m.logoB}" class="team-logo">
+  </div>
+</div>
   <!-- DATE -->
   <div class="pro-date">
     <i class="fa-regular fa-calendar"></i>
