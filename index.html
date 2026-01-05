@@ -317,10 +317,10 @@ window.openMyBets = ()=>{
     if(match?.result){
       if(b.choice === match.result){
         statusClass = "bet-win";
-        statusText  = "✅ ربحت";
+       statusText = `<i class="fa-solid fa-trophy"></i> فوز`;
       }else{
         statusClass = "bet-lose";
-        statusText  = "❌ خسرت";
+        statusText = `<i class="fa-solid fa-circle-xmark"></i> خسارة`;
       }
     }
 
