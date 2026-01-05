@@ -463,7 +463,8 @@ function loadMatches(){
 
   matches.forEach(m=>{
     const canBet = now < m.startTime;
-
+const isToday =
+  new Date().toDateString() === m.startTime.toDateString();
     matchesBox.innerHTML += `
       <div class="match-card">
         <div class="match-header">
@@ -483,7 +484,7 @@ function loadMatches(){
        <div class="match-time pro-time">
   <i class="fa-solid fa-clock"></i>
   <span class="time-text">
-    ${m.startTime.toLocaleDateString("ar-TN")}
+   ${isToday ? "اليوم" : m.startTime.toLocaleDateString("ar-TN")}
   </span>
   <span class="time-sep">•</span>
   <span class="time-hour">
