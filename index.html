@@ -327,7 +327,11 @@ window.openMyBets = ()=>{
     myBetsList.innerHTML += `
       <div class="match-card">
         <div style="display:flex;justify-content:space-between">
-          <strong>${match?.teamA ?? "؟"} 🆚 ${match?.teamB ?? "؟"}</strong>
+          <strong>
+  ${match?.teamA ?? "؟"}
+  <i class="fa-solid fa-bolt" style="margin:0 6px;color:#00e676"></i>
+  ${match?.teamB ?? "؟"}
+</strong>
           <span class="badge ${statusClass}">
             ${statusText}
           </span>
