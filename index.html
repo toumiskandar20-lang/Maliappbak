@@ -143,6 +143,78 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   70%{box-shadow:0 0 0 10px rgba(255,23,68,0);}
   100%{box-shadow:0 0 0 0 rgba(255,23,68,0);}
 }
+  /* ===== PRO MATCH CARD ===== */
+.pro-card{
+  background:linear-gradient(160deg,#1a1a1a,#262626);
+  border:1px solid #2f2f2f;
+}
+
+.pro-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.league-badge{
+  font-size:12px;
+  background:#00c85322;
+  color:#00e676;
+  padding:4px 10px;
+  border-radius:20px;
+  font-weight:bold;
+}
+
+.time-chip{
+  font-size:12px;
+  background:#111;
+  padding:4px 10px;
+  border-radius:20px;
+  opacity:.9;
+}
+
+.pro-teams{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:14px 0;
+}
+
+.pro-team{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:bold;
+  font-size:15px;
+}
+
+.pro-team.left{justify-content:flex-start;}
+.pro-team.right{justify-content:flex-end;}
+
+.pro-team i{
+  color:#00e676;
+  font-size:18px;
+}
+
+.pro-vs{
+  background:#00e676;
+  color:#000;
+  width:38px;
+  height:38px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+  box-shadow:0 0 12px #00e67688;
+}
+
+.pro-date{
+  font-size:12px;
+  opacity:.7;
+  text-align:center;
+  margin-bottom:10px;
+}
 </style>
 </head>
 <body>
@@ -435,26 +507,45 @@ function loadMatches(){
     const canBet = now < m.startTime;
 
     matchesBox.innerHTML += `
-      <div class="match-card">
-        <div class="match-header">
-          <div class="team">
-            <i class="fa-solid fa-shield"></i>
-            ${m.teamA}
-          </div>
+    <div class="match-card pro-card">
+  
+  <!-- HEADER -->
+  <div class="pro-header">
+    <span class="league-badge">
+      <i class="fa-solid fa-trophy"></i> Match
+    </span>
 
-          <span class="vs">VS</span>
+    <span class="time-chip">
+      <i class="fa-regular fa-clock"></i>
+      ${m.startTime.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+    </span>
+  </div>
 
-          <div class="team">
-            <i class="fa-solid fa-shield"></i>
-            ${m.teamB}
-          </div>
-        </div>
+  <!-- TEAMS -->
+  <div class="pro-teams">
+    <div class="pro-team left">
+      <i class="fa-solid fa-shield-halved"></i>
+      <span>${m.teamA}</span>
+    </div>
 
-        <div class="match-time">
-          🕒 ${m.startTime.toLocaleString()}
-        </div>
+    <div class="pro-vs">
+      <i class="fa-solid fa-bolt"></i>
+    </div>
 
-        <div class="bet-buttons">
+    <div class="pro-team right">
+      <span>${m.teamB}</span>
+      <i class="fa-solid fa-shield-halved"></i>
+    </div>
+  </div>
+
+  <!-- DATE -->
+  <div class="pro-date">
+    <i class="fa-regular fa-calendar"></i>
+    ${m.startTime.toLocaleDateString()}
+  </div>
+
+  <!-- BET BUTTONS -->
+  <div class="bet-buttons">
    <button class="bet-btn"
         data-id="${m.id}"
         data-choice="1"
