@@ -280,7 +280,11 @@ import {
   serverTimestamp,
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+const LEVEL_REWARDS = {
+  1: 0.5,
+  2: 1.5,
+  3: 3
+};
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
@@ -454,6 +458,15 @@ window.openMyBets = ()=>{
   النتيجة:
   ${match?.result ?? "لم تُحدد بعد"}
 </div>
+<div class="bet-status ${statusClass}">
+  <i class="fa-solid fa-coins"></i>
+  الربح:
+  <strong>
+    ${b.choice === match?.result 
+      ? `+${LEVEL_REWARDS[userData.level]} 💰`
+      : "0"}
+  </strong>
+</div>
       </div>
     `;
   });
@@ -607,13 +620,14 @@ async function settleMatch(match){
   for(const betDoc of betsSnap.docs){
     const bet = betDoc.data();
 
+    // ✅ إذا التكهن صحيح
     if(bet.choice === match.result){
       const userRef = doc(db,"users",bet.userId);
       const userSnap = await getDoc(userRef);
 
       if(userSnap.exists()){
         const lvl = userSnap.data().level || 1;
-        const reward = LEVELS[lvl].reward;
+        const reward = LEVEL_REWARDS[lvl] || 0.5;
 
         await updateDoc(userRef,{
           balance: (userSnap.data().balance || 0) + reward
@@ -621,13 +635,19 @@ async function settleMatch(match){
       }
     }
 
-    await updateDoc(betDoc.ref,{ settled:true });
+    // 🔒 قفل التكهن
+    await updateDoc(betDoc.ref,{
+      settled: true
+    });
   }
 
-  await updateDoc(doc(db,"matches",match.id),{ settled:true });
-  console.log("✅ تمت تسوية المباراة:",match.id);
-}
+  // 🔒 قفل المباراة
+  await updateDoc(doc(db,"matches",match.id),{
+    settled: true
+  });
 
+  console.log("✅ تمت تسوية المباراة:", match.id);
+}
 /* ================= LOGOUT ================= */
 window.logout = async ()=>{
   await signOut(auth);
