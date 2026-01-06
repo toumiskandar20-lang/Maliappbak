@@ -491,7 +491,11 @@ async function fetchMatches(){
       settled: d.settled ?? false
     });
   });
-
+for(const match of matches){
+  if(match.result && match.settled === false){
+    await settleMatch(match);
+  }
+}
   loadMatches(); 
 }
 function loadMatches(){
