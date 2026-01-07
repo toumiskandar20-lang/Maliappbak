@@ -324,31 +324,31 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   <div class="upgrade-cards">
 
     <!-- LEVEL 1 -->
-    <div class="upgrade-card level-1">
-      <h4>المستوى 1</h4>
-      <p>مكافأة ربح: <strong>0.5 💰</strong></p>
-      <button onclick="upgradeLevel(1,150)">
-        الترقية – 150$
-      </button>
-    </div>
+   <div class="upgrade-card level-1">
+  <h4>المستوى 1</h4>
+  <p>مكافأة ربح: <strong>0.5 💰</strong></p>
+  <button disabled>
+    المستوى الحالي
+  </button>
+</div>
 
     <!-- LEVEL 2 -->
-    <div class="upgrade-card level-2">
-      <h4>المستوى 2</h4>
-      <p>مكافأة ربح: <strong>1.5 💰</strong></p>
-      <button onclick="upgradeLevel(2,295)">
-        الترقية – 295$
-      </button>
-    </div>
+   <div class="upgrade-card level-2">
+  <h4>المستوى 2</h4>
+  <p>مكافأة ربح: <strong>1.5 💰</strong></p>
+  <button onclick="upgradeLevel(2)">
+    الترقية – 150$
+  </button>
+</div>
 
     <!-- LEVEL 3 -->
-    <div class="upgrade-card level-3">
-      <h4>المستوى 3</h4>
-      <p>مكافأة ربح: <strong>3 💰</strong></p>
-      <button onclick="upgradeLevel(3,590)">
-        الترقية – 590$
-      </button>
-    </div>
+   <div class="upgrade-card level-3">
+  <h4>المستوى 3</h4>
+  <p>مكافأة ربح: <strong>3 💰</strong></p>
+  <button onclick="upgradeLevel(3)">
+    الترقية – 295$
+  </button>
+</div>
 
   </div>
 </div>
@@ -762,9 +762,18 @@ window.logout = async ()=>{
   upgradeBox.classList.remove("hidden");
 };
 
-async function upgradeLevel(level, price){
+const UPGRADE_PRICES = {
+  2: 150,
+  3: 295,
+  4: 590
+};
+
+async function upgradeLevel(level){
   const user = auth.currentUser;
   if(!user) return;
+
+  const price = UPGRADE_PRICES[level];
+  if(!price) return;
 
   const userRef = doc(db,"users",user.uid);
   const snap = await getDoc(userRef);
@@ -788,7 +797,12 @@ async function upgradeLevel(level, price){
     balance: data.balance - price
   });
 
-  alert("🎉 تمت الترقية بنجاح!");
+  // ✅ تحديث محلي (مهم جدًا)
+  userData.level = level;
+  userData.balance -= price;
+  updateUI();
+
+  alert("🚀 تمت الترقية بنجاح!");
   backToMatches();
 }
 </script>
