@@ -202,6 +202,53 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
 .back-btn:hover i{
   color:#000;
 }
+  .upgrade-btn{
+  background:linear-gradient(135deg,#7c4dff,#651fff);
+  border:none;
+  padding:12px;
+  color:white;
+  width:100%;
+  border-radius:10px;
+  font-weight:bold;
+  margin-top:10px;
+}
+
+.upgrade-title{
+  text-align:center;
+  color:#ffd54f;
+  margin-bottom:15px;
+}
+
+.upgrade-cards{
+  display:grid;
+  gap:15px;
+}
+
+.upgrade-card{
+  background:#1e1e2f;
+  border-radius:14px;
+  padding:15px;
+  text-align:center;
+  box-shadow:0 0 15px rgba(0,0,0,.4);
+}
+
+.upgrade-card h4{
+  color:#fff;
+}
+
+.upgrade-card button{
+  margin-top:10px;
+  width:100%;
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.level-1 button{background:#00c853;color:#000;}
+.level-2 button{background:#2979ff;color:#fff;}
+.level-3 button{background:#ffab00;color:#000;}
 </style>
 </head>
 <body>
@@ -230,6 +277,10 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
 <div class="box hidden" id="appBox">
   <h3>💰 الرصيد: <span id="balance">0</span></h3>
   <h4>🏆 المستوى: <span id="level">1</span></h4>
+  <button class="upgrade-btn" onclick="openUpgrade()">
+  <i class="fa-solid fa-arrow-trend-up"></i>
+  ترقية المستوى
+</button>
 <button onclick="openMyBets()" style="margin-top:10px">
   <i class="fa-solid fa-ticket"></i> رهاناتي
 </button>
@@ -257,6 +308,49 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   <i class="fa-solid fa-arrow-left"></i>
   العودة إلى المباريات
 </button>
+</div>
+  <div class="box hidden" id="upgradeBox">
+
+  <button onclick="backToMatches()" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i>
+    العودة
+  </button>
+
+  <h3 class="upgrade-title">
+    <i class="fa-solid fa-crown"></i>
+    ترقية المستوى
+  </h3>
+
+  <div class="upgrade-cards">
+
+    <!-- LEVEL 1 -->
+    <div class="upgrade-card level-1">
+      <h4>المستوى 1</h4>
+      <p>مكافأة ربح: <strong>0.5 💰</strong></p>
+      <button onclick="upgradeLevel(1,150)">
+        الترقية – 150$
+      </button>
+    </div>
+
+    <!-- LEVEL 2 -->
+    <div class="upgrade-card level-2">
+      <h4>المستوى 2</h4>
+      <p>مكافأة ربح: <strong>1.5 💰</strong></p>
+      <button onclick="upgradeLevel(2,295)">
+        الترقية – 295$
+      </button>
+    </div>
+
+    <!-- LEVEL 3 -->
+    <div class="upgrade-card level-3">
+      <h4>المستوى 3</h4>
+      <p>مكافأة ربح: <strong>3 💰</strong></p>
+      <button onclick="upgradeLevel(3,590)">
+        الترقية – 590$
+      </button>
+    </div>
+
+  </div>
 </div>
 <script type="module">
 /* ================= IMPORTS ================= */
@@ -663,6 +757,40 @@ window.logout = async ()=>{
   myBetsBox.classList.add("hidden");
   appBox.classList.remove("hidden");
 };
+  window.openUpgrade = ()=>{
+  appBox.classList.add("hidden");
+  upgradeBox.classList.remove("hidden");
+};
+
+async function upgradeLevel(level, price){
+  const user = auth.currentUser;
+  if(!user) return;
+
+  const userRef = doc(db,"users",user.uid);
+  const snap = await getDoc(userRef);
+
+  if(!snap.exists()) return;
+
+  const data = snap.data();
+
+  if(data.level >= level){
+    alert("⚠️ مستواك الحالي أعلى أو يساوي هذا المستوى");
+    return;
+  }
+
+  if((data.balance || 0) < price){
+    alert("❌ رصيدك غير كافٍ");
+    return;
+  }
+
+  await updateDoc(userRef,{
+    level: level,
+    balance: data.balance - price
+  });
+
+  alert("🎉 تمت الترقية بنجاح!");
+  backToMatches();
+}
 </script>
 
 </body>
