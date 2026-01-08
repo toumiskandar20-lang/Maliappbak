@@ -249,6 +249,56 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
 .level-1 button{background:#00c853;color:#000;}
 .level-2 button{background:#2979ff;color:#fff;}
 .level-3 button{background:#ffab00;color:#000;}
+  .level-box{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:linear-gradient(135deg,#1c1c2b,#222);
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:12px;
+  box-shadow:0 6px 18px rgba(0,0,0,.4);
+}
+
+.level-icon{
+  font-size:32px;
+  background:linear-gradient(135deg,#ffd54f,#ffb300);
+  color:#000;
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.level-number{
+  font-weight:800;
+  font-size:15px;
+  letter-spacing:1px;
+}
+
+.level-name{
+  font-size:13px;
+  opacity:.8;
+  margin-top:2px;
+}
+
+.level-bar{
+  height:6px;
+  background:#111;
+  border-radius:10px;
+  overflow:hidden;
+  margin-top:6px;
+}
+
+.level-bar span{
+  display:block;
+  height:100%;
+  background:linear-gradient(90deg,#00e676,#00c853);
+  width:20%;
+  transition:.3s;
+}
 </style>
 </head>
 <body>
@@ -422,7 +472,28 @@ const LEVELS = {
 /* ================= UI ================= */
 function updateUI(){
   balance.innerText = userData.balance ?? 0;
-  level.innerText = userData.level ?? 1;
+  updateLevelUI(); // 👈 مهم
+}
+  function updateLevelUI(){
+  const lvl = userData.level || 1;
+
+  const names = {
+    1: "Bronze Member",
+    2: "Silver Member",
+    3: "Gold Member",
+    4: "Platinum Member"
+  };
+
+  const progress = {
+    1: "25%",
+    2: "50%",
+    3: "75%",
+    4: "100%"
+  };
+
+  level.innerText = lvl;
+  levelName.innerText = names[lvl] || "VIP";
+  levelBar.style.width = progress[lvl] || "100%";
 }
 
 /* ================= AUTH ================= */
