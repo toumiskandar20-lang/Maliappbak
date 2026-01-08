@@ -940,6 +940,10 @@ let matches = [];
   });
   document.getElementById(id).classList.remove("hidden");
 } 
+  window.openTab = function(btn, viewId){
+  setActiveTab(btn);
+  showView(viewId);
+};
 /* ================= LEVELS ================= */
 const LEVELS = {
   1: { reward: 0.5 },
