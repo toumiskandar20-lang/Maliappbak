@@ -567,6 +567,55 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   .box{
   padding-bottom: 80px;
 }
+  .bottom-bar{
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 500px;
+  height: 70px;
+
+  background: rgba(20,20,20,0.85);
+  backdrop-filter: blur(12px);
+  border-radius: 22px;
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+  z-index: 999;
+}
+
+.bottom-bar button{
+  background: none;
+  border: none;
+  color: #aaa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.bottom-bar button i{
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.bottom-bar button.active{
+  color: #f5c26b;
+}
+
+.bottom-bar button.active i{
+  transform: translateY(-3px);
+}
+
+.bottom-bar button:active{
+  transform: scale(0.92);
+}
 </style>
 </head>
 <body>
@@ -791,32 +840,31 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
     </p>
   </div>
 </div>
-  <!-- BOTTOM NAV BAR -->
 <div class="bottom-bar">
-  <div class="nav-item active">
-    <i class="fa-solid fa-house"></i>
-    <span>الرئيسية</span>
-  </div>
+  <button onclick="showView('appBox')" class="active">
+    <i class="fa-solid fa-futbol"></i>
+    <span>المباريات</span>
+  </button>
 
-  <div class="nav-item">
+  <button onclick="openUpgrade()">
+    <i class="fa-solid fa-crown"></i>
+    <span>المستوى</span>
+  </button>
+
+  <button onclick="openProfile()">
     <i class="fa-solid fa-user"></i>
-    <span>بروفايل</span>
-  </div>
+    <span>بروفيل</span>
+  </button>
 
-  <div class="nav-item">
+  <button onclick="alert('قريبًا')">
     <i class="fa-solid fa-gift"></i>
     <span>الجوائز</span>
-  </div>
+  </button>
 
-  <div class="nav-item">
-    <i class="fa-solid fa-users"></i>
-    <span>الفريق</span>
-  </div>
-
-  <div class="nav-item">
+  <button onclick="alert('الدعم')">
     <i class="fa-solid fa-headset"></i>
     <span>الدعم</span>
-  </div>
+  </button>
 </div>
  <!-- BOTTOM BAR -->
 <div class="bottom-bar">
@@ -1320,6 +1368,11 @@ window.copyAddress = ()=>{
   navigator.clipboard.writeText("TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW");
   alert("✅ تم نسخ العنوان");
 }; 
+ function setActiveTab(btn){
+  document.querySelectorAll(".bottom-bar button")
+    .forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+} 
 </script>
 
 </body>
