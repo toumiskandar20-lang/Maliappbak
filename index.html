@@ -396,6 +396,44 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   color:#ffab00;
   margin-top:10px;
 } 
+  .bottom-bar{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:#111;
+  border-top:1px solid #2f2f2f;
+  display:flex;
+  justify-content:space-around;
+  padding:8px 0;
+  z-index:999;
+}
+
+.nav-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  font-size:11px;
+  color:#aaa;
+  cursor:pointer;
+  transition:.2s;
+}
+
+.nav-item i{
+  font-size:20px;
+  margin-bottom:4px;
+}
+
+.nav-item.active{
+  color:#00e676;
+}
+
+.nav-item.active i{
+  color:#00e676;
+}
+  body{
+  padding-bottom:70px;
+}
 </style>
 </head>
 <body>
@@ -554,6 +592,33 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
       <i class="fa-solid fa-circle-info"></i>
       أرسل فقط USDT (TRC20) إلى هذا العنوان
     </p>
+  </div>
+</div>
+  <!-- BOTTOM NAV BAR -->
+<div class="bottom-bar">
+  <div class="nav-item active">
+    <i class="fa-solid fa-house"></i>
+    <span>الرئيسية</span>
+  </div>
+
+  <div class="nav-item">
+    <i class="fa-solid fa-user"></i>
+    <span>بروفايل</span>
+  </div>
+
+  <div class="nav-item">
+    <i class="fa-solid fa-gift"></i>
+    <span>الجوائز</span>
+  </div>
+
+  <div class="nav-item">
+    <i class="fa-solid fa-users"></i>
+    <span>الفريق</span>
+  </div>
+
+  <div class="nav-item">
+    <i class="fa-solid fa-headset"></i>
+    <span>الدعم</span>
   </div>
 </div>
 <script type="module">
