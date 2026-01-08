@@ -606,7 +606,12 @@ async function getMatchesMap(){
 /* ================= GLOBAL ================= */
 let userData = {};
 let matches = [];
-
+ function showView(id){
+  document.querySelectorAll(".box").forEach(b=>{
+    b.classList.add("hidden");
+  });
+  document.getElementById(id).classList.remove("hidden");
+} 
 /* ================= LEVELS ================= */
 const LEVELS = {
   1: { reward: 0.5 },
@@ -976,14 +981,11 @@ window.logout = async ()=>{
   location.reload();
 };
   window.backToMatches = ()=>{
-  myBetsBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
+  showView("appBox");
 };
-  window.openUpgrade = ()=>{
-  appBox.classList.add("hidden");
-  upgradeBox.classList.remove("hidden");
+window.openUpgrade = ()=>{
+  showView("upgradeBox");
 };
-
 const UPGRADE_PRICES = {
   2: 150,
   3: 295,
@@ -1027,9 +1029,8 @@ window.upgradeLevel = async function(level){
   alert("🚀 تمت الترقية بنجاح!");
   backToMatches();
 };
- window.openTopUp = ()=>{
-  appBox.classList.add("hidden");
-  topUpBox.classList.remove("hidden");
+window.openTopUp = ()=>{
+  showView("topUpBox");
 };
 
 window.copyAddress = ()=>{
