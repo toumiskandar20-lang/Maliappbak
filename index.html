@@ -357,6 +357,45 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   cursor:pointer;
   box-shadow:0 6px 14px rgba(0,230,118,.4);
 }
+ .topup-card{
+  background:#1e1e2f;
+  border-radius:18px;
+  padding:18px;
+  text-align:center;
+  box-shadow:0 0 20px rgba(0,0,0,.5);
+}
+
+.qr{
+  width:180px;
+  border-radius:14px;
+  margin-bottom:12px;
+}
+
+.wallet-address{
+  background:#111;
+  padding:10px;
+  border-radius:10px;
+  font-size:13px;
+  word-break:break-all;
+  margin-bottom:10px;
+}
+
+.copy-btn{
+  background:#2979ff;
+  border:none;
+  padding:10px;
+  width:100%;
+  border-radius:10px;
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.warning{
+  font-size:12px;
+  color:#ffab00;
+  margin-top:10px;
+} 
 </style>
 </head>
 <body>
@@ -990,6 +1029,15 @@ window.upgradeLevel = async function(level){
   alert("🚀 تمت الترقية بنجاح!");
   backToMatches();
 };
+ window.openTopUp = ()=>{
+  appBox.classList.add("hidden");
+  topUpBox.classList.remove("hidden");
+};
+
+window.copyAddress = ()=>{
+  navigator.clipboard.writeText("TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW");
+  alert("✅ تم نسخ العنوان");
+}; 
 </script>
 
 </body>
