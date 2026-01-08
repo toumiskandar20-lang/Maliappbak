@@ -450,39 +450,7 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   <i class="fa-solid fa-arrow-trend-up"></i>
   ترقية المستوى
 </button>
-  <div class="box hidden" id="topUpBox">
 
-  <button onclick="backToMatches()" class="back-btn">
-    <i class="fa-solid fa-arrow-left"></i>
-    العودة
-  </button>
-
-  <h3 class="upgrade-title">
-    <i class="fa-solid fa-wallet"></i>
-    تعبئة الحساب
-  </h3>
-
-  <div class="topup-card">
-    <img 
-      src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW"
-      class="qr"
-    >
-
-    <div class="wallet-address">
-      TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW
-    </div>
-
-    <button onclick="copyAddress()" class="copy-btn">
-      <i class="fa-solid fa-copy"></i>
-      نسخ العنوان
-    </button>
-
-    <p class="warning">
-      <i class="fa-solid fa-circle-info"></i>
-      أرسل فقط USDT (TRC20) إلى هذا العنوان
-    </p>
-  </div>
-</div>
 <button onclick="openMyBets()" style="margin-top:10px">
   <i class="fa-solid fa-ticket"></i> رهاناتي
 </button>
@@ -551,10 +519,41 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
     الترقية – 295$
   </button>
 </div>
+ </div>
+    </div> 
+  <div class="box hidden" id="topUpBox">
 
+  <button onclick="backToMatches()" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i>
+    العودة
+  </button>
+
+  <h3 class="upgrade-title">
+    <i class="fa-solid fa-wallet"></i>
+    تعبئة الحساب
+  </h3>
+
+  <div class="topup-card">
+    <img 
+      src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW"
+      class="qr"
+    >
+
+    <div class="wallet-address">
+      TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW
+    </div>
+
+    <button onclick="copyAddress()" class="copy-btn">
+      <i class="fa-solid fa-copy"></i>
+      نسخ العنوان
+    </button>
+
+    <p class="warning">
+      <i class="fa-solid fa-circle-info"></i>
+      أرسل فقط USDT (TRC20) إلى هذا العنوان
+    </p>
   </div>
-    
-</div> 
+</div>
 <script type="module">
 /* ================= IMPORTS ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
