@@ -305,6 +305,43 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   -webkit-background-clip:text;
   -webkit-text-fill-color:transparent;
 }
+  .balance-card{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  background:linear-gradient(135deg,#1e1e1e,#2b2b2b);
+  padding:14px 16px;
+  border-radius:16px;
+  box-shadow:0 8px 18px rgba(0,0,0,.4);
+  margin-bottom:12px;
+}
+
+.balance-card i{
+  font-size:26px;
+  color:#00e676;
+}
+
+.balance-info{
+  display:flex;
+  flex-direction:column;
+}
+
+.balance-label{
+  font-size:12px;
+  opacity:.7;
+}
+
+.balance-value{
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:.5px;
+}
+
+.balance-value small{
+  font-size:12px;
+  margin-left:6px;
+  opacity:.6;
+}
 </style>
 </head>
 <body>
@@ -331,7 +368,16 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
 
 <!-- APP -->
 <div class="box hidden" id="appBox">
-  <h3>💰 الرصيد: <span id="balance">0</span></h3>
+ <div class="balance-card">
+  <i class="fa-solid fa-wallet"></i>
+  <div class="balance-info">
+    <span class="balance-label">الرصيد المتاح</span>
+    <span class="balance-value">
+      <span id="balance">0</span>
+      <small>USD</small>
+    </span>
+  </div>
+</div>
  <div class="level-box">
 <i class="fa-solid fa-crown level-icon"></i>
   <div class="level-info">
