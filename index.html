@@ -532,6 +532,41 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
 .profile-actions .danger i{
   color:#ff5252;
 }
+  .bottom-bar{
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: #0f172a;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  z-index: 999;
+}
+
+.bottom-bar button{
+  background: none;
+  border: none;
+  color: #cbd5f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 12px;
+}
+
+.bottom-bar i{
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.bottom-bar button:hover{
+  color: #38bdf8;
+}
+  .box{
+  padding-bottom: 80px;
+}
 </style>
 </head>
 <body>
@@ -786,6 +821,23 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
     <span>الدعم</span>
   </div>
 </div>
+ <!-- BOTTOM BAR -->
+<div class="bottom-bar">
+  <button onclick="openProfile()">
+    <i class="fa-solid fa-user"></i>
+    <span>بروفيل</span>
+  </button>
+
+  <button onclick="openUpgrade()">
+    <i class="fa-solid fa-crown"></i>
+    <span>المستوى</span>
+  </button>
+
+  <button onclick="backToMatches()">
+    <i class="fa-solid fa-futbol"></i>
+    <span>المباريات</span>
+  </button>
+</div> 
 <script type="module">
 /* ================= IMPORTS ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
