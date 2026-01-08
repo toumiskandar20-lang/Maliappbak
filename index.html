@@ -434,6 +434,104 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   body{
   padding-bottom:70px;
 }
+  /* ===== PROFILE ===== */
+.profile-header{
+  display:flex;
+  gap:14px;
+  align-items:center;
+  margin-bottom:18px;
+}
+
+.avatar{
+  width:64px;
+  height:64px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#00e676,#00c853);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  color:#000;
+}
+
+.profile-info{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.profile-name{
+  font-weight:800;
+  font-size:17px;
+}
+
+.profile-id{
+  font-size:12px;
+  opacity:.6;
+}
+
+.profile-level{
+  font-size:13px;
+  color:#ffd54f;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.profile-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.stat{
+  background:#1e1e1e;
+  border-radius:12px;
+  padding:12px;
+  text-align:center;
+}
+
+.stat-number{
+  font-size:18px;
+  font-weight:800;
+  display:block;
+}
+
+.stat-label{
+  font-size:11px;
+  opacity:.6;
+}
+
+.profile-actions{
+  display:grid;
+  gap:10px;
+}
+
+.profile-actions button{
+  background:#111;
+  border:1px solid #333;
+  border-radius:12px;
+  padding:12px;
+  color:#fff;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.profile-actions button i{
+  color:#00e676;
+}
+
+.profile-actions .danger{
+  background:#2b1111;
+  border-color:#ff5252;
+}
+
+.profile-actions .danger i{
+  color:#ff5252;
+}
 </style>
 </head>
 <body>
@@ -480,7 +578,10 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
     </div>
   </div>
 </div>
-  
+  <button onclick="openProfile()">
+  <i class="fa-solid fa-user"></i>
+  بروفايلي
+</button>
   <button class="topup-btn" onclick="openTopUp()">
   <i class="fa-solid fa-bolt"></i>
   تعبئة الحساب
@@ -519,6 +620,70 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   العودة إلى المباريات
 </button>
 </div>
+ <!-- PROFILE -->
+<div class="box hidden" id="profileBox">
+
+  <button onclick="backToMatches()" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i>
+    العودة
+  </button>
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="avatar">
+      <i class="fa-solid fa-user"></i>
+    </div>
+
+    <div class="profile-info">
+      <div class="profile-name" id="profileName">User</div>
+      <div class="profile-id">ID: <span id="profileId">---</span></div>
+      <div class="profile-level">
+        <i class="fa-solid fa-crown"></i>
+        <span id="profileLevel">Bronze Member</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICK STATS -->
+  <div class="profile-stats">
+    <div class="stat">
+      <span class="stat-number" id="statBets">0</span>
+      <span class="stat-label">رهانات</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number" id="statWins">0</span>
+      <span class="stat-label">فوز</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number" id="statLoss">0</span>
+      <span class="stat-label">خسارة</span>
+    </div>
+  </div>
+
+  <!-- PROFILE ACTIONS -->
+  <div class="profile-actions">
+    <button onclick="openTopUp()">
+      <i class="fa-solid fa-wallet"></i>
+      تعبئة الحساب
+    </button>
+
+    <button onclick="openUpgrade()">
+      <i class="fa-solid fa-arrow-trend-up"></i>
+      ترقية المستوى
+    </button>
+
+    <button>
+      <i class="fa-solid fa-headset"></i>
+      خدمة العملاء
+    </button>
+
+    <button onclick="logout()" class="danger">
+      <i class="fa-solid fa-right-from-bracket"></i>
+      تسجيل الخروج
+    </button>
+  </div>
+
+</div> 
   <div class="box hidden" id="upgradeBox">
 
   <button onclick="backToMatches()" class="back-btn">
@@ -1050,6 +1215,10 @@ window.logout = async ()=>{
 };
 window.openUpgrade = ()=>{
   showView("upgradeBox");
+};
+  window.openProfile = ()=>{
+  appBox.classList.add("hidden");
+  profileBox.classList.remove("hidden");
 };
 const UPGRADE_PRICES = {
   2: 150,
