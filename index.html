@@ -841,30 +841,31 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   </div>
 </div>
 <div class="bottom-bar">
-  <button onclick="showView('appBox')" class="active">
-    <i class="fa-solid fa-futbol"></i>
-    <span>المباريات</span>
-  </button>
+  <button class="active"
+        onclick="openTab(this,'appBox')">
+  <i class="fa-solid fa-futbol"></i>
+  <span>المباريات</span>
+</button>
 
-  <button onclick="openUpgrade()">
-    <i class="fa-solid fa-crown"></i>
-    <span>المستوى</span>
-  </button>
+<button onclick="openTab(this,'upgradeBox')">
+  <i class="fa-solid fa-crown"></i>
+  <span>المستوى</span>
+</button>
 
-  <button onclick="openProfile()">
-    <i class="fa-solid fa-user"></i>
-    <span>بروفيل</span>
-  </button>
+<button onclick="openTab(this,'profileBox')">
+  <i class="fa-solid fa-user"></i>
+  <span>بروفايل</span>
+</button>
 
-  <button onclick="alert('قريبًا')">
-    <i class="fa-solid fa-gift"></i>
-    <span>الجوائز</span>
-  </button>
+<button onclick="setActiveTab(this); alert('قريبًا')">
+  <i class="fa-solid fa-gift"></i>
+  <span>الجوائز</span>
+</button>
 
-  <button onclick="alert('الدعم')">
-    <i class="fa-solid fa-headset"></i>
-    <span>الدعم</span>
-  </button>
+<button onclick="setActiveTab(this); alert('الدعم')">
+  <i class="fa-solid fa-headset"></i>
+  <span>الدعم</span>
+</button>
 </div>
  <!-- BOTTOM BAR -->
 <div class="bottom-bar">
