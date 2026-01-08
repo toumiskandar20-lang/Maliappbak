@@ -968,9 +968,6 @@ async function settleMatch(match){
   await updateDoc(doc(db,"matches",match.id),{
     settled: true
   });
-await updateDoc(doc(db,"matches",match.id),{
-  settled: true
-});
   console.log("✅ تمت تسوية المباراة:", match.id);
 }
 /* ================= LOGOUT ================= */
