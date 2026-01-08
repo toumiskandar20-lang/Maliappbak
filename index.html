@@ -768,7 +768,7 @@ const UPGRADE_PRICES = {
   4: 590
 };
 
-async function upgradeLevel(level){
+window.upgradeLevel = async function(level){
   const user = auth.currentUser;
   if(!user) return;
 
@@ -797,14 +797,14 @@ async function upgradeLevel(level){
     balance: data.balance - price
   });
 
-  // ✅ تحديث محلي (مهم جدًا)
+  // تحديث محلي
   userData.level = level;
   userData.balance -= price;
   updateUI();
 
   alert("🚀 تمت الترقية بنجاح!");
   backToMatches();
-}
+};
 </script>
 
 </body>
