@@ -825,21 +825,22 @@ top: -6px;
     <span>المباريات</span>
   </button>
 
-  <button onclick="openTab(this,'profileBox')">
+  <button onclick="openProfile()">
     <i class="fa-solid fa-user"></i>
     <span>بروفايل</span>
   </button>
 
-  <button class="center-btn" onclick="openTab(this,'appBox')">
+  <button class="center-btn"
+          onclick="openTab(this,'appBox')">
     <i class="fa-solid fa-futbol"></i>
   </button>
 
-  <button onclick="setActiveTab(this); alert('قريبًا')">
+  <button onclick="alert('قريبًا')">
     <i class="fa-solid fa-gift"></i>
     <span>الجوائز</span>
   </button>
 
-  <button onclick="setActiveTab(this); alert('الدعم')">
+  <button onclick="alert('الدعم')">
     <i class="fa-solid fa-headset"></i>
     <span>الدعم</span>
   </button>
@@ -984,9 +985,8 @@ const navBar = document.getElementById("navBar");
 
 onAuthStateChanged(auth, async (user)=>{
   if(!user){
+    showView("authBox");
     navBar.classList.add("hidden");
-    authBox.classList.remove("hidden");
-    appBox.classList.add("hidden");
     return;
   }
 
@@ -995,8 +995,7 @@ onAuthStateChanged(auth, async (user)=>{
   const snap = await getDoc(doc(db,"users",user.uid));
   userData = snap.data();
 
-  authBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
+  showView("appBox");
 
   updateUI();
   await fetchMatches();
@@ -1285,7 +1284,6 @@ async function settleMatch(match){
 /* ================= LOGOUT ================= */
 window.logout = async ()=>{
   await signOut(auth);
-  location.reload();
 };
   window.backToMatches = ()=>{
   showView("appBox");
