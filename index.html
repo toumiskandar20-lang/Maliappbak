@@ -585,6 +585,9 @@ top: -6px;
 .center-btn:active{
   transform: scale(0.92);
 }
+  .hidden{
+  display: none !important;
+}
 
 /* تفعيل */
 .bottom-bar button.active:not(.center-btn){
@@ -814,7 +817,6 @@ top: -6px;
     </p>
   </div>
 </div>
-<div class="bottom-bar">
 
  <div id="navBar" class="bottom-bar hidden">
 
@@ -978,19 +980,27 @@ window.login = async ()=>{
 };
 
 /* ================= AUTH STATE ================= */
-onAuthStateChanged(auth, async(user)=>{
-  if(!user){
-    authBox.classList.remove("hidden");
-    appBox.classList.add("hidden");
-    return; 
-  }
 const navBar = document.getElementById("navBar");
 
-if(user){
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){
+    navBar.classList.add("hidden");
+    authBox.classList.remove("hidden");
+    appBox.classList.add("hidden");
+    return;
+  }
+
   navBar.classList.remove("hidden");
-}else{
-  navBar.classList.add("hidden");
-}
+
+  const snap = await getDoc(doc(db,"users",user.uid));
+  userData = snap.data();
+
+  authBox.classList.add("hidden");
+  appBox.classList.remove("hidden");
+
+  updateUI();
+  await fetchMatches();
+});
   const snap = await getDoc(doc(db,"users",user.uid));
   userData = snap.data();
 
