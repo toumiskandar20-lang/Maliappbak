@@ -1000,15 +1000,7 @@ onAuthStateChanged(auth, async (user)=>{
   updateUI();
   await fetchMatches();
 });
-  const snap = await getDoc(doc(db,"users",user.uid));
-  userData = snap.data();
 
-  authBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
-
-  updateUI();
-  await fetchMatches();
-});
 window.openMyBets = ()=>{
   appBox.classList.add("hidden");
   myBetsBox.classList.remove("hidden");
