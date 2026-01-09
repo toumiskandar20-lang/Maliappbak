@@ -982,16 +982,15 @@ onAuthStateChanged(auth, async(user)=>{
   if(!user){
     authBox.classList.remove("hidden");
     appBox.classList.add("hidden");
-    return;
-    const navBar = document.getElementById("navBar");
+    return; 
+  }
+const navBar = document.getElementById("navBar");
 
 if(user){
   navBar.classList.remove("hidden");
 }else{
   navBar.classList.add("hidden");
 }
-  }
-
   const snap = await getDoc(doc(db,"users",user.uid));
   userData = snap.data();
 
