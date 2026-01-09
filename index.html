@@ -816,8 +816,9 @@ top: -6px;
 </div>
 <div class="bottom-bar">
 
-  <button class="active"
-          onclick="openTab(this,'appBox')">
+ <div id="navBar" class="bottom-bar hidden">
+
+  <button class="active" onclick="openTab(this,'appBox')">
     <i class="fa-solid fa-futbol"></i>
     <span>المباريات</span>
   </button>
@@ -827,9 +828,7 @@ top: -6px;
     <span>بروفايل</span>
   </button>
 
-  <!-- ⭐ الزر الأوسط -->
-  <button class="center-btn"
-          onclick="openTab(this,'appBox')">
+  <button class="center-btn" onclick="openTab(this,'appBox')">
     <i class="fa-solid fa-futbol"></i>
   </button>
 
@@ -984,6 +983,13 @@ onAuthStateChanged(auth, async(user)=>{
     authBox.classList.remove("hidden");
     appBox.classList.add("hidden");
     return;
+    const navBar = document.getElementById("navBar");
+
+if(user){
+  navBar.classList.remove("hidden");
+}else{
+  navBar.classList.add("hidden");
+}
   }
 
   const snap = await getDoc(doc(db,"users",user.uid));
