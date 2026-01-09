@@ -815,25 +815,20 @@ top: -6px;
   </div>
 </div>
 <div class="bottom-bar">
-  <button class="active"
-        onclick="openTab(this,'appBox')">
-  <i class="fa-solid fa-futbol"></i>
-  <span>المباريات</span>
-</button>
 
-<div class="bottom-bar">
-  <button onclick="openProfile()">
+  <button class="active"
+          onclick="openTab(this,'appBox')">
+    <i class="fa-solid fa-futbol"></i>
+    <span>المباريات</span>
+  </button>
+
+  <button onclick="openTab(this,'profileBox')">
     <i class="fa-solid fa-user"></i>
     <span>بروفايل</span>
   </button>
 
-  <button onclick="openUpgrade()">
-    <i class="fa-solid fa-crown"></i>
-    <span>المستوى</span>
-  </button>
-
-  <!-- ⭐ زر الوسط البارز -->
-  <button class="center-btn active"
+  <!-- ⭐ الزر الأوسط -->
+  <button class="center-btn"
           onclick="openTab(this,'appBox')">
     <i class="fa-solid fa-futbol"></i>
   </button>
@@ -847,8 +842,8 @@ top: -6px;
     <i class="fa-solid fa-headset"></i>
     <span>الدعم</span>
   </button>
-</div>
 
+</div>
 <script type="module">
 /* ================= IMPORTS ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -1283,9 +1278,8 @@ window.logout = async ()=>{
 window.openUpgrade = ()=>{
   showView("upgradeBox");
 };
-  window.openProfile = ()=>{
-  appBox.classList.add("hidden");
-  profileBox.classList.remove("hidden");
+ window.openProfile = ()=>{
+  showView("profileBox");
 };
 const UPGRADE_PRICES = {
   2: 150,
