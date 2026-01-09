@@ -522,7 +522,7 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   color:#ff5252;
 }
 
-  .bottom-bar{
+.bottom-bar{
   position: fixed;
   bottom: 12px;
   left: 50%;
@@ -531,15 +531,15 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   max-width: 500px;
   height: 70px;
 
-  background: rgba(20,20,20,0.85);
+  background: rgba(20,20,20,0.9);
   backdrop-filter: blur(12px);
-  border-radius: 22px;
+  border-radius: 24px;
 
   display: flex;
   justify-content: space-around;
   align-items: center;
 
-  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.5);
   z-index: 999;
 }
 
@@ -550,7 +550,7 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 12px;
+  font-size: 11px;
   cursor: pointer;
   transition: 0.3s;
 }
@@ -560,16 +560,36 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   margin-bottom: 4px;
 }
 
-.bottom-bar button.active{
-  color: #f5c26b;
+/* ⭐ الزر الأوسط */
+.center-btn{
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#00e676,#00c853);
+  color: #000 !important;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+  top: -28px;
+
+  box-shadow: 0 12px 30px rgba(0,230,118,.6);
+  transition: 0.3s;
 }
 
-.bottom-bar button.active i{
-  transform: translateY(-3px);
+.center-btn i{
+  font-size: 26px;
 }
 
-.bottom-bar button:active{
+.center-btn:active{
   transform: scale(0.92);
+}
+
+/* تفعيل */
+.bottom-bar button.active:not(.center-btn){
+  color:#f5c26b;
 }
 </style>
 </head>
@@ -802,25 +822,32 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   <span>المباريات</span>
 </button>
 
-<button onclick="openTab(this,'upgradeBox')">
-  <i class="fa-solid fa-crown"></i>
-  <span>المستوى</span>
-</button>
+<div class="bottom-bar">
+  <button onclick="openProfile()">
+    <i class="fa-solid fa-user"></i>
+    <span>بروفايل</span>
+  </button>
 
-<button onclick="openTab(this,'profileBox')">
-  <i class="fa-solid fa-user"></i>
-  <span>بروفايل</span>
-</button>
+  <button onclick="openUpgrade()">
+    <i class="fa-solid fa-crown"></i>
+    <span>المستوى</span>
+  </button>
 
-<button onclick="setActiveTab(this); alert('قريبًا')">
-  <i class="fa-solid fa-gift"></i>
-  <span>الجوائز</span>
-</button>
+  <!-- ⭐ زر الوسط البارز -->
+  <button class="center-btn active"
+          onclick="openTab(this,'appBox')">
+    <i class="fa-solid fa-futbol"></i>
+  </button>
 
-<button onclick="setActiveTab(this); alert('الدعم')">
-  <i class="fa-solid fa-headset"></i>
-  <span>الدعم</span>
-</button>
+  <button onclick="setActiveTab(this); alert('قريبًا')">
+    <i class="fa-solid fa-gift"></i>
+    <span>الجوائز</span>
+  </button>
+
+  <button onclick="setActiveTab(this); alert('الدعم')">
+    <i class="fa-solid fa-headset"></i>
+    <span>الدعم</span>
+  </button>
 </div>
 
 <script type="module">
