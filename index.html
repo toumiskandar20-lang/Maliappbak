@@ -757,6 +757,24 @@ top: -6px;
       <i class="fa-solid fa-wallet"></i>
       تعبئة الحساب
     </button>
+    <div class="profile-section">
+  <h4>
+    <i class="fa-solid fa-link"></i>
+    رابط الدعوة الخاص بك
+  </h4>
+
+  <div class="referral-box">
+    <input type="text" id="referralLink" readonly>
+    <button onclick="copyReferral()">
+      <i class="fa-solid fa-copy"></i>
+    </button>
+  </div>
+
+  <button class="share-btn" onclick="shareReferral()">
+    <i class="fa-solid fa-share-nodes"></i>
+    مشاركة الرابط
+  </button>
+</div>
 
     <button onclick="openUpgrade()">
       <i class="fa-solid fa-arrow-trend-up"></i>
@@ -877,24 +895,6 @@ top: -6px;
     <i class="fa-solid fa-headset"></i>
     <span>الدعم</span>
   </button>
-   <div class="profile-section">
-  <h4>
-    <i class="fa-solid fa-link"></i>
-    رابط الدعوة الخاص بك
-  </h4>
-
-  <div class="referral-box">
-    <input type="text" id="referralLink" readonly>
-    <button onclick="copyReferral()">
-      <i class="fa-solid fa-copy"></i>
-    </button>
-  </div>
-
-  <button class="share-btn" onclick="shareReferral()">
-    <i class="fa-solid fa-share-nodes"></i>
-    مشاركة الرابط
-  </button>
-</div>
 
 </div>
 <script type="module">
