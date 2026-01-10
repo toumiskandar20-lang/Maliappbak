@@ -299,12 +299,7 @@ button{background:#00c853;font-weight:bold;cursor:pointer;}
   width:20%;
   transition:.3s;
 }
-  .level-icon{
-  font-size:20px;
-  background:linear-gradient(135deg,#ffd54f,#ff9100);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
+
   .balance-card{
   display:flex;
   align-items:center;
@@ -876,7 +871,7 @@ top: -6px;
     <span>المباريات</span>
   </button>
 
-  <button onclick="openProfile()">
+<button onclick="openTab(this,'profileBox')">
     <i class="fa-solid fa-user"></i>
     <span>بروفايل</span>
   </button>
@@ -919,11 +914,7 @@ import {
   serverTimestamp,
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-const LEVEL_REWARDS = {
-  1: 0.5,
-  2: 1.5,
-  3: 3
-};
+
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
@@ -1035,11 +1026,12 @@ window.login = async ()=>{
 const navBar = document.getElementById("navBar");
 
 onAuthStateChanged(auth, async (user)=>{
-  if(!user){
-    showView("authBox");
-    navBar.classList.add("hidden");
-    return;
-  }
+if(!user){
+  showView("authBox");
+  navBar.classList.add("hidden");
+  registerBox.classList.add("hidden");
+  return;
+}
 
   navBar.classList.remove("hidden");
 
