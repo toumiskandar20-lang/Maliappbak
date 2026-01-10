@@ -889,10 +889,6 @@ top: -6px;
   </button>
 
 <button onclick="openTab(this,'profileBox')">
-    <i class="fa-solid fa-user"></i>
-    <span>بروفايل</span>
-  </button>
-
   <button class="center-btn"
           onclick="openTab(this,'appBox')">
     <i class="fa-solid fa-futbol"></i>
@@ -1043,30 +1039,25 @@ window.login = async ()=>{
 const navBar = document.getElementById("navBar");
 
 onAuthStateChanged(auth, async (user)=>{
-if(!user){
-  showView("authBox");
-  navBar.classList.add("hidden");
-  registerBox.classList.add("hidden");
-  return;
-  
-}
-generateReferralLink();
-updateProfileUI();
+  if(!user){
+    showView("authBox");
+    navBar.classList.add("hidden");
+    registerBox.classList.add("hidden");
+    return;
+  }
+
   navBar.classList.remove("hidden");
 
   const snap = await getDoc(doc(db,"users",user.uid));
   userData = snap.data();
-  const baseUrl = location.origin + location.pathname;
 
-updateUI();
-generateReferralLink();
-await fetchMatches();
-  showView("appBox");
-
+  generateReferralLink();
   updateUI();
+  updateProfileUI();
+
+  showView("appBox");
   await fetchMatches();
 });
-
 window.openMyBets = ()=>{
   appBox.classList.add("hidden");
   myBetsBox.classList.remove("hidden");
@@ -1320,7 +1311,12 @@ async function settleMatch(match){
       if(userSnap.exists()){
         const lvl = userSnap.data().level || 1;
         const reward = LEVEL_REWARDS[lvl] || 0.5;
-
+const LEVEL_REWARDS = {
+  1: 0.5,
+  2: 1.5,
+  3: 3,
+  4: 5
+};
         await updateDoc(userRef,{
           balance: (userSnap.data().balance || 0) + reward
         });
@@ -1425,15 +1421,18 @@ window.copyAddress = ()=>{
     .forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
 } 
- function generateReferralLink(){
+function generateReferralLink(){
   const user = auth.currentUser;
   if(!user) return;
 
   const link =
     window.location.origin + "/?ref=" + user.uid;
 
-  document.getElementById("referralLink").value = link;
+  userData.referralLink = link;
 
+  const input = document.getElementById("referralLink");
+  if(input) input.value = link;
+}
 </script>
 
 </body>
