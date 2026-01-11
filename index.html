@@ -753,20 +753,28 @@ top: -6px;
   </div>
 
   <!-- QUICK STATS -->
-  <div class="profile-stats">
-    <div class="stat">
-      <span class="stat-number" id="statBets">0</span>
-      <span class="stat-label">رهانات</span>
-    </div>
-    <div class="stat">
-      <span class="stat-number" id="statWins">0</span>
-      <span class="stat-label">فوز</span>
-    </div>
-    <div class="stat">
-      <span class="stat-number" id="statLoss">0</span>
-      <span class="stat-label">خسارة</span>
-    </div>
+<div class="profile-stats">
+  <div class="stat">
+    <span class="stat-number" id="statBets">0</span>
+    <span class="stat-label">رهانات</span>
   </div>
+
+  <div class="stat">
+    <span class="stat-number" id="statWins">0</span>
+    <span class="stat-label">فوز</span>
+  </div>
+
+  <div class="stat">
+    <span class="stat-number" id="statLoss">0</span>
+    <span class="stat-label">خسارة</span>
+  </div>
+
+  <!-- 👥 الدعوات -->
+  <div class="stat">
+    <span class="stat-number" id="statInvites">0</span>
+    <span class="stat-label">الدعوات</span>
+  </div>
+</div> 
 
   <!-- PROFILE ACTIONS -->
   <div class="profile-actions">
@@ -930,7 +938,12 @@ import {
   serverTimestamp,
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
+const REFERRAL_BONUS_NEW = 50;
+const REFERRAL_BONUS_OWNER = 100;
+  function getReferralFromURL(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get("ref"); // userId أو null
+}
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
@@ -1030,22 +1043,49 @@ window.submitRegister = async ()=>{
     return;
   }
 
-  const cred = await createUserWithEmailAndPassword(auth,email,pass);
+  try{
+    // 🔗 قراءة رابط الدعوة من URL
+    const referrerId = getReferralFromURL(); // قد تكون null
 
-  await setDoc(doc(db,"users",cred.user.uid),{
-    email,
-    phone,
-    balance: 1000,
-    level: 1,
-    createdAt: serverTimestamp()
-  });
+    // إنشاء الحساب
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
 
-  registerBox.classList.add("hidden");
-  appBox.classList.remove("hidden");
-};
+    // الرصيد الابتدائي
+    let startBalance = 1000;
 
-window.login = async ()=>{
-  await signInWithEmailAndPassword(auth,email.value,password.value);
+    if(referrerId){
+      startBalance += REFERRAL_BONUS_NEW; // بونص للمستخدم الجديد
+    }
+
+    // إنشاء حساب المستخدم
+    await setDoc(doc(db,"users",cred.user.uid),{
+      email,
+      phone,
+      balance: startBalance,
+      level: 1,
+      referredBy: referrerId || null,
+      createdAt: serverTimestamp()
+    });
+
+    // 🎁 مكافأة صاحب الدعوة
+    if(referrerId){
+      const refUserRef = doc(db,"users",referrerId);
+      const refSnap = await getDoc(refUserRef);
+
+      if(refSnap.exists()){
+        await updateDoc(refUserRef,{
+          balance: (refSnap.data().balance || 0) + REFERRAL_BONUS_OWNER
+        });
+      }
+    }
+
+    alert("✅ تم إنشاء الحساب بنجاح");
+    showView("appBox");
+
+  }catch(e){
+    console.error(e);
+    alert("❌ خطأ أثناء التسجيل");
+  }
 };
 
 /* ================= AUTH STATE ================= */
@@ -1361,6 +1401,18 @@ window.openProfile = ()=>{
   if(!userData.referralLink){
     generateReferralLink();
   }
+    async function loadReferralCount(){
+  const user = auth.currentUser;
+  if(!user) return;
+
+  const q = query(
+    collection(db,"users"),
+    where("referredBy","==",user.uid)
+  );
+
+  const snap = await getDocs(q);
+  document.getElementById("statInvites").innerText = snap.size;
+}
 
   const input = document.getElementById("referralLink");
   if(input){
