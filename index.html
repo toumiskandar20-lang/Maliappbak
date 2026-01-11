@@ -895,8 +895,8 @@ top: -6px;
 
 <button class="center-btn"
         onclick="openTab(this,'appBox')">
-  <i class="
-
+  <i class="fa-solid fa-futbol"></i>
+</button>
   <button onclick="alert('قريبًا')">
     <i class="fa-solid fa-gift"></i>
     <span>الجوائز</span>
@@ -960,6 +960,11 @@ let matches = [];
   });
   document.getElementById(id).classList.remove("hidden");
 } 
+  function setActiveTab(btn){
+  document.querySelectorAll(".bottom-bar button")
+    .forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+}
   window.openTab = function(btn, viewId){
   setActiveTab(btn);
   showView(viewId);
@@ -970,7 +975,12 @@ const LEVELS = {
   2: { reward: 1.5 },
   3: { reward: 3 }
 };
-
+const LEVEL_REWARDS = {
+  1: 0.5,
+  2: 1.5,
+  3: 3,
+  4: 5
+};
 /* ================= UI ================= */
 function updateUI(){
   balance.innerText = userData.balance ?? 0;
@@ -1357,7 +1367,6 @@ window.openProfile = ()=>{
     input.value = userData.referralLink;
   }
 }
-}
 
 function shareReferral(){
   if(navigator.share){
@@ -1421,11 +1430,7 @@ window.copyAddress = ()=>{
   navigator.clipboard.writeText("TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW");
   alert("✅ تم نسخ العنوان");
 }; 
- function setActiveTab(btn){
-  document.querySelectorAll(".bottom-bar button")
-    .forEach(b=>b.classList.remove("active"));
-  btn.classList.add("active");
-} 
+ 
 function generateReferralLink(){
   const user = auth.currentUser;
   if(!user) return;
@@ -1438,6 +1443,16 @@ function generateReferralLink(){
   const input = document.getElementById("referralLink");
   if(input) input.value = link;
 }
+  window.copyReferral = function(){
+  const input = document.getElementById("referralLink");
+  if(!input) return;
+
+  input.select();
+  input.setSelectionRange(0,99999);
+  navigator.clipboard.writeText(input.value);
+
+  alert("✅ تم نسخ رابط الدعوة");
+};
 </script>
 
 </body>
