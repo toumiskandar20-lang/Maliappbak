@@ -889,10 +889,13 @@ top: -6px;
   </button>
 
 <button onclick="openTab(this,'profileBox')">
-  <button class="center-btn"
-          onclick="openTab(this,'appBox')">
-    <i class="fa-solid fa-futbol"></i>
-  </button>
+  <i class="fa-solid fa-user"></i>
+  <span>بروفيل</span>
+</button>
+
+<button class="center-btn"
+        onclick="openTab(this,'appBox')">
+  <i class="
 
   <button onclick="alert('قريبًا')">
     <i class="fa-solid fa-gift"></i>
@@ -1311,12 +1314,7 @@ async function settleMatch(match){
       if(userSnap.exists()){
         const lvl = userSnap.data().level || 1;
         const reward = LEVEL_REWARDS[lvl] || 0.5;
-const LEVEL_REWARDS = {
-  1: 0.5,
-  2: 1.5,
-  3: 3,
-  4: 5
-};
+
         await updateDoc(userRef,{
           balance: (userSnap.data().balance || 0) + reward
         });
@@ -1350,8 +1348,15 @@ window.openProfile = ()=>{
   updateProfileUI();
 };
   function updateProfileUI(){
-  document.getElementById("referralLink").value =
-    userData.referralLink || "";
+  if(!userData.referralLink){
+    generateReferralLink();
+  }
+
+  const input = document.getElementById("referralLink");
+  if(input){
+    input.value = userData.referralLink;
+  }
+}
 }
 
 function shareReferral(){
