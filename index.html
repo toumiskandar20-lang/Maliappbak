@@ -1092,13 +1092,31 @@ window.submitRegister = async ()=>{
 const navBar = document.getElementById("navBar");
 
 onAuthStateChanged(auth, async (user)=>{
-  if(!user){
-    showView("authBox");
+  const ref = getReferralFromURL();
+
+  // 🟡 جاء من رابط دعوة
+  if(ref && !user){
+    showView("registerBox");
     navBar.classList.add("hidden");
-    registerBox.classList.add("hidden");
     return;
   }
 
+  // ❌ غير مسجل
+  if(!user){
+    showView("authBox");
+    navBar.classList.add("hidden");
+    return;
+  }
+
+  // ⚠️ مسجل لكن فتح رابط دعوة → نطلب إنشاء حساب جديد
+  if(ref && user){
+    await signOut(auth);
+    showView("registerBox");
+    navBar.classList.add("hidden");
+    return;
+  }
+
+  // ✅ دخول عادي
   navBar.classList.remove("hidden");
 
   const snap = await getDoc(doc(db,"users",user.uid));
