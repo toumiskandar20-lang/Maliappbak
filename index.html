@@ -1487,8 +1487,10 @@ function generateReferralLink(){
   const user = auth.currentUser;
   if(!user) return;
 
-  const link =
-    window.location.origin + "/?ref=" + user.uid;
+  const baseURL =
+    window.location.origin + window.location.pathname;
+
+  const link = baseURL + "?ref=" + user.uid;
 
   userData.referralLink = link;
 
