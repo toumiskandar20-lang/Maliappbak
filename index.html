@@ -1312,7 +1312,15 @@ window.placeBet = async (matchId, choice, btn)=>{
 
     const betRef = doc(db,"bets",`${user.uid}_${matchId}`);
     const snap = await getDoc(betRef);
+if(userData.level === 0){
+  alert("⛔ يجب ترقية المستوى أولًا قبل التكهن");
+  return;
+}
 
+if(userData.balance <= 0){
+  alert("⛔ رصيدك غير كافٍ");
+  return;
+}
     if(snap.exists()){
       alert("❌ لا يمكنك تغيير التكهن");
       return;
