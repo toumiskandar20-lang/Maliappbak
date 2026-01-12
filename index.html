@@ -997,12 +997,14 @@ const LEVEL_REWARDS = {
 /* ================= UI ================= */
 function updateUI(){
   balance.innerText = userData.balance ?? 0;
-  updateLevelUI(); // 👈 مهم
+  updateLevelUI();
 }
-  function updateLevelUI(){
-  const lvl = userData.level || 1;
+
+function updateLevelUI(){
+  const lvl = userData.level ?? 0; // ✅ يدعم مستوى 0
 
   const names = {
+    0: "Locked",
     1: "Bronze Member",
     2: "Silver Member",
     3: "Gold Member",
@@ -1010,6 +1012,7 @@ function updateUI(){
   };
 
   const progress = {
+    0: "0%",
     1: "25%",
     2: "50%",
     3: "75%",
@@ -1018,9 +1021,8 @@ function updateUI(){
 
   level.innerText = lvl;
   levelName.innerText = names[lvl] || "VIP";
-  levelBar.style.width = progress[lvl] || "100%";
+  levelBar.style.width = progress[lvl] || "0%";
 }
-
 /* ================= AUTH ================= */
 window.openRegister = ()=>{
   authBox.classList.add("hidden");
@@ -1050,13 +1052,14 @@ window.submitRegister = async ()=>{
     // 🔐 إنشاء الحساب
     const cred = await createUserWithEmailAndPassword(auth,email,pass);
 
-    const userDataToSave = {
-      email,
-      phone,
-      balance: 1000,
-      level: 1,
-      createdAt: serverTimestamp()
-    };
+await setDoc(doc(db,"users",cred.user.uid),{
+  email,
+  phone,
+  balance: 0,        // يبدأ من 0
+  level: 0,          // مستوى 0 (مغلق)
+  referredBy: referrerId || null,
+  createdAt: serverTimestamp()
+});
 
     // ✅ إذا جاء من رابط دعوة
     if(referredBy && referredBy !== cred.user.uid){
@@ -1306,7 +1309,15 @@ window.placeBet = async (matchId, choice, btn)=>{
 
     // 🔍 هذا السطر هنا بالضبط
     console.log("USER:", user?.uid);
+if(userData.level === 0){
+  alert("⛔ يجب ترقية المستوى أولًا قبل التكهن");
+  return;
+}
 
+if(userData.balance <= 0){
+  alert("⛔ رصيدك غير كافٍ");
+  return;
+}
     if(!user){
       alert("❌ يجب تسجيل الدخول");
       return;
