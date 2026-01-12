@@ -1044,41 +1044,31 @@ window.submitRegister = async ()=>{
       return;
     }
 
-    // 🔗 قراءة رابط الدعوة
-    const referrerId = getReferralFromURL();
+    // 👈 جلب ref من الرابط
+    const referredBy = getReferralFromURL();
 
     // 🔐 إنشاء الحساب
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    const cred = await createUserWithEmailAndPassword(auth,email,pass);
 
-    let startBalance = 1000;
-
-    if(referrerId && referrerId !== cred.user.uid){
-      startBalance += REFERRAL_BONUS_NEW;
-    }
-
-    // 🧾 إنشاء وثيقة المستخدم
-    await setDoc(doc(db,"users",cred.user.uid),{
+    const userDataToSave = {
       email,
       phone,
-      balance: startBalance,
+      balance: 1000,
       level: 1,
-      referredBy: referrerId || null,
       createdAt: serverTimestamp()
-    });
+    };
 
-    // 🎁 مكافأة صاحب الدعوة
-    if(referrerId){
-      const refUserRef = doc(db,"users",referrerId);
-      const refSnap = await getDoc(refUserRef);
-
-      if(refSnap.exists()){
-        await updateDoc(refUserRef,{
-          balance: (refSnap.data().balance || 0) + REFERRAL_BONUS_OWNER
-        });
-      }
+    // ✅ إذا جاء من رابط دعوة
+    if(referredBy && referredBy !== cred.user.uid){
+      userDataToSave.referredBy = referredBy;
+      userDataToSave.balance += 50; // 🎁 Bonus للتسجيل
     }
 
-    alert("✅ تم إنشاء الحساب بنجاح");
+    await setDoc(
+      doc(db,"users",cred.user.uid),
+      userDataToSave
+    );
+
     showView("appBox");
 
   }catch(e){
