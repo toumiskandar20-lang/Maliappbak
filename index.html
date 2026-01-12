@@ -1033,31 +1033,30 @@ window.backToLogin = ()=>{
 };
 
 window.submitRegister = async ()=>{
-  const email = regEmail.value.trim();
-  const phone = regPhone.value.trim();
-  const pass = regPassword.value;
-  const confirm = regConfirm.value;
-
-  if(!email || !phone || !pass || pass !== confirm){
-    alert("❌ تحقق من البيانات");
-    return;
-  }
-
   try{
-    // 🔗 قراءة رابط الدعوة من URL
-    const referrerId = getReferralFromURL(); // قد تكون null
+    const email = regEmail.value.trim();
+    const phone = regPhone.value.trim();
+    const pass = regPassword.value;
+    const confirm = regConfirm.value;
 
-    // إنشاء الحساب
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-
-    // الرصيد الابتدائي
-    let startBalance = 1000;
-
-    if(referrerId){
-      startBalance += REFERRAL_BONUS_NEW; // بونص للمستخدم الجديد
+    if(!email || !phone || !pass || pass !== confirm){
+      alert("❌ تحقق من البيانات");
+      return;
     }
 
-    // إنشاء حساب المستخدم
+    // 🔗 قراءة رابط الدعوة
+    const referrerId = getReferralFromURL();
+
+    // 🔐 إنشاء الحساب
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+
+    let startBalance = 1000;
+
+    if(referrerId && referrerId !== cred.user.uid){
+      startBalance += REFERRAL_BONUS_NEW;
+    }
+
+    // 🧾 إنشاء وثيقة المستخدم
     await setDoc(doc(db,"users",cred.user.uid),{
       email,
       phone,
@@ -1083,11 +1082,10 @@ window.submitRegister = async ()=>{
     showView("appBox");
 
   }catch(e){
-    console.error(e);
-    alert("❌ خطأ أثناء التسجيل");
+    console.error("REGISTER ERROR 👉", e);
+    alert("❌ خطأ أثناء التسجيل:\n" + e.message);
   }
 };
-
 /* ================= AUTH STATE ================= */
 const navBar = document.getElementById("navBar");
 
