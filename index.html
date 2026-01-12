@@ -1082,32 +1082,27 @@ const navBar = document.getElementById("navBar");
 onAuthStateChanged(auth, async (user)=>{
   const ref = getReferralFromURL();
 
-  // 🟡 جاء من رابط دعوة
-  if(ref && !user){
-    showView("registerBox");
-    navBar.classList.add("hidden");
-    return;
-  }
-
   // ❌ غير مسجل
   if(!user){
-    showView("authBox");
+    if(ref){
+      showView("registerBox"); // جاء من رابط دعوة
+    }else{
+      showView("authBox"); // دخول عادي
+    }
     navBar.classList.add("hidden");
     return;
   }
 
-  // ⚠️ مسجل لكن فتح رابط دعوة → نطلب إنشاء حساب جديد
-  if(ref && user){
-    await signOut(auth);
-    showView("registerBox");
-    navBar.classList.add("hidden");
-    return;
-  }
-
-  // ✅ دخول عادي
+  // ✅ مسجل دخول
   navBar.classList.remove("hidden");
 
   const snap = await getDoc(doc(db,"users",user.uid));
+  if(!snap.exists()){
+    // حماية إضافية
+    showView("registerBox");
+    return;
+  }
+
   userData = snap.data();
 
   generateReferralLink();
