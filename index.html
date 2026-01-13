@@ -995,6 +995,7 @@ const authBox = document.getElementById("authBox");
 const registerBox = document.getElementById("registerBox");
 const appBox = document.getElementById("appBox");
 const profileBox = document.getElementById("profileBox");
+  const myBetsBox = document.getElementById("myBetsBox");
 /* ================= LEVELS ================= */
 const LEVELS = {
   1: { reward: 0.5 },
@@ -1288,7 +1289,8 @@ function loadMatches(){
     </div>
   </div>
 `;
-
+}); // ✅ إغلاق forEach
+}   // ✅ إغلاق loadMatche
 /* ================= BET ================= */
 window.placeBet = async (matchId, choice, btn)=>{
   try{
@@ -1412,12 +1414,6 @@ window.openProfile = ()=>{
 
   const snap = await getDocs(q);
   document.getElementById("statInvites").innerText = snap.size;
-}
-
-  const input = document.getElementById("referralLink");
-  if(input){
-    input.value = userData.referralLink;
-  }
 }
 
 function shareReferral(){
