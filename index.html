@@ -643,6 +643,10 @@ top: -6px;
   border-radius:8px;
   font-weight:bold;
 }
+  .bet-btn:disabled{
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 </style>
 </head>
 <body>
@@ -998,6 +1002,7 @@ const LEVEL_REWARDS = {
 function updateUI(){
   balance.innerText = userData.balance ?? 0;
   updateLevelUI();
+ const locked = userData.level === 0; 
 }
 
 function updateLevelUI(){
@@ -1046,32 +1051,25 @@ window.submitRegister = async ()=>{
       return;
     }
 
-    // 👈 جلب ref من الرابط
-    const referredBy = getReferralFromURL();
+    const referredBy = getReferralFromURL(); // ✅
 
-    // 🔐 إنشاء الحساب
     const cred = await createUserWithEmailAndPassword(auth,email,pass);
 
-await setDoc(doc(db,"users",cred.user.uid),{
-  email,
-  phone,
-  balance: 0,        // يبدأ من 0
-  level: 0,          // مستوى 0 (مغلق)
-  referredBy: referrerId || null,
-  createdAt: serverTimestamp()
-});
-
-    // ✅ إذا جاء من رابط دعوة
-    if(referredBy && referredBy !== cred.user.uid){
-      userDataToSave.referredBy = referredBy;
-      userDataToSave.balance += 50; // 🎁 Bonus للتسجيل
-    }
+    const userDataToSave = {
+      email,
+      phone,
+      balance: referredBy ? 50 : 0, // 🎁 بونص تسجيل
+      level: 0,
+      referredBy: referredBy || null,
+      createdAt: serverTimestamp()
+    };
 
     await setDoc(
       doc(db,"users",cred.user.uid),
       userDataToSave
     );
 
+    alert("✅ تم إنشاء الحساب بنجاح");
     showView("appBox");
 
   }catch(e){
@@ -1114,6 +1112,7 @@ onAuthStateChanged(auth, async (user)=>{
 
   showView("appBox");
   await fetchMatches();
+  loadReferralCount();
 });
 window.openMyBets = ()=>{
   appBox.classList.add("hidden");
@@ -1295,9 +1294,10 @@ const isToday =
         onclick="placeBet('${m.id}','2', this)">
   2
 </button>
-<button class="bet-btn" onclick="placeBet(...)">
-  تكهن
-</button>
+<button class="bet-btn"
+  ${locked ? "disabled" : ""}
+  onclick="placeBet('${m.id}','1', this)">
+
         </div>
       </div>
     `;
