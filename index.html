@@ -1002,7 +1002,6 @@ const LEVEL_REWARDS = {
 function updateUI(){
   balance.innerText = userData.balance ?? 0;
   updateLevelUI();
- const locked = userData.level === 0; 
 }
 
 function updateLevelUI(){
@@ -1242,67 +1241,42 @@ function loadMatches(){
   }
 
   const now = new Date();
+  const locked = userData.level === 0; // ✅ هنا الحل
 
   matches.forEach(m=>{
     const canBet = now < m.startTime;
-const isToday =
-  new Date().toDateString() === m.startTime.toDateString();
+    const isToday =
+      new Date().toDateString() === m.startTime.toDateString();
+
     matchesBox.innerHTML += `
       <div class="match-card">
-        <div class="match-header">
-          <div class="team">
-            <i class="fa-solid fa-shield"></i>
-            ${m.teamA}
-          </div>
 
-          <span class="vs">VS</span>
+        ...
 
-          <div class="team">
-            <i class="fa-solid fa-shield"></i>
-            ${m.teamB}
-          </div>
-        </div>
-
-       <div class="match-time pro-time">
-  <i class="fa-solid fa-clock"></i>
-  <span class="time-text">
-   ${isToday ? "اليوم" : m.startTime.toLocaleDateString("ar-TN")}
-  </span>
-  <span class="time-sep">•</span>
-  <span class="time-hour">
-    ${m.startTime.toLocaleTimeString("ar-TN", { hour: "2-digit", minute: "2-digit" })}
-  </span>
-</div>
         <div class="bet-buttons">
-   <button class="bet-btn"
-        data-id="${m.id}"
-        data-choice="1"
-        onclick="placeBet('${m.id}','1', this)">
-  1
-</button>
 
-<button class="bet-btn"
-        data-id="${m.id}"
-        data-choice="X"
-        onclick="placeBet('${m.id}','X', this)">
-  X
-</button>
+          <button class="bet-btn"
+            ${locked ? "disabled" : ""}
+            onclick="placeBet('${m.id}','1', this)">
+            1
+          </button>
 
-<button class="bet-btn"
-        data-id="${m.id}"
-        data-choice="2"
-        onclick="placeBet('${m.id}','2', this)">
-  2
-</button>
-<button class="bet-btn"
-  ${locked ? "disabled" : ""}
-  onclick="placeBet('${m.id}','1', this)">
+          <button class="bet-btn"
+            ${locked ? "disabled" : ""}
+            onclick="placeBet('${m.id}','X', this)">
+            X
+          </button>
+
+          <button class="bet-btn"
+            ${locked ? "disabled" : ""}
+            onclick="placeBet('${m.id}','2', this)">
+            2
+          </button>
 
         </div>
       </div>
     `;
   });
- 
 }
 
 /* ================= BET ================= */
