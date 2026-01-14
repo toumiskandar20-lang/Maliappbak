@@ -735,7 +735,7 @@ top: -6px;
 <!-- ================= PROFILE ================= -->
 <div class="box hidden" id="profileBox">
 
-  <button onclick="backToMatches()" class="back-btn">
+  <button onclick="showView('appBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
   </button>
@@ -748,11 +748,21 @@ top: -6px;
 
     <div class="profile-info">
       <div class="profile-name" id="profileName">User</div>
-      <div class="profile-id">ID: <span id="profileId">---</span></div>
+      <div class="profile-id">
+        ID: <span id="profileId">---</span>
+      </div>
       <div class="profile-level">
         <i class="fa-solid fa-crown"></i>
         <span id="profileLevel">Bronze Member</span>
       </div>
+    </div>
+  </div>
+
+  <!-- PROFILE STATS -->
+  <div class="profile-stats">
+    <div class="stat">
+      <span class="stat-number" id="statInvites">0</span>
+      <span class="stat-label">الدعوات</span>
     </div>
   </div>
 
@@ -774,8 +784,10 @@ top: -6px;
   <!-- REFERRAL -->
   <div class="profile-section">
     <h4>🔗 رابط الدعوة</h4>
-    <input id="referralLink" readonly>
-    <button onclick="copyReferral()">نسخ الرابط</button>
+    <div class="referral-box">
+      <input id="referralLink" readonly>
+      <button onclick="copyReferral()">نسخ</button>
+    </div>
   </div>
 
 </div>
@@ -783,7 +795,7 @@ top: -6px;
 <!-- ================= WITHDRAW ================= -->
 <div class="box hidden" id="withdrawBox">
 
-  <button onclick="openTab(null,'profileBox')" class="back-btn">
+  <button onclick="showView('profileBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
   </button>
@@ -796,7 +808,9 @@ top: -6px;
   <!-- BALANCE INFO -->
   <div class="topup-card">
     <p>💰 الرصيد المتاح للسحب</p>
-    <h2><span id="withdrawBalance">0</span> USDT</h2>
+    <h2>
+      <span id="withdrawBalance">0</span> USDT
+    </h2>
     <p class="warning">الحد الأدنى للسحب: 20 USDT</p>
   </div>
 
@@ -840,73 +854,6 @@ top: -6px;
 
 </div>
 
-<div class="box hidden" id="profileBox">
-
-  <button onclick="backToMatches()" class="back-btn">
-    <i class="fa-solid fa-arrow-left"></i>
-    العودة
-  </button>
-
-  <!-- HEADER -->
-  <div class="profile-header"> ... </div>
-
-  <!-- STATS -->
-  <div class="profile-stats">
-    <div class="stat">
-      <span id="statBets">0</span>
-      <span>رهانات</span>
-    </div>
-    <div class="stat">
-      <span id="statWins">0</span>
-      <span>فوز</span>
-    </div>
-    <div class="stat">
-      <span id="statLoss">0</span>
-      <span>خسارة</span>
-    </div>
-    <div class="stat">
-      <span id="statInvites">0</span>
-      <span>الدعوات</span>
-    </div>
-  </div>
-
-  <!-- ACTIONS -->
-  <div class="profile-actions">
-
-    <button onclick="openTopUp()">
-      <i class="fa-solid fa-wallet"></i>
-      تعبئة الحساب
-    </button>
-
-    <button onclick="openWithdraw()">
-      <i class="fa-solid fa-money-bill-wave"></i>
-      طلب سحب
-    </button>
-
-    <button onclick="openUpgrade()">
-      <i class="fa-solid fa-arrow-trend-up"></i>
-      ترقية المستوى
-    </button>
-
-    <button onclick="logout()" class="danger">
-      <i class="fa-solid fa-right-from-bracket"></i>
-      تسجيل الخروج
-    </button>
-
-  </div>
-
-  <!-- REFERRAL -->
-  <div class="profile-section">
-    <h4>🔗 رابط الدعوة</h4>
-    <div class="referral-box">
-      <input id="referralLink" readonly>
-      <button onclick="copyReferral()">نسخ</button>
-    </div>
-  </div>
-
-</div>
-
-</div> 
   <div class="box hidden" id="upgradeBox">
 
   <button onclick="backToMatches()" class="back-btn">
