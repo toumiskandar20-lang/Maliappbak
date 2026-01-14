@@ -732,7 +732,7 @@ top: -6px;
   العودة إلى المباريات
 </button>
 </div>
- <!-- PROFILE -->
+<!-- ================= PROFILE ================= -->
 <div class="box hidden" id="profileBox">
 
   <button onclick="backToMatches()" class="back-btn">
@@ -755,10 +755,35 @@ top: -6px;
       </div>
     </div>
   </div>
-  <!-- WITHDRAW -->
+
+  <!-- PROFILE ACTIONS -->
+  <div class="profile-actions">
+
+    <button onclick="openTopUp()">
+      <i class="fa-solid fa-wallet"></i>
+      تعبئة الحساب
+    </button>
+
+    <button onclick="openWithdraw()">
+      <i class="fa-solid fa-money-bill-wave"></i>
+      طلب سحب
+    </button>
+
+  </div>
+
+  <!-- REFERRAL -->
+  <div class="profile-section">
+    <h4>🔗 رابط الدعوة</h4>
+    <input id="referralLink" readonly>
+    <button onclick="copyReferral()">نسخ الرابط</button>
+  </div>
+
+</div>
+
+<!-- ================= WITHDRAW ================= -->
 <div class="box hidden" id="withdrawBox">
 
-  <button onclick="backToMatches()" class="back-btn">
+  <button onclick="openTab(null,'profileBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
   </button>
