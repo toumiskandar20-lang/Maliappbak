@@ -755,6 +755,65 @@ top: -6px;
       </div>
     </div>
   </div>
+  <!-- WITHDRAW -->
+<div class="box hidden" id="withdrawBox">
+
+  <button onclick="backToMatches()" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i>
+    العودة
+  </button>
+
+  <h3 class="upgrade-title">
+    <i class="fa-solid fa-money-bill-transfer"></i>
+    طلب سحب
+  </h3>
+
+  <!-- BALANCE INFO -->
+  <div class="topup-card">
+    <p>💰 الرصيد المتاح للسحب</p>
+    <h2><span id="withdrawBalance">0</span> USDT</h2>
+    <p class="warning">الحد الأدنى للسحب: 20 USDT</p>
+  </div>
+
+  <!-- FORM -->
+  <div class="topup-card" style="margin-top:15px">
+
+    <label>طريقة السحب</label>
+    <select id="withdrawMethod">
+      <option value="USDT_TRC20">USDT (TRC20)</option>
+    </select>
+
+    <label>عنوان المحفظة</label>
+    <input
+      id="withdrawAddress"
+      placeholder="TXxxxxxxxxxxxxxxxxxxxx"
+    >
+
+    <label>المبلغ</label>
+    <input
+      id="withdrawAmount"
+      type="number"
+      placeholder="مثال: 50"
+    >
+
+    <!-- SUMMARY -->
+    <div class="wallet-address" style="margin-top:10px">
+      العمولة: <strong>2 USDT</strong><br>
+      الصافي: <strong id="withdrawNet">0 USDT</strong>
+    </div>
+
+    <label style="margin-top:10px;display:flex;gap:8px;align-items:center">
+      <input type="checkbox" id="agreeWithdraw">
+      أوافق على شروط السحب
+    </label>
+
+    <button class="topup-btn" style="margin-top:12px">
+      🚀 إرسال طلب السحب
+    </button>
+
+  </div>
+
+</div>
 
   <!-- QUICK STATS -->
 <div class="profile-stats">
@@ -786,6 +845,10 @@ top: -6px;
       <i class="fa-solid fa-wallet"></i>
       تعبئة الحساب
     </button>
+    <button onclick="openWithdraw()">
+  <i class="fa-solid fa-money-bill-wave"></i>
+  طلب سحب
+</button>
    <div class="profile-section">
   <h4>🔗 رابط الدعوة</h4>
 
@@ -1392,6 +1455,13 @@ window.openUpgrade = ()=>{
 window.openProfile = ()=>{
   showView("profileBox");
   updateProfileUI();
+};
+  window.openWithdraw = ()=>{
+  showView("withdrawBox");
+
+  // عرض الرصيد
+  document.getElementById("withdrawBalance").innerText =
+    userData.balance ?? 0;
 };
   function updateProfileUI(){
   if(!userData.referralLink){
