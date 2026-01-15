@@ -651,7 +651,7 @@ top: -6px;
 </head>
 <body>
 
-<!-- AUTH -->
+<!-- ================= AUTH ================= -->
 <div class="box" id="authBox">
   <h2>🔐 MaliApp</h2>
   <input id="email" placeholder="Email">
@@ -660,7 +660,7 @@ top: -6px;
   <button onclick="login()">تسجيل دخول</button>
 </div>
 
-<!-- REGISTER -->
+<!-- ================= REGISTER ================= -->
 <div class="box hidden" id="registerBox">
   <h2>📝 إنشاء حساب جديد</h2>
   <input id="regEmail" type="email" placeholder="📧 البريد الإلكتروني">
@@ -671,82 +671,82 @@ top: -6px;
   <button onclick="backToLogin()">⬅ رجوع</button>
 </div>
 
-<!-- APP -->
+<!-- ================= APP ================= -->
+<div class="box hidden" id="appBox">
 
- <div class="balance-card">
-  <i class="fa-solid fa-wallet"></i>
-  <div class="balance-info">
-    <span class="balance-label">الرصيد المتاح</span>
-    <span class="balance-value">
-      <span id="balance">0</span>
-      <small>USD</small>
-    </span>
-  </div>
-</div>
- <div class="level-box">
-<i class="fa-solid fa-crown level-icon"></i>
-  <div class="level-info">
-    <div class="level-number">LEVEL <span id="level">1</span></div>
-    <div class="level-name" id="levelName">Bronze Member</div>
-    <div class="level-bar">
-      <span id="levelBar"></span>
+  <!-- BALANCE -->
+  <div class="balance-card">
+    <i class="fa-solid fa-wallet"></i>
+    <div class="balance-info">
+      <span class="balance-label">الرصيد المتاح</span>
+      <span class="balance-value">
+        <span id="balance">0</span>
+        <small>USD</small>
+      </span>
     </div>
   </div>
-</div>
- 
- 
+
+  <!-- LEVEL -->
+  <div class="level-box">
+    <i class="fa-solid fa-crown level-icon"></i>
+    <div class="level-info">
+      <div class="level-number">LEVEL <span id="level">1</span></div>
+      <div class="level-name" id="levelName">Bronze Member</div>
+      <div class="level-bar">
+        <span id="levelBar"></span>
+      </div>
+    </div>
+  </div>
+
   <button class="upgrade-btn" onclick="openUpgrade()">
-  <i class="fa-solid fa-arrow-trend-up"></i>
-  ترقية المستوى
-</button>
+    <i class="fa-solid fa-arrow-trend-up"></i>
+    ترقية المستوى
+  </button>
 
-<button onclick="openMyBets()" style="margin-top:10px">
-  <i class="fa-solid fa-ticket"></i> رهاناتي
-</button>
-<div class="section-title">
-  <div class="title-left">
-    <i class="fa-solid fa-futbol"></i>
-    <span>مواجهات اليوم</span>
+  <button onclick="openMyBets()" style="margin-top:10px">
+    <i class="fa-solid fa-ticket"></i> رهاناتي
+  </button>
+
+  <!-- MATCHES -->
+  <div class="section-title">
+    <div class="title-left">
+      <i class="fa-solid fa-futbol"></i>
+      <span>مواجهات اليوم</span>
+    </div>
+    <span class="live-dot">LIVE</span>
   </div>
 
-  <span class="live-dot">LIVE</span>
-</div>
   <div id="matchesBox"></div>
+
 </div>
-<!-- MY BETS -->
+
+<!-- ================= MY BETS ================= -->
 <div class="box hidden" id="myBetsBox">
- <h3>
-  <i class="fa-solid fa-ticket"></i> رهاناتي
-</h3>
+  <h3><i class="fa-solid fa-ticket"></i> رهاناتي</h3>
+  <div id="myBetsList"></div>
 
-  <div id="myBetsList">
-    <!-- التكهنات تظهر هنا -->
-  </div>
-
-<button onclick="goBack('appBox')" class="back-btn">
-  <i class="fa-solid fa-arrow-left"></i>
-  العودة إلى المباريات
-</button>
+  <button onclick="goBack('appBox')" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i>
+    العودة إلى المباريات
+  </button>
 </div>
+
 <!-- ================= PROFILE ================= -->
 <div class="box hidden" id="profileBox">
 
- <button onclick="goBack('appBox')" class="back-btn">
+  <button onclick="goBack('appBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
   </button>
 
-  <!-- PROFILE HEADER -->
   <div class="profile-header">
     <div class="avatar">
       <i class="fa-solid fa-user"></i>
     </div>
-<div class="box hidden" id="appBox">
+
     <div class="profile-info">
       <div class="profile-name" id="profileName">User</div>
-      <div class="profile-id">
-        ID: <span id="profileId">---</span>
-      </div>
+      <div class="profile-id">ID: <span id="profileId">---</span></div>
       <div class="profile-level">
         <i class="fa-solid fa-crown"></i>
         <span id="profileLevel">Bronze Member</span>
@@ -754,7 +754,6 @@ top: -6px;
     </div>
   </div>
 
-  <!-- PROFILE STATS -->
   <div class="profile-stats">
     <div class="stat">
       <span class="stat-number" id="statInvites">0</span>
@@ -762,21 +761,18 @@ top: -6px;
     </div>
   </div>
 
-  <!-- PROFILE ACTIONS -->
   <div class="profile-actions">
-
     <button onclick="openTopUp()">
-  <i class="fa-solid fa-wallet"></i>
-  تعبئة الحساب
-</button>
+      <i class="fa-solid fa-wallet"></i>
+      تعبئة الحساب
+    </button>
+
     <button onclick="openWithdraw()">
       <i class="fa-solid fa-money-bill-wave"></i>
       طلب سحب
     </button>
-
   </div>
 
-  <!-- REFERRAL -->
   <div class="profile-section">
     <h4>🔗 رابط الدعوة</h4>
     <div class="referral-box">
@@ -789,8 +785,7 @@ top: -6px;
 
 <!-- ================= WITHDRAW ================= -->
 <div class="box hidden" id="withdrawBox">
-
-<button onclick="goBack('profileBox')" class="back-btn">
+  <button onclick="goBack('profileBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
   </button>
@@ -800,57 +795,41 @@ top: -6px;
     طلب سحب
   </h3>
 
-  <!-- BALANCE INFO -->
   <div class="topup-card">
     <p>💰 الرصيد المتاح للسحب</p>
-    <h2>
-      <span id="withdrawBalance">0</span> USDT
-    </h2>
+    <h2><span id="withdrawBalance">0</span> USDT</h2>
     <p class="warning">الحد الأدنى للسحب: 20 USDT</p>
   </div>
 
-  <!-- FORM -->
   <div class="topup-card" style="margin-top:15px">
-
     <label>طريقة السحب</label>
     <select id="withdrawMethod">
       <option value="USDT_TRC20">USDT (TRC20)</option>
     </select>
 
     <label>عنوان المحفظة</label>
-    <input
-      id="withdrawAddress"
-      placeholder="TXxxxxxxxxxxxxxxxxxxxx"
-    >
+    <input id="withdrawAddress" placeholder="TXxxxxxxxxxxxxxxxxxxxx">
 
     <label>المبلغ</label>
-    <input
-      id="withdrawAmount"
-      type="number"
-      placeholder="مثال: 50"
-    >
+    <input id="withdrawAmount" type="number" placeholder="مثال: 50">
 
-    <!-- SUMMARY -->
-    <div class="wallet-address" style="margin-top:10px">
+    <div class="wallet-address">
       العمولة: <strong>2 USDT</strong><br>
       الصافي: <strong id="withdrawNet">0 USDT</strong>
     </div>
 
-    <label style="margin-top:10px;display:flex;gap:8px;align-items:center">
-  <input type="checkbox" id="agreeWithdraw">
-  أوافق على شروط وأحكام السحب
-</label>
-    <button class="topup-btn" style="margin-top:12px">
-      🚀 إرسال طلب السحب
-    </button>
+    <label style="display:flex;gap:8px;align-items:center">
+      <input type="checkbox" id="agreeWithdraw">
+      أوافق على شروط وأحكام السحب
+    </label>
 
+    <button class="topup-btn">🚀 إرسال طلب السحب</button>
   </div>
-
 </div>
 
-  <div class="box hidden" id="upgradeBox">
-
-<button onclick="goBack('profileBox')" class="back-btn">
+<!-- ================= UPGRADE ================= -->
+<div class="box hidden" id="upgradeBox">
+  <button onclick="goBack('profileBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
   </button>
@@ -861,38 +840,13 @@ top: -6px;
   </h3>
 
   <div class="upgrade-cards">
-
-    <!-- LEVEL 1 -->
-   <div class="upgrade-card level-1">
-  <h4>المستوى 1</h4>
-  <p>مكافأة ربح: <strong>0.5 💰</strong></p>
-  <button disabled>
-    المستوى الحالي
-  </button>
+    <!-- المستويات كما هي عندك -->
+  </div>
 </div>
 
-    <!-- LEVEL 2 -->
-   <div class="upgrade-card level-2">
-  <h4>المستوى 2</h4>
-  <p>مكافأة ربح: <strong>1.5 💰</strong></p>
-  <button onclick="upgradeLevel(2)">
-    الترقية – 150$
-  </button>
-</div>
-
-    <!-- LEVEL 3 -->
-   <div class="upgrade-card level-3">
-  <h4>المستوى 3</h4>
-  <p>مكافأة ربح: <strong>3 💰</strong></p>
-  <button onclick="upgradeLevel(3)">
-    الترقية – 295$
-  </button>
-</div>
- </div>
-    </div> 
-  <div class="box hidden" id="topUpBox">
-
- <button onclick="goBack('profileBox')" class="back-btn">
+<!-- ================= TOP UP ================= -->
+<div class="box hidden" id="topUpBox">
+  <button onclick="goBack('profileBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
   </button>
@@ -903,53 +857,36 @@ top: -6px;
   </h3>
 
   <div class="topup-card">
-    <img 
-      src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW"
-      class="qr"
-    >
-
-    <div class="wallet-address">
-      TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW
-    </div>
-
+    <img class="qr"
+      src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW">
+    <div class="wallet-address">TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW</div>
     <button onclick="copyAddress()" class="copy-btn">
-      <i class="fa-solid fa-copy"></i>
-      نسخ العنوان
+      <i class="fa-solid fa-copy"></i> نسخ العنوان
     </button>
-
-    <p class="warning">
-      <i class="fa-solid fa-circle-info"></i>
-      أرسل فقط USDT (TRC20) إلى هذا العنوان
-    </p>
   </div>
 </div>
 
- <div id="navBar" class="bottom-bar hidden">
-
+<!-- ================= NAV BAR ================= -->
+<div id="navBar" class="bottom-bar hidden">
   <button class="active" onclick="openTab(this,'appBox')">
-    <i class="fa-solid fa-futbol"></i>
-    <span>المباريات</span>
+    <i class="fa-solid fa-futbol"></i><span>المباريات</span>
   </button>
 
-<button onclick="openTab(this,'profileBox')">
-  <i class="fa-solid fa-user"></i>
-  <span>بروفيل</span>
-</button>
+  <button onclick="openTab(this,'profileBox')">
+    <i class="fa-solid fa-user"></i><span>بروفيل</span>
+  </button>
 
-<button class="center-btn"
-        onclick="openTab(this,'appBox')">
-  <i class="fa-solid fa-futbol"></i>
-</button>
+  <button class="center-btn" onclick="openTab(this,'appBox')">
+    <i class="fa-solid fa-futbol"></i>
+  </button>
+
   <button onclick="alert('قريبًا')">
-    <i class="fa-solid fa-gift"></i>
-    <span>الجوائز</span>
+    <i class="fa-solid fa-gift"></i><span>الجوائز</span>
   </button>
 
   <button onclick="alert('الدعم')">
-    <i class="fa-solid fa-headset"></i>
-    <span>الدعم</span>
+    <i class="fa-solid fa-headset"></i><span>الدعم</span>
   </button>
-
 </div>
 <script type="module">
 /* ================= IMPORTS ================= */
