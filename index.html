@@ -1281,61 +1281,79 @@ window.placeBet = async (matchId, choice, btn)=>{
   alert("✅ تم تسجيل التكهن");
 };
 
-/* ================= MY BETS ================= */
+/* ================= MY BETS (REAL TIME) ================= */
+
+import { onSnapshot } from
+"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+let unsubscribeMyBets = null;
+
 window.openMyBets = ()=>{
   showView("myBetsBox");
-  loadMyBets();
-};
 
-async function loadMyBets(){
-  myBetsList.innerHTML = "⏳ تحميل...";
+  // إيقاف أي listener قديم
+  if (unsubscribeMyBets) {
+    unsubscribeMyBets();
+    unsubscribeMyBets = null;
+  }
 
   const q = query(
-    collection(db,"bets"),
-    where("userId","==",auth.currentUser.uid)
+    collection(db, "bets"),
+    where("userId", "==", auth.currentUser.uid)
   );
 
-  const snap = await getDocs(q);
-  myBetsList.innerHTML = snap.empty ? "❌ لا توجد رهانات" : "";
+  myBetsList.innerHTML = "⏳ تحميل...";
 
-  snap.forEach(b=>{
-    const bet = b.data();
+  unsubscribeMyBets = onSnapshot(q, (snap) => {
+    myBetsList.innerHTML = "";
 
-    const statusClass =
-      bet.status === "win" ? "bet-win" :
-      bet.status === "lose" ? "bet-lose" :
-      "bet-pending";
+    if (snap.empty) {
+      myBetsList.innerHTML = "❌ لا توجد رهانات";
+      return;
+    }
 
-    const statusText =
-      bet.status === "win" ? "✅ فوز" :
-      bet.status === "lose" ? "❌ خسارة" :
-      "⏳ قيد اللعب";
+    snap.forEach((docSnap) => {
+      const bet = docSnap.data();
 
-    myBetsList.innerHTML += `
-      <div class="bet-card ${statusClass}">
-        <div class="bet-header">
-          <span class="bet-match">${bet.matchName || "مباراة"}</span>
-          <span class="bet-status">${statusText}</span>
-        </div>
+      const statusClass =
+        bet.status === "win"  ? "bet-win"  :
+        bet.status === "lose" ? "bet-lose" :
+        "bet-pending";
 
-        <div class="bet-body">
-          <div class="bet-item">
-            <span class="label">اختيارك</span>
-            <span class="value">${bet.choice}</span>
-          </div>
+      const statusText =
+        bet.status === "win"  ? "✅ فوز" :
+        bet.status === "lose" ? "❌ خسارة" :
+        "⏳ قيد اللعب";
 
-          <div class="bet-item">
-            <span class="label">التاريخ</span>
-            <span class="value">
-              ${bet.createdAt?.toDate().toLocaleString() || ""}
+      myBetsList.innerHTML += `
+        <div class="bet-card ${statusClass}">
+          <div class="bet-header">
+            <span class="bet-match">
+              ${bet.matchName || "مباراة"}
+            </span>
+            <span class="bet-status">
+              ${statusText}
             </span>
           </div>
-        </div>
-      </div>
-    `;
-  });
-}
 
+          <div class="bet-body">
+            <div class="bet-item">
+              <span class="label">اختيارك</span>
+              <span class="value">${bet.choice}</span>
+            </div>
+
+            <div class="bet-item">
+              <span class="label">التاريخ</span>
+              <span class="value">
+                ${bet.createdAt?.toDate().toLocaleString() || ""}
+              </span>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  });
+};
 /* ================= LOGOUT ================= */
 window.logout = async ()=>{
   await signOut(auth);
