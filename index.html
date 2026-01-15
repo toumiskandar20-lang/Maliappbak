@@ -727,7 +727,7 @@ top: -6px;
     <!-- التكهنات تظهر هنا -->
   </div>
 
-<button onclick="backToMatches()" class="back-btn">
+<button onclick="goBack('appBox')" class="back-btn">
   <i class="fa-solid fa-arrow-left"></i>
   العودة إلى المباريات
 </button>
@@ -735,7 +735,7 @@ top: -6px;
 <!-- ================= PROFILE ================= -->
 <div class="box hidden" id="profileBox">
 
-  <button onclick="showView('appBox')" class="back-btn">
+ <button onclick="goBack('appBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
   </button>
@@ -855,7 +855,7 @@ top: -6px;
 
   <div class="box hidden" id="upgradeBox">
 
-<button onclick="showView('profileBox')" class="back-btn">
+<button onclick="goBack('profileBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
   </button>
@@ -897,7 +897,7 @@ top: -6px;
     </div> 
   <div class="box hidden" id="topUpBox">
 
-  <button onclick="backToMatches()" class="back-btn">
+ <button onclick="goBack('profileBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
   </button>
@@ -1019,6 +1019,9 @@ let matches = [];
     console.error("❌ View not found:", id);
   }
 }
+  window.goBack = function(target){
+  showView(target || "appBox");
+};
   function setActiveTab(btn){
   document.querySelectorAll(".bottom-bar button")
     .forEach(b=>b.classList.remove("active"));
