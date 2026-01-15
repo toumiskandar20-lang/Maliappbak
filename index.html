@@ -658,6 +658,80 @@ top: -6px;
   opacity:.65;
   margin-top:4px;
 }
+  .bet-card{
+  background: linear-gradient(145deg,#1c1c1c,#262626);
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:14px;
+  box-shadow:0 8px 18px rgba(0,0,0,.45);
+  border-left:4px solid transparent;
+}
+
+.bet-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.bet-match{
+  font-weight:800;
+  font-size:14px;
+}
+
+.bet-status{
+  font-size:12px;
+  padding:4px 10px;
+  border-radius:20px;
+  font-weight:bold;
+}
+
+/* BODY */
+.bet-body{
+  display:flex;
+  justify-content:space-between;
+}
+
+.bet-item{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+
+.bet-item .label{
+  font-size:11px;
+  opacity:.6;
+}
+
+.bet-item .value{
+  font-size:14px;
+  font-weight:700;
+}
+
+/* الحالات */
+.bet-pending{
+  border-left-color:#ffc107;
+}
+.bet-pending .bet-status{
+  background:#ffc107;
+  color:#000;
+}
+
+.bet-win{
+  border-left-color:#00e676;
+}
+.bet-win .bet-status{
+  background:#00e676;
+  color:#000;
+}
+
+.bet-lose{
+  border-left-color:#ff5252;
+}
+.bet-lose .bet-status{
+  background:#ff5252;
+  color:#fff;
+}
 </style>
 </head>
 <body>
@@ -727,14 +801,23 @@ top: -6px;
 </div>
 
 <!-- ================= MY BETS ================= -->
-<div class="box hidden" id="myBetsBox">
-  <h3><i class="fa-solid fa-ticket"></i> رهاناتي</h3>
-  <div id="myBetsList"></div>
+<div class="bet-card bet-pending">
+  <div class="bet-header">
+    <span class="bet-match">Barcelona vs Real Madrid</span>
+    <span class="bet-status">⏳ قيد اللعب</span>
+  </div>
 
-  <button onclick="goBack('appBox')" class="back-btn">
-    <i class="fa-solid fa-arrow-left"></i>
-    العودة إلى المباريات
-  </button>
+  <div class="bet-body">
+    <div class="bet-item">
+      <span class="label">اختيارك</span>
+      <span class="value">1</span>
+    </div>
+
+    <div class="bet-item">
+      <span class="label">الوقت</span>
+      <span class="value">اليوم 18:30</span>
+    </div>
+  </div>
 </div>
 
 <!-- ================= PROFILE ================= -->
@@ -1225,6 +1308,42 @@ async function loadMyBets(){
       </div>
     `;
   });
+  snap.forEach(b=>{
+  const bet = b.data();
+
+  const statusClass =
+    bet.status === "win" ? "bet-win" :
+    bet.status === "lose" ? "bet-lose" :
+    "bet-pending";
+
+  const statusText =
+    bet.status === "win" ? "✅ فوز" :
+    bet.status === "lose" ? "❌ خسارة" :
+    "⏳ قيد اللعب";
+
+  myBetsList.innerHTML += `
+    <div class="bet-card ${statusClass}">
+      <div class="bet-header">
+        <span class="bet-match">${bet.matchName || "مباراة"}</span>
+        <span class="bet-status">${statusText}</span>
+      </div>
+
+      <div class="bet-body">
+        <div class="bet-item">
+          <span class="label">اختيارك</span>
+          <span class="value">${bet.choice}</span>
+        </div>
+
+        <div class="bet-item">
+          <span class="label">التاريخ</span>
+          <span class="value">
+            ${bet.createdAt?.toDate().toLocaleString() || ""}
+          </span>
+        </div>
+      </div>
+    </div>
+  `;
+});
 }
 
 /* ================= LOGOUT ================= */
