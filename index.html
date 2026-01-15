@@ -1067,7 +1067,30 @@ window.openWithdraw = ()=>{
 
 /* ================= TOP UP ================= */
 window.openTopUp = ()=> showView("topUpBox");
+/* ================= COPY TOP UP ADDRESS ================= */
+window.copyAddress = async function () {
+  const addressEl = document.querySelector("#topUpBox .wallet-address");
+  if (!addressEl) {
+    alert("❌ لم يتم العثور على العنوان");
+    return;
+  }
 
+  const address = addressEl.innerText.trim();
+
+  try {
+    await navigator.clipboard.writeText(address);
+    alert("✅ تم نسخ عنوان المحفظة بنجاح");
+  } catch (e) {
+    // fallback للمتصفحات القديمة
+    const tempInput = document.createElement("input");
+    tempInput.value = address;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    document.body.removeChild(tempInput);
+    alert("✅ تم نسخ عنوان المحفظة");
+  }
+};
 /* ================= MATCHES ================= */
 async function fetchMatches(){
   matchesBox.innerHTML = "⏳ تحميل المباريات...";
