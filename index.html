@@ -647,6 +647,17 @@ top: -6px;
   opacity: 0.5;
   cursor: not-allowed;
 }
+  .section-title-text{
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:.3px;
+}
+
+.section-subtext{
+  font-size:12px;
+  opacity:.65;
+  margin-top:4px;
+}
 </style>
 </head>
 <body>
@@ -773,7 +784,10 @@ top: -6px;
   </div>
 
   <div class="profile-section">
-    <h4>🔗 رابط الدعوة</h4>
+<h4 class="section-title-text">رابط الإحالة الخاص بك</h4>
+    <p class="section-subtext">
+  شارك هذا الرابط مع أصدقائك واحصل على مزايا إضافية عند تسجيلهم.
+</p>
     <div class="referral-box">
       <input id="referralLink" readonly>
       <button onclick="copyReferral()">نسخ</button>
