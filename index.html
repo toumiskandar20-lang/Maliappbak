@@ -910,12 +910,7 @@ import {
   serverTimestamp,
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-const REFERRAL_BONUS_NEW = 50;
-const REFERRAL_BONUS_OWNER = 100;
-  function getReferralFromURL(){
-  const params = new URLSearchParams(window.location.search);
-  return params.get("ref"); // userId أو null
-}
+
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
@@ -926,20 +921,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-async function getMatchesMap(){
-  const map = {};
-  const snap = await getDocs(collection(db,"matches"));
 
-  snap.forEach(docu=>{
-    map[docu.id] = docu.data();
-  });
-
-  return map;
-}
 /* ================= GLOBAL ================= */
 let userData = {};
 let matches = [];
- function showView(id){
+
+/* ================= VIEW SYSTEM (المهم) ================= */
+function showView(id){
   document.querySelectorAll(".box").forEach(b=>{
     b.classList.add("hidden");
   });
@@ -951,40 +939,26 @@ let matches = [];
     console.error("❌ View not found:", id);
   }
 }
-  window.goBack = function(target){
+
+window.goBack = function(target){
   showView(target || "appBox");
 };
-  function setActiveTab(btn){
+
+window.openTab = function(btn, viewId){
   document.querySelectorAll(".bottom-bar button")
     .forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
-}
-  window.openTab = function(btn, viewId){
-  setActiveTab(btn);
   showView(viewId);
 };
-  const balance = document.getElementById("balance");
+
+/* ================= DOM ================= */
+const balance = document.getElementById("balance");
 const level = document.getElementById("level");
 const levelName = document.getElementById("levelName");
 const levelBar = document.getElementById("levelBar");
 const matchesBox = document.getElementById("matchesBox");
-const authBox = document.getElementById("authBox");
-const registerBox = document.getElementById("registerBox");
-const appBox = document.getElementById("appBox");
-const profileBox = document.getElementById("profileBox");
-  const myBetsBox = document.getElementById("myBetsBox");
-/* ================= LEVELS ================= */
-const LEVELS = {
-  1: { reward: 0.5 },
-  2: { reward: 1.5 },
-  3: { reward: 3 }
-};
-const LEVEL_REWARDS = {
-  1: 0.5,
-  2: 1.5,
-  3: 3,
-  4: 5
-};
+const navBar = document.getElementById("navBar");
+
 /* ================= UI ================= */
 function updateUI(){
   balance.innerText = userData.balance ?? 0;
@@ -992,7 +966,7 @@ function updateUI(){
 }
 
 function updateLevelUI(){
-  const lvl = userData.level ?? 0; // ✅ يدعم مستوى 0
+  const lvl = userData.level ?? 0;
 
   const names = {
     0: "Locked",
@@ -1011,481 +985,191 @@ function updateLevelUI(){
   };
 
   level.innerText = lvl;
-  levelName.innerText = names[lvl] || "VIP";
-  levelBar.style.width = progress[lvl] || "0%";
+  levelName.innerText = names[lvl];
+  levelBar.style.width = progress[lvl];
 }
-/* ================= AUTH ================= */
-window.openRegister = ()=>{
-  authBox.classList.add("hidden");
-  registerBox.classList.remove("hidden");
-};
 
-window.backToLogin = ()=>{
-  registerBox.classList.add("hidden");
-  authBox.classList.remove("hidden");
-};
+/* ================= AUTH ================= */
+window.openRegister = ()=> showView("registerBox");
+window.backToLogin  = ()=> showView("authBox");
 
 window.submitRegister = async ()=>{
   try{
     const email = regEmail.value.trim();
     const phone = regPhone.value.trim();
-    const pass = regPassword.value;
-    const confirm = regConfirm.value;
+    const pass  = regPassword.value;
+    const conf  = regConfirm.value;
 
-    if(!email || !phone || !pass || pass !== confirm){
+    if(!email || !phone || pass !== conf){
       alert("❌ تحقق من البيانات");
       return;
     }
 
-    const referredBy = getReferralFromURL(); // ✅
-
     const cred = await createUserWithEmailAndPassword(auth,email,pass);
 
-    const userDataToSave = {
+    await setDoc(doc(db,"users",cred.user.uid),{
       email,
       phone,
-      balance: referredBy ? 50 : 0, // 🎁 بونص تسجيل
+      balance: 0,
       level: 0,
-      referredBy: referredBy || null,
       createdAt: serverTimestamp()
-    };
+    });
 
-    await setDoc(
-      doc(db,"users",cred.user.uid),
-      userDataToSave
-    );
-
-    alert("✅ تم إنشاء الحساب بنجاح");
     showView("appBox");
-
   }catch(e){
-    console.error("REGISTER ERROR 👉", e);
-    alert("❌ خطأ أثناء التسجيل:\n" + e.message);
+    alert(e.message);
   }
 };
-  window.login = async ()=>{
+
+window.login = async ()=>{
   try{
-    await signInWithEmailAndPassword(
-      auth,
-      email.value,
-      password.value
-    );
-  }catch(e){
+    await signInWithEmailAndPassword(auth,email.value,password.value);
+  }catch{
     alert("❌ فشل تسجيل الدخول");
   }
 };
+
 /* ================= AUTH STATE ================= */
-const navBar = document.getElementById("navBar");
-
 onAuthStateChanged(auth, async (user)=>{
-  const ref = getReferralFromURL();
-
-  // ❌ غير مسجل
   if(!user){
-    if(ref){
-      showView("registerBox"); // جاء من رابط دعوة
-    }else{
-      showView("authBox"); // دخول عادي
-    }
     navBar.classList.add("hidden");
+    showView("authBox");
     return;
   }
 
-  // ✅ مسجل دخول
   navBar.classList.remove("hidden");
 
   const snap = await getDoc(doc(db,"users",user.uid));
-  if(!snap.exists()){
-    // حماية إضافية
-    showView("registerBox");
-    return;
-  }
-
   userData = snap.data();
 
-  generateReferralLink();
   updateUI();
   updateProfileUI();
-
   showView("appBox");
+
   await fetchMatches();
-  loadReferralCount();
 });
-window.openMyBets = ()=>{
-  appBox.classList.add("hidden");
-  myBetsBox.classList.remove("hidden");
 
-  // تعريف العنصر هنا
-  const myBetsList = document.getElementById("myBetsList");
-  myBetsList.innerHTML = "⏳ تحميل تكهناتك...";
+/* ================= PROFILE ================= */
+function updateProfileUI(){
+  profileName.innerText = userData.email;
+  profileLevel.innerText = levelName.innerText;
+}
 
-  loadMyBets();
+window.openProfile = ()=>{
+  updateProfileUI();
+  showView("profileBox");
 };
 
- async function loadMyBets(){
-  const myBetsList = document.getElementById("myBetsList");
-  const user = auth.currentUser;
+/* ================= WITHDRAW ================= */
+window.openWithdraw = ()=>{
+  showView("withdrawBox");
+  withdrawBalance.innerText = userData.balance ?? 0;
+};
 
-  if(!user){
-    myBetsList.innerHTML = "❌ غير مسجل الدخول";
-    return;
-  }
+/* ================= TOP UP ================= */
+window.openTopUp = ()=> showView("topUpBox");
 
-  myBetsList.innerHTML = "⏳ تحميل تكهناتك...";
-
-  const matchesMap = await getMatchesMap();
-
-  const q = query(
-    collection(db,"bets"),
-    where("userId","==",user.uid)
-  );
-
-  const snap = await getDocs(q);
-
-  if(snap.empty){
-    myBetsList.innerHTML = "❌ لا توجد تكهنات";
-    return;
-  }
-
-  myBetsList.innerHTML = "";
-
-  snap.forEach(docu=>{
-    const b = docu.data();
-    const match = matchesMap[b.matchId];
-
-    let statusClass = "bet-pending";
-    let statusText  = '<i class="fa-solid fa-hourglass-half"></i> قيد المراجعة';
-
-    if(match?.result){
-      if(b.choice === match.result){
-        statusClass = "bet-win";
-       statusText = `<i class="fa-solid fa-trophy"></i> فوز`;
-      }else{
-        statusClass = "bet-lose";
-        statusText = `<i class="fa-solid fa-circle-xmark"></i> خسارة`;
-      }
-    }
-
-    myBetsList.innerHTML += `
-      <div class="match-card">
-        <div style="display:flex;justify-content:space-between">
-          <strong>
-  ${match?.teamA ?? "؟"}
-  <i class="fa-solid fa-bolt" style="margin:0 6px;color:#00e676"></i>
-  ${match?.teamB ?? "؟"}
-</strong>
-          <span class="badge ${statusClass}">
-            ${statusText}
-          </span>
-        </div>
-
-       <div style="margin-top:8px">
-  <i class="fa-solid fa-crosshairs" style="margin-left:6px"></i>
-  اختيارك:
-  <strong style="font-size:18px">${b.choice}</strong>
-</div>
-
-        <div class="bet-status ${statusClass}">
-  <i class="fa-solid fa-flag-checkered" style="margin-left:6px"></i>
-  النتيجة:
-  ${match?.result ?? "لم تُحدد بعد"}
-</div>
-<div class="bet-status ${statusClass}">
-  <i class="fa-solid fa-coins"></i>
-  الربح:
-  <strong>
-    ${b.choice === match?.result 
-      ? `+${LEVEL_REWARDS[userData.level]} 💰`
-      : "0"}
-  </strong>
-</div>
-      </div>
-    `;
-  });
-}
 /* ================= MATCHES ================= */
 async function fetchMatches(){
   matchesBox.innerHTML = "⏳ تحميل المباريات...";
   matches = [];
 
-  const q = query(collection(db,"matches"));
-  const snap = await getDocs(q);
-
-  snap.forEach(docu=>{
-    const d = docu.data();
+  const snap = await getDocs(collection(db,"matches"));
+  snap.forEach(d=>{
     matches.push({
-      id: docu.id,
-      teamA: d.teamA,
-      teamB: d.teamB,
-      startTime: d.startTime.toDate(),
-      endTime: d.endTime.toDate(),
-      result: d.result ?? null,
-      settled: d.settled ?? false
+      id: d.id,
+      ...d.data()
     });
   });
-for(const match of matches){
-  if(match.result && match.settled === false){
-    await settleMatch(match);
-  }
+
+  loadMatches();
 }
-  loadMatches(); 
-}
+
 function loadMatches(){
   matchesBox.innerHTML = "";
 
-  if(matches.length === 0){
-    matchesBox.innerHTML = "<p>❌ لا توجد مباريات</p>";
+  const locked = userData.level === 0;
+
+  matches.forEach(m=>{
+    matchesBox.innerHTML += `
+      <div class="match-card">
+        <div class="match-header">
+          <div class="team">${m.teamA}</div>
+          <div class="vs">VS</div>
+          <div class="team">${m.teamB}</div>
+        </div>
+
+        <div class="bet-buttons">
+          <button class="bet-btn" ${locked?"disabled":""}
+            onclick="placeBet('${m.id}','1',this)">1</button>
+          <button class="bet-btn" ${locked?"disabled":""}
+            onclick="placeBet('${m.id}','X',this)">X</button>
+          <button class="bet-btn" ${locked?"disabled":""}
+            onclick="placeBet('${m.id}','2',this)">2</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+/* ================= BET ================= */
+window.placeBet = async (matchId, choice, btn)=>{
+  if(userData.level === 0){
+    alert("⛔ يجب ترقية المستوى أولًا");
     return;
   }
 
-  const now = new Date();
-  const locked = userData.level === 0; // ✅ هنا الحل
-
-  matches.forEach(m=>{
-    const canBet = now < m.startTime;
-    const isToday =
-      new Date().toDateString() === m.startTime.toDateString();
-
-    matchesBox.innerHTML += `
-  <div class="match-card">
-    <div class="match-header">
-      <div class="team">${m.teamA}</div>
-      <div class="vs">VS</div>
-      <div class="team">${m.teamB}</div>
-    </div>
-
-    <div class="bet-buttons">
-      <button class="bet-btn" ${locked ? "disabled" : ""}
-        onclick="placeBet('${m.id}','1', this)">1</button>
-
-      <button class="bet-btn" ${locked ? "disabled" : ""}
-        onclick="placeBet('${m.id}','X', this)">X</button>
-
-      <button class="bet-btn" ${locked ? "disabled" : ""}
-        onclick="placeBet('${m.id}','2', this)">2</button>
-    </div>
-  </div>
-`;
-}); // ✅ إغلاق forEach
-}   // ✅ إغلاق loadMatche
-/* ================= BET ================= */
-window.placeBet = async (matchId, choice, btn)=>{
-  try{
-    const user = auth.currentUser;
-
-    // 🔍 هذا السطر هنا بالضبط
-    console.log("USER:", user?.uid);
-
-    const betRef = doc(db,"bets",`${user.uid}_${matchId}`);
-    const snap = await getDoc(betRef);
-if(userData.level === 0){
-  alert("⛔ يجب ترقية المستوى أولًا قبل التكهن");
-  return;
-}
-
-if(userData.balance <= 0){
-  alert("⛔ رصيدك غير كافٍ");
-  return;
-}
-    if(snap.exists()){
-      alert("❌ لا يمكنك تغيير التكهن");
-      return;
-    }
-
-    await setDoc(betRef,{
-      userId: user.uid,
-      matchId,
-      choice,
-      settled: false,
-      createdAt: serverTimestamp()
-    });
-
-    // تلوين الزر
-    btn.classList.add("selected");
-
-    // تعطيل بقية الأزرار
-    btn.parentElement.querySelectorAll(".bet-btn").forEach(b=>{
-      b.disabled = true;
-    });
-
-    alert("✅ تم تسجيل التكهن: " + choice);
-
-  }catch(e){
-    console.error("FIRESTORE ERROR 👉", e);
-    alert(e.message);
-  }
-};
-
-/* ================= SETTLE MATCH ================= */
-async function settleMatch(match){
-  const betsQ = query(
-    collection(db,"bets"),
-    where("matchId","==",match.id),
-    where("settled","==",false)
-  );
-
-  const betsSnap = await getDocs(betsQ);
-
-  for(const betDoc of betsSnap.docs){
-    const bet = betDoc.data();
-
-    // ✅ إذا التكهن صحيح
-    if(bet.choice === match.result){
-      const userRef = doc(db,"users",bet.userId);
-      const userSnap = await getDoc(userRef);
-
-      if(userSnap.exists()){
-        const lvl = userSnap.data().level || 1;
-        const reward = LEVEL_REWARDS[lvl] || 0.5;
-
-        await updateDoc(userRef,{
-          balance: (userSnap.data().balance || 0) + reward
-        });
-      }
-    }
-
-    // 🔒 قفل التكهن
-    await updateDoc(betDoc.ref,{
-      settled: true
-    });
-  }
-
-  // 🔒 قفل المباراة
-  await updateDoc(doc(db,"matches",match.id),{
-    settled: true
-  });
-  console.log("✅ تمت تسوية المباراة:", match.id);
-}
-/* ================= LOGOUT ================= */
-window.logout = async ()=>{
-  await signOut(auth);
-};
-  window.backToMatches = ()=>{
-  showView("appBox");
-};
-window.openUpgrade = ()=>{
-  showView("upgradeBox");
-};
-window.openProfile = ()=>{
-  showView("profileBox");
-  updateProfileUI();
-};
-  window.openWithdraw = ()=>{
-  showView("withdrawBox");
-
-  // عرض الرصيد
-  document.getElementById("withdrawBalance").innerText =
-    userData.balance ?? 0;
-};
-  function updateProfileUI(){
-  if(!userData.referralLink){
-    generateReferralLink();
-  }
-
-  const input = document.getElementById("referralLink");
-  if(input){
-    input.value = userData.referralLink;
-  }
-}
- async function loadReferralCount(){
   const user = auth.currentUser;
-  if(!user) return;
+  const betRef = doc(db,"bets",`${user.uid}_${matchId}`);
+  const snap = await getDoc(betRef);
 
+  if(snap.exists()){
+    alert("❌ لا يمكنك تغيير التكهن");
+    return;
+  }
+
+  await setDoc(betRef,{
+    userId: user.uid,
+    matchId,
+    choice,
+    createdAt: serverTimestamp()
+  });
+
+  btn.classList.add("selected");
+  btn.parentElement.querySelectorAll(".bet-btn")
+    .forEach(b=>b.disabled=true);
+
+  alert("✅ تم تسجيل التكهن");
+};
+
+/* ================= MY BETS ================= */
+window.openMyBets = ()=>{
+  showView("myBetsBox");
+  loadMyBets();
+};
+
+async function loadMyBets(){
+  myBetsList.innerHTML = "⏳ تحميل...";
   const q = query(
-    collection(db,"users"),
-    where("referredBy","==",user.uid)
+    collection(db,"bets"),
+    where("userId","==",auth.currentUser.uid)
   );
 
   const snap = await getDocs(q);
-  document.getElementById("statInvites").innerText = snap.size;
-}
+  myBetsList.innerHTML = snap.empty ? "❌ لا توجد رهانات" : "";
 
-function shareReferral(){
-  if(navigator.share){
-    navigator.share({
-      title: "انضم إليّ",
-      text: "سجّل عبر رابط الدعوة الخاص بي 👇",
-      url: userData.referralLink
-    });
-  }else{
-    copyReferral();
-  }
-}
-const UPGRADE_PRICES = {
-  2: 150,
-  3: 295,
-  4: 590
-};
-
-window.upgradeLevel = async function(level){
-  const user = auth.currentUser;
-  if(!user) return;
-
-  const price = UPGRADE_PRICES[level];
-  if(!price) return;
-
-  const userRef = doc(db,"users",user.uid);
-  const snap = await getDoc(userRef);
-
-  if(!snap.exists()) return;
-
-  const data = snap.data();
-
-  if(data.level >= level){
-    alert("⚠️ مستواك الحالي أعلى أو يساوي هذا المستوى");
-    return;
-  }
-
-  if((data.balance || 0) < price){
-    alert("❌ رصيدك غير كافٍ");
-    return;
-  }
-
-  await updateDoc(userRef,{
-    level: level,
-    balance: data.balance - price
+  snap.forEach(b=>{
+    myBetsList.innerHTML += `
+      <div class="match-card">
+        <strong>${b.data().choice}</strong>
+      </div>
+    `;
   });
-
-  // تحديث محلي
-  userData.level = level;
-  userData.balance -= price;
-  updateUI();
-
-  alert("🚀 تمت الترقية بنجاح!");
-  backToMatches();
-};
-window.openTopUp = ()=>{
-  showView("topUpBox");
-};
-
-window.copyAddress = ()=>{
-  navigator.clipboard.writeText("TE3THEisH6nttHBWtJiKpreaxvPGt5sZVW");
-  alert("✅ تم نسخ العنوان");
-}; 
- 
-function generateReferralLink(){
-  const user = auth.currentUser;
-  if(!user) return;
-
-  const baseURL =
-    window.location.origin + window.location.pathname;
-
-  const link = baseURL + "?ref=" + user.uid;
-
-  userData.referralLink = link;
-
-  const input = document.getElementById("referralLink");
-  if(input) input.value = link;
 }
-  window.copyReferral = function(){
-  const input = document.getElementById("referralLink");
-  if(!input) return;
 
-  input.select();
-  input.setSelectionRange(0,99999);
-  navigator.clipboard.writeText(input.value);
-
-  alert("✅ تم نسخ رابط الدعوة");
+/* ================= LOGOUT ================= */
+window.logout = async ()=>{
+  await signOut(auth);
 };
 </script>
 
