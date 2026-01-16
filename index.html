@@ -1314,84 +1314,54 @@ window.placeBet = async (matchId, choice, btn)=>{
 
 /* ================= MY BETS (FIXED) ================= */
 
-import { onSnapshot } from
-"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-let unsubscribeMyBets = null;
-
-window.openMyBets = () => {
+window.openMyBets = ()=>{
   showView("myBetsBox");
 
-  // 🔒 خزن uid مرة واحدة
-  const user = auth.currentUser;
-  if (!user) {
-    myBetsList.innerHTML = "❌ يجب تسجيل الدخول";
-    return;
-  }
-  const uid = user.uid;
-
-  // أوقف أي listener قديم
-  if (unsubscribeMyBets) {
-    unsubscribeMyBets();
-    unsubscribeMyBets = null;
-  }
+  if (unsubscribeMyBets) unsubscribeMyBets();
 
   myBetsList.innerHTML = "⏳ تحميل...";
 
-  const q = query(
+  unsubscribeMyBets = onSnapshot(
     collection(db, "bets"),
-    where("userId", "==", uid)
-  );
+    (snap) => {
 
-  unsubscribeMyBets = onSnapshot(q, (snap) => {
-    if (snap.empty) {
-      myBetsList.innerHTML = "❌ لا توجد رهانات";
-      return;
+      myBetsList.innerHTML = "";
+
+      let found = false;
+
+      snap.forEach(docSnap => {
+        const bet = docSnap.data();
+
+        // فلترة يدوية بدل where
+        if (bet.userId !== auth.currentUser.uid) return;
+
+        found = true;
+
+        const statusClass =
+          bet.status === "win"  ? "bet-win"  :
+          bet.status === "lose" ? "bet-lose" :
+          "bet-pending";
+
+        const statusText =
+          bet.status === "win"  ? "✅ فوز" :
+          bet.status === "lose" ? "❌ خسارة" :
+          "⏳ قيد اللعب";
+
+        myBetsList.innerHTML += `
+          <div class="bet-card ${statusClass}">
+            <div class="bet-header">
+              <span>${bet.matchName}</span>
+              <span>${statusText}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      if (!found) {
+        myBetsList.innerHTML = "❌ لا توجد رهانات";
+      }
     }
-
-    myBetsList.innerHTML = "";
-
-    snap.forEach((docSnap) => {
-      const bet = docSnap.data();
-
-      const statusClass =
-        bet.status === "win"  ? "bet-win"  :
-        bet.status === "lose" ? "bet-lose" :
-        "bet-pending";
-
-      const statusText =
-        bet.status === "win"  ? "✅ فوز" :
-        bet.status === "lose" ? "❌ خسارة" :
-        "⏳ قيد اللعب";
-
-      myBetsList.innerHTML += `
-        <div class="bet-card ${statusClass}">
-          <div class="bet-header">
-            <span class="bet-match">
-              ${bet.matchName || "مباراة"}
-            </span>
-            <span class="bet-status">
-              ${statusText}
-            </span>
-          </div>
-
-          <div class="bet-body">
-            <div class="bet-item">
-              <span class="label">اختيارك</span>
-              <span class="value">${bet.choice}</span>
-            </div>
-
-            <div class="bet-item">
-              <span class="label">التاريخ</span>
-              <span class="value">
-                ${bet.createdAt?.toDate().toLocaleString() || ""}
-              </span>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-  });
+  );
 };
 /* ================= LOGOUT ================= */
 window.logout = async ()=>{
