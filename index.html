@@ -1122,6 +1122,8 @@ window.login = async ()=>{
 };
 
 /* ================= AUTH STATE ================= */
+let firstLogin = true;
+
 onAuthStateChanged(auth, async (user)=>{
   if(!user){
     navBar.classList.add("hidden");
@@ -1136,11 +1138,15 @@ onAuthStateChanged(auth, async (user)=>{
 
   updateUI();
   updateProfileUI();
-  showView("appBox");
+
+  // 🔒 افتح appBox مرة واحدة فقط
+  if(firstLogin){
+    showView("appBox");
+    firstLogin = false;
+  }
 
   await fetchMatches();
 });
-
 /* ================= PROFILE ================= */
 function updateProfileUI(){
   profileName.innerText = userData.email;
