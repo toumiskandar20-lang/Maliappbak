@@ -1276,46 +1276,38 @@ function loadMatches(){
 }
 /* ================= BET ================= */
 window.placeBet = async (matchId, choice, btn)=>{
-  const lvl = Number(userData.level) || 0;
+  try {
+    const lvl = Number(userData.level) || 0;
+    if (lvl === 0) {
+      alert("⛔ يجب ترقية المستوى أولًا");
+      return;
+    }
 
-  if(lvl === 0){
-    alert("⛔ يجب ترقية المستوى أولًا");
-    return;
+    const user = auth.currentUser;
+    if (!user) throw "USER NOT LOGGED";
+
+    const match = matches.find(m => m.id === matchId);
+
+    const betRef = doc(db, "bets", `${user.uid}_${matchId}`);
+
+    await setDoc(betRef,{
+      userId: user.uid,
+      matchId: matchId,
+      matchName: match
+        ? `${match.teamA} vs ${match.teamB}`
+        : "مباراة",
+      choice: choice,
+      status: "pending",
+      createdAt: serverTimestamp()
+    });
+
+    alert("✅ تم تسجيل التكهن");
+
+  } catch (e) {
+    console.error("🔥 BET ERROR:", e);
+    alert("❌ Firestore رفض العملية (راجع Rules)");
   }
-
-  const user = auth.currentUser;
-  if (!user) return;
-
-  const match = matches.find(m => m.id === matchId);
-
-  const betRef = doc(db, "bets", `${user.uid}_${matchId}`);
-  const snap = await getDoc(betRef);
-
-  if(snap.exists()){
-    alert("❌ لا يمكنك تغيير التكهن");
-    return;
-  }
-
-  await setDoc(betRef,{
-    userId: user.uid,
-    matchId: matchId,
-    matchName: match
-      ? `${match.teamA} vs ${match.teamB}`
-      : "مباراة",
-    choice: choice,
-    status: "pending",          // 🔴 مهم جدًا
-    createdAt: serverTimestamp()
-  });
-
-  // UI
-  btn.classList.add("selected");
-  btn.parentElement
-    .querySelectorAll(".bet-btn")
-    .forEach(b => b.disabled = true);
-
-  alert("✅ تم تسجيل التكهن");
 };
-
 /* ================= MY BETS (STABLE) ================= */
 
 window.openMyBets = async ()=>{
