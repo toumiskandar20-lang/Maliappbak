@@ -1252,13 +1252,19 @@ function loadMatches(){
 
 /* ================= BET ================= */
 window.placeBet = async (matchId, choice, btn)=>{
-if(Number(userData.level) === 0){
+  const lvl = Number(userData.level) || 0;
+
+  if(lvl === 0){
     alert("⛔ يجب ترقية المستوى أولًا");
     return;
   }
 
   const user = auth.currentUser;
-  const betRef = doc(db,"bets",`${user.uid}_${matchId}`);
+  if (!user) return;
+
+  const match = matches.find(m => m.id === matchId);
+
+  const betRef = doc(db, "bets", `${user.uid}_${matchId}`);
   const snap = await getDoc(betRef);
 
   if(snap.exists()){
@@ -1268,14 +1274,20 @@ if(Number(userData.level) === 0){
 
   await setDoc(betRef,{
     userId: user.uid,
-    matchId,
-    choice,
+    matchId: matchId,
+    matchName: match
+      ? `${match.teamA} vs ${match.teamB}`
+      : "مباراة",
+    choice: choice,
+    status: "pending",          // 🔴 مهم جدًا
     createdAt: serverTimestamp()
   });
 
+  // UI
   btn.classList.add("selected");
-  btn.parentElement.querySelectorAll(".bet-btn")
-    .forEach(b=>b.disabled=true);
+  btn.parentElement
+    .querySelectorAll(".bet-btn")
+    .forEach(b => b.disabled = true);
 
   alert("✅ تم تسجيل التكهن");
 };
