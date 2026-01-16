@@ -1099,31 +1099,29 @@ window.submitRegister = async ()=>{
 
     const cred = await createUserWithEmailAndPassword(auth,email,pass);
 
-    await setDoc(doc(db,"users",cred.user.uid),{
-      email,
-      phone,
-      balance: 0,
-      level: 0,
-      createdAt: serverTimestamp()
-    });
+await setDoc(doc(db,"users",cred.user.uid),{
+  email,
+  phone,
+  balance: 0,
+  level: 0,
+  createdAt: serverTimestamp()
+});
 
-    showView("appBox");
-  }catch(e){
-    alert(e.message);
+showView("appBox");
+fetchMatches();
   }
 };
 
 window.login = async ()=>{
   try{
     await signInWithEmailAndPassword(auth,email.value,password.value);
+    showView("appBox");
+    fetchMatches();
   }catch{
     alert("❌ فشل تسجيل الدخول");
   }
 };
-
 /* ================= AUTH STATE ================= */
-let firstLogin = true;
-
 onAuthStateChanged(auth, async (user)=>{
   if(!user){
     navBar.classList.add("hidden");
@@ -1139,13 +1137,7 @@ onAuthStateChanged(auth, async (user)=>{
   updateUI();
   updateProfileUI();
 
-  // 🔒 افتح appBox مرة واحدة فقط
-  if(firstLogin){
-    showView("appBox");
-    firstLogin = false;
-  }
-
-  await fetchMatches();
+  // ❌ ممنوع showView هنا
 });
 /* ================= PROFILE ================= */
 function updateProfileUI(){
