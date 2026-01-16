@@ -1227,8 +1227,7 @@ async function fetchMatches(){
 function loadMatches(){
   matchesBox.innerHTML = "";
 
-  const locked = userData.level === 0;
-
+ const locked = Number(userData.level) === 0;
   matches.forEach(m=>{
     matchesBox.innerHTML += `
       <div class="match-card">
@@ -1253,7 +1252,7 @@ function loadMatches(){
 
 /* ================= BET ================= */
 window.placeBet = async (matchId, choice, btn)=>{
-  if(userData.level === 0){
+if(Number(userData.level) === 0){
     alert("⛔ يجب ترقية المستوى أولًا");
     return;
   }
