@@ -1312,36 +1312,44 @@ window.placeBet = async (matchId, choice, btn)=>{
   alert("✅ تم تسجيل التكهن");
 };
 
-/* ================= MY BETS (REAL TIME) ================= */
+/* ================= MY BETS (FIXED) ================= */
 
 import { onSnapshot } from
 "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 let unsubscribeMyBets = null;
 
-window.openMyBets = ()=>{
+window.openMyBets = () => {
   showView("myBetsBox");
 
-  // إيقاف أي listener قديم
+  // 🔒 خزن uid مرة واحدة
+  const user = auth.currentUser;
+  if (!user) {
+    myBetsList.innerHTML = "❌ يجب تسجيل الدخول";
+    return;
+  }
+  const uid = user.uid;
+
+  // أوقف أي listener قديم
   if (unsubscribeMyBets) {
     unsubscribeMyBets();
     unsubscribeMyBets = null;
   }
 
-  const q = query(
-    collection(db, "bets"),
-    where("userId", "==", auth.currentUser.uid)
-  );
-
   myBetsList.innerHTML = "⏳ تحميل...";
 
-  unsubscribeMyBets = onSnapshot(q, (snap) => {
-    myBetsList.innerHTML = "";
+  const q = query(
+    collection(db, "bets"),
+    where("userId", "==", uid)
+  );
 
+  unsubscribeMyBets = onSnapshot(q, (snap) => {
     if (snap.empty) {
       myBetsList.innerHTML = "❌ لا توجد رهانات";
       return;
     }
+
+    myBetsList.innerHTML = "";
 
     snap.forEach((docSnap) => {
       const bet = docSnap.data();
