@@ -1015,11 +1015,14 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 /* ================= GLOBAL ================= */
+let currentView = "authBox";
 let userData = {};
 let matches = [];
 
 /* ================= VIEW SYSTEM (المهم) ================= */
 function showView(id){
+  currentView = id;
+
   document.querySelectorAll(".box").forEach(b=>{
     b.classList.add("hidden");
   });
@@ -1027,8 +1030,6 @@ function showView(id){
   const el = document.getElementById(id);
   if(el){
     el.classList.remove("hidden");
-  }else{
-    console.error("❌ View not found:", id);
   }
 }
 
@@ -1157,7 +1158,8 @@ onAuthStateChanged(auth, async (user)=>{
   updateUI();
   updateProfileUI();
 
-  // ❌ ممنوع showView هنا
+  // ✅ أعد فتح نفس الصفحة بدل إخفائها
+  showView(currentView);
 });
 /* ================= PROFILE ================= */
 function updateProfileUI(){
