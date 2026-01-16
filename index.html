@@ -1159,8 +1159,10 @@ onAuthStateChanged(auth, async (user)=>{
   updateUI();
   updateProfileUI();
 
-  // ✅ أعد فتح نفس الصفحة بدل إخفائها
-  showView(currentView);
+  // ✅ هنا فقط
+  fetchMatches();
+
+  showView("appBox");
 });
 /* ================= PROFILE ================= */
 function updateProfileUI(){
@@ -1248,7 +1250,9 @@ async function fetchMatches(){
 function loadMatches(){
   matchesBox.innerHTML = "";
 
- const locked = Number(userData.level) === 0;
+  const lvl = Number(userData.level ?? 0);
+  const locked = lvl === 0;
+
   matches.forEach(m=>{
     matchesBox.innerHTML += `
       <div class="match-card">
@@ -1259,18 +1263,17 @@ function loadMatches(){
         </div>
 
         <div class="bet-buttons">
-          <button class="bet-btn" ${locked?"disabled":""}
+          <button class="bet-btn" ${locked ? "disabled" : ""}
             onclick="placeBet('${m.id}','1',this)">1</button>
-          <button class="bet-btn" ${locked?"disabled":""}
+          <button class="bet-btn" ${locked ? "disabled" : ""}
             onclick="placeBet('${m.id}','X',this)">X</button>
-          <button class="bet-btn" ${locked?"disabled":""}
+          <button class="bet-btn" ${locked ? "disabled" : ""}
             onclick="placeBet('${m.id}','2',this)">2</button>
         </div>
       </div>
     `;
   });
 }
-
 /* ================= BET ================= */
 window.placeBet = async (matchId, choice, btn)=>{
   const lvl = Number(userData.level) || 0;
