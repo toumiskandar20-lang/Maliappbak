@@ -1158,7 +1158,7 @@ onAuthStateChanged(auth, async (user)=>{
 
   updateUI();
   updateProfileUI();
-  watchMatchesResults();
+  
 
   // ✅ هنا فقط
   fetchMatches();
@@ -1275,44 +1275,7 @@ function loadMatches(){
     `;
   });
 }
-  /* ================= MATCH RESULT WATCHER ================= */
-import { onSnapshot, updateDoc } from
-"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-function watchMatchesResults() {
-  const q = collection(db, "matches");
-
-  onSnapshot(q, async (snap) => {
-    snap.forEach(async (docSnap) => {
-      const match = docSnap.data();
-
-      // لو مازال ما ثماش نتيجة
-      if (!match.result) return;
-
-      const matchId = docSnap.id;
-
-      // جيب كل الرهانات متاع هالمباراة
-      const betsQ = query(
-        collection(db, "bets"),
-        where("matchId", "==", matchId),
-        where("status", "==", "pending")
-      );
-
-      const betsSnap = await getDocs(betsQ);
-
-      betsSnap.forEach(async (betDoc) => {
-        const bet = betDoc.data();
-
-        const newStatus =
-          bet.choice === match.result ? "win" : "lose";
-
-        await updateDoc(betDoc.ref, {
-          status: newStatus
-        });
-      });
-    });
-  });
-}
+ 
 /* ================= BET ================= */
 window.placeBet = async (matchId, choice, btn)=>{
   try {
