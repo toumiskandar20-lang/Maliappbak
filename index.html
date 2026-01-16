@@ -1313,16 +1313,10 @@ window.placeBet = async (matchId, choice, btn)=>{
   alert("✅ تم تسجيل التكهن");
 };
 
-/* ================= MY BETS (FINAL FIX) ================= */
+/* ================= MY BETS (STABLE) ================= */
 
-window.openMyBets = ()=>{
+window.openMyBets = async ()=>{
   showView("myBetsBox");
-
-  // أوقف أي استماع قديم
-  if (unsubscribeMyBets) {
-    unsubscribeMyBets();
-    unsubscribeMyBets = null;
-  }
 
   myBetsList.innerHTML = "⏳ تحميل...";
 
@@ -1331,7 +1325,9 @@ window.openMyBets = ()=>{
     where("userId", "==", auth.currentUser.uid)
   );
 
-  unsubscribeMyBets = onSnapshot(q, (snap) => {
+  try {
+    const snap = await getDocs(q);
+
     myBetsList.innerHTML = "";
 
     if (snap.empty) {
@@ -1375,7 +1371,11 @@ window.openMyBets = ()=>{
         </div>
       `;
     });
-  });
+
+  } catch (e) {
+    console.error(e);
+    myBetsList.innerHTML = "❌ خطأ في تحميل الرهانات";
+  }
 };
 /* ================= LOGOUT ================= */
 window.logout = async ()=>{
