@@ -1050,7 +1050,13 @@ const levelName = document.getElementById("levelName");
 const levelBar = document.getElementById("levelBar");
 const matchesBox = document.getElementById("matchesBox");
 const navBar = document.getElementById("navBar");
-
+ const emailInput = document.getElementById("email");
+const passwordInput = document.getElementById("password"); 
+/* ===== PROFILE DOM ===== */
+const profileName = document.getElementById("profileName");
+const profileLevel = document.getElementById("profileLevel");
+const referralLink = document.getElementById("referralLink");
+const withdrawBalance = document.getElementById("withdrawBalance");
 /* ================= UI ================= */
 function updateUI(){
   balance.innerText = userData.balance ?? 0;
@@ -1099,26 +1105,19 @@ window.submitRegister = async ()=>{
 
     const cred = await createUserWithEmailAndPassword(auth,email,pass);
 
-await setDoc(doc(db,"users",cred.user.uid),{
-  email,
-  phone,
-  balance: 0,
-  level: 0,
-  createdAt: serverTimestamp()
-});
+    await setDoc(doc(db,"users",cred.user.uid),{
+      email,
+      phone,
+      balance: 0,
+      level: 0,
+      createdAt: serverTimestamp()
+    });
 
-showView("appBox");
-fetchMatches();
-  }
-};
-
-window.login = async ()=>{
-  try{
-    await signInWithEmailAndPassword(auth,email.value,password.value);
     showView("appBox");
     fetchMatches();
-  }catch{
-    alert("❌ فشل تسجيل الدخول");
+
+  }catch(e){
+    alert(e.message);
   }
 };
 /* ================= AUTH STATE ================= */
