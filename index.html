@@ -1120,6 +1120,27 @@ window.submitRegister = async ()=>{
     alert(e.message);
   }
 };
+  /* ================= LOGIN ================= */
+window.login = async ()=>{
+  try{
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if(!email || !password){
+      alert("❌ أدخل البريد وكلمة المرور");
+      return;
+    }
+
+    await signInWithEmailAndPassword(auth, email, password);
+
+    showView("appBox");
+    fetchMatches();
+
+  }catch(e){
+    alert("❌ فشل تسجيل الدخول");
+    console.error(e);
+  }
+};
 /* ================= AUTH STATE ================= */
 onAuthStateChanged(auth, async (user)=>{
   if(!user){
