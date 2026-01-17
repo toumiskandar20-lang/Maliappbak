@@ -732,6 +732,38 @@ top: -6px;
   background:#ff5252;
   color:#fff;
 }
+  .level-card{
+  background:#111;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:12px;
+  border:1px solid #222;
+}
+
+.level-card h4{
+  margin:0 0 8px;
+}
+
+.level-card .price{
+  color:#f0c040;
+  font-weight:bold;
+}
+
+.level-card .tag{
+  display:inline-block;
+  margin-top:8px;
+  font-size:12px;
+  opacity:.8;
+}
+
+.level-card.active{
+  border:1px solid #4caf50;
+}
+
+.level-card.coming,
+.level-card.locked{
+  opacity:.5;
+}
 </style>
 </head>
 <body>
@@ -851,8 +883,8 @@ top: -6px;
       <i class="fa-solid fa-wallet"></i>
       تعبئة الحساب
     </button>
-    <button class="upgrade-btn" onclick="openUpgrade()">
-  <i class="fa-solid fa-arrow-trend-up"></i>
+   <button onclick="openUpgradeLevels()">
+  <i class="fa-solid fa-arrow-up-wide-short"></i>
   ترقية المستوى
 </button>
 
@@ -919,8 +951,9 @@ top: -6px;
   </div>
 </div>
 
-<!-- ================= UPGRADE ================= -->
-<div class="box hidden" id="upgradeBox">
+<!-- ================= UPGRADE LEVELS ================= -->
+<div class="box hidden" id="upgradeLevelsBox">
+
   <button onclick="goBack('profileBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
@@ -931,9 +964,8 @@ top: -6px;
     ترقية المستوى
   </h3>
 
-  <div class="upgrade-cards">
-    <!-- المستويات كما هي عندك -->
-  </div>
+  <div class="levels-list" id="levelsList"></div>
+
 </div>
 
 <!-- ================= TOP UP ================= -->
@@ -1208,6 +1240,77 @@ window.openProfile = ()=>{
   updateProfileUI();
   showView("profileBox");
 };
+  /* ================= UPGRADE LEVELS ================= */
+
+const levelsData = [
+  { level: 1, reward: "0.5 USD", price: 150 },
+  { level: 2, reward: "1 USD",   price: 295 },
+  { level: 3, reward: "2 USD",   price: 590 },
+  { level: 4, reward: "3.5 USD", price: 1000 },
+  { level: 5, reward: "5 USD",   price: 1450 },
+  { level: 6, coming: true },
+  { level: 7, coming: true },
+  { level: 8, coming: true },
+  { level: 9, unavailable: true },
+  { level: 10, unavailable: true }
+];
+
+window.openUpgradeLevels = () => {
+  renderLevels();
+  showView("upgradeLevelsBox");
+};
+
+function renderLevels() {
+  const container = document.getElementById("levelsList");
+  const currentLevel = Number(userData.level) || 0;
+
+  container.innerHTML = "";
+
+  levelsData.forEach(l => {
+
+    if (l.coming) {
+      container.innerHTML += `
+        <div class="level-card coming">
+          <h4>مستوى ${l.level}</h4>
+          <span class="tag">قيد الإنشاء</span>
+        </div>
+      `;
+      return;
+    }
+
+    if (l.unavailable) {
+      container.innerHTML += `
+        <div class="level-card locked">
+          <h4>مستوى ${l.level}</h4>
+          <span class="tag">غير متوفر الآن</span>
+        </div>
+      `;
+      return;
+    }
+
+    const isCurrent = l.level === currentLevel;
+    const isNext = l.level === currentLevel + 1;
+
+    container.innerHTML += `
+      <div class="level-card ${isCurrent ? "active" : ""}">
+        <h4>مستوى ${l.level}</h4>
+
+        <p>💰 ${l.reward} على كل تكهن صحيح</p>
+        <p class="price">سعر الترقية: ${l.price} USD</p>
+
+        ${
+          isCurrent
+            ? `<span class="tag active">مستواك الحالي</span>`
+            : isNext
+            ? `<button class="upgrade-btn" disabled>
+                 الترقية قريبًا
+               </button>`
+            : `<span class="tag locked">غير متاح</span>`
+        }
+      </div>
+    `;
+  });
+}
 /* ================= WITHDRAW ================= */
 window.openWithdraw = ()=>{
   showView("withdrawBox");
