@@ -1013,7 +1013,34 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+function watchMatchesResults() {
+  const q = collection(db, "matches");
 
+  onSnapshot(q, async (snap) => {
+    for (const docSnap of snap.docs) {
+      const match = docSnap.data();
+      if (!match.result) continue;
+
+      const matchId = docSnap.id;
+
+      const betsQ = query(
+        collection(db, "bets"),
+        where("matchId", "==", matchId),
+        where("status", "==", "pending")
+      );
+
+      const betsSnap = await getDocs(betsQ);
+
+      for (const betDoc of betsSnap.docs) {
+        const bet = betDoc.data();
+        const newStatus =
+          bet.choice === match.result ? "win" : "lose";
+
+        await updateDoc(betDoc.ref, { status: newStatus });
+      }
+    }
+  });
+}
 /* ================= GLOBAL ================= */
  let unsubscribeMyBets = null; 
 let currentView = "authBox";
@@ -1159,7 +1186,7 @@ onAuthStateChanged(auth, async (user)=>{
   updateUI();
   updateProfileUI();
   
-
+watchMatchesResults();
   // ✅ هنا فقط
   fetchMatches();
 
