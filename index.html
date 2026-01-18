@@ -989,6 +989,48 @@ top: -6px;
     </button>
   </div>
 </div>
+  <!-- ================= REWARDS ================= -->
+<div class="box hidden" id="rewardsBox">
+
+  <button onclick="goBack('appBox')" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i>
+    العودة
+  </button>
+
+  <h3 class="upgrade-title">
+    <i class="fa-solid fa-gift"></i>
+    الجوائز
+  </h3>
+
+  <!-- دعوات -->
+  <div class="level-card">
+    <h4>🎯 دعوة الأصدقاء</h4>
+    <p>المستوى 1 ➜ <strong>5 USD</strong> لكل شخص</p>
+    <p>المستوى 2 ➜ <strong>10 USD</strong> لكل شخص</p>
+    <p>المستوى 3 ➜ <strong>25 USD</strong> لكل شخص</p>
+
+    <p style="margin-top:8px">
+      الدعوات المفعّلة: <strong id="activeInvites">0</strong>
+    </p>
+  </div>
+
+  <!-- جائزة 100 -->
+  <div class="level-card">
+    <h4>🏆 جائزة 100 USD</h4>
+    <p>✔️ دعوة 10 أشخاص</p>
+    <p>✔️ كلهم مستوى 1 أو أكثر</p>
+
+    <p>
+      التقدم:
+      <strong><span id="inviteProgress">0</span>/10</strong>
+    </p>
+
+    <button id="claimBigReward" class="upgrade-btn" disabled>
+      غير متاحة بعد
+    </button>
+  </div>
+
+</div>
 
 <!-- ================= NAV BAR ================= -->
 <div id="navBar" class="bottom-bar hidden">
@@ -1004,9 +1046,9 @@ top: -6px;
     <i class="fa-solid fa-futbol"></i>
   </button>
 
-  <button onclick="alert('قريبًا')">
-    <i class="fa-solid fa-gift"></i><span>الجوائز</span>
-  </button>
+<button onclick="openRewards()">
+  <i class="fa-solid fa-gift"></i><span>الجوائز</span>
+</button>
 
   <button onclick="alert('الدعم')">
     <i class="fa-solid fa-headset"></i><span>الدعم</span>
@@ -1197,16 +1239,25 @@ window.submitRegister = async ()=>{
       return;
     }
 
-    const cred = await createUserWithEmailAndPassword(auth,email,pass);
+const params = new URLSearchParams(window.location.search);
+const ref = params.get("ref");
 
-    await setDoc(doc(db,"users",cred.user.uid),{
-      email,
-      phone,
-      balance: 0,
-      level: 0,
-      createdAt: serverTimestamp()
-    });
+const cred = await createUserWithEmailAndPassword(auth, email, password);
 
+await setDoc(doc(db,"users",cred.user.uid),{
+  email,
+  phone,
+  balance: 0,
+  level: 0,
+
+  // 🔗 صاحب رابط الإحالة
+  referredBy: ref || null,
+
+  // 🎁 جائزة 100$
+  bigRewardClaimed: false,
+
+  createdAt: serverTimestamp()
+});
     showView("appBox");
     fetchMatches();
 
@@ -1257,6 +1308,62 @@ watchMatchesResults();
 
   showView("appBox");
 });
+  window.openRewards = async () => {
+  showView("rewardsBox");
+  await loadRewards();
+};
+
+async function loadRewards() {
+  const uid = auth.currentUser.uid;
+
+  const q = query(
+    collection(db, "users"),
+    where("invitedBy", "==", uid)
+  );
+
+  const snap = await getDocs(q);
+
+  let active = 0;
+
+  snap.forEach(d => {
+    const u = d.data();
+    if ((u.level || 0) >= 1) active++;
+  });
+
+  document.getElementById("activeInvites").innerText = active;
+  document.getElementById("inviteProgress").innerText = active;
+
+  const btn = document.getElementById("claimBigReward");
+
+  if (active >= 10 && !userData.bigRewardClaimed) {
+    btn.disabled = false;
+    btn.innerText = "تحصيل 100 USD";
+    btn.onclick = claimBigReward;
+  } else if (userData.bigRewardClaimed) {
+    btn.innerText = "تم التحصيل ✔️";
+    btn.disabled = true;
+  }
+}
+  async function claimBigReward() {
+  if (userData.bigRewardClaimed) return;
+
+  const ok = confirm("هل تريد تحصيل جائزة 100 USD؟");
+  if (!ok) return;
+
+  const userRef = doc(db, "users", auth.currentUser.uid);
+
+  await updateDoc(userRef, {
+    balance: (userData.balance || 0) + 100,
+    bigRewardClaimed: true
+  });
+
+  userData.balance += 100;
+  userData.bigRewardClaimed = true;
+
+  updateUI();
+  alert("🎉 تم إضافة 100 USD إلى رصيدك");
+  loadRewards();
+}
   window.upgradeLevel = async (targetLevel, price) => {
   const currentLevel = Number(userData.level) || 0;
   const currentBalance = Number(userData.balance) || 0;
