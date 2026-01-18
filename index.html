@@ -1224,6 +1224,52 @@ watchMatchesResults();
 
   showView("appBox");
 });
+  window.upgradeLevel = async (targetLevel, price) => {
+  const currentLevel = Number(userData.level) || 0;
+  const currentBalance = Number(userData.balance) || 0;
+
+  // 🔒 يسمح فقط بالترقية للمستوى التالي
+  if (targetLevel !== currentLevel + 1) {
+    alert("❌ يمكنك الترقية للمستوى التالي فقط");
+    return;
+  }
+
+  // 💰 التحقق من الرصيد
+  if (currentBalance < price) {
+    alert("❌ رصيدك غير كافي لإتمام الترقية");
+    return;
+  }
+
+  // تأكيد
+  const ok = confirm(
+    `هل تريد ترقية حسابك إلى مستوى ${targetLevel} مقابل ${price} USD؟`
+  );
+  if (!ok) return;
+
+  try {
+    const userRef = doc(db, "users", auth.currentUser.uid);
+
+    // تحديث Firestore
+    await updateDoc(userRef, {
+      level: targetLevel,
+      balance: currentBalance - price
+    });
+
+    // تحديث محلي
+    userData.level = targetLevel;
+    userData.balance = currentBalance - price;
+
+    updateUI();
+    updateProfileUI();
+    renderLevels();
+
+    alert("✅ تمت الترقية بنجاح 🎉");
+
+  } catch (e) {
+    console.error(e);
+    alert("❌ حدث خطأ أثناء الترقية");
+  }
+};
 /* ================= PROFILE ================= */
 function updateProfileUI(){
   profileName.innerText = userData.email;
@@ -1288,27 +1334,28 @@ function renderLevels() {
       return;
     }
 
-    const isCurrent = l.level === currentLevel;
-    const isNext = l.level === currentLevel + 1;
+const isCurrent = l.level === currentLevel;
+const isNext = l.level === currentLevel + 1;
 
-    container.innerHTML += `
-      <div class="level-card ${isCurrent ? "active" : ""}">
-        <h4>مستوى ${l.level}</h4>
+container.innerHTML += `
+  <div class="level-card ${isCurrent ? "active" : ""}">
+    <h4>مستوى ${l.level}</h4>
 
-        <p>💰 ${l.reward} على كل تكهن صحيح</p>
-        <p class="price">سعر الترقية: ${l.price} USD</p>
+    <p>💰 ${l.reward} على كل تكهن صحيح</p>
+    <p class="price">سعر الترقية: ${l.price} USD</p>
 
-        ${
-          isCurrent
-            ? `<span class="tag active">مستواك الحالي</span>`
-            : isNext
-            ? `<button class="upgrade-btn" disabled>
-                 الترقية قريبًا
-               </button>`
-            : `<span class="tag locked">غير متاح</span>`
-        }
-      </div>
-    `;
+    ${
+      isCurrent
+        ? `<span class="tag active">مستواك الحالي</span>`
+        : isNext
+        ? `<button class="upgrade-btn"
+             onclick="upgradeLevel(${l.level}, ${l.price})">
+             ترقية الآن
+           </button>`
+        : `<span class="tag locked">غير متاح</span>`
+    }
+  </div>
+`;
   });
 }
 /* ================= WITHDRAW ================= */
