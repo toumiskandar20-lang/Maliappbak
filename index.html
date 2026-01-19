@@ -1314,21 +1314,27 @@ async function loadRewards() {
   const uid = auth.currentUser.uid;
 
   const q = query(
-  collection(db, "users"),
-  where("referredBy", "==", uid)
-);
+    collection(db, "users"),
+    where("referredBy", "==", uid)
+  );
 
   const snap = await getDocs(q);
 
-  let active = 0;
+  let totalInvites = snap.size; // 👈 كل الدعوات
+  let active = 0;               // 👈 فقط المفعّلة
 
   snap.forEach(d => {
     const u = d.data();
     if ((u.level || 0) >= 1) active++;
   });
 
+  // صفحة الجوائز
   document.getElementById("activeInvites").innerText = active;
   document.getElementById("inviteProgress").innerText = active;
+
+  // صفحة البروفيل
+  const stat = document.getElementById("statInvites");
+  if (stat) stat.innerText = totalInvites;
 
   const btn = document.getElementById("claimBigReward");
 
