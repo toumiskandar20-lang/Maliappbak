@@ -1239,29 +1239,26 @@ window.submitRegister = async ()=>{
       return;
     }
 
-const params = new URLSearchParams(window.location.search);
-const ref = params.get("ref");
+    const params = new URLSearchParams(window.location.search);
+    const ref = params.get("ref");
 
-const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
 
-await setDoc(doc(db,"users",cred.user.uid),{
-  email,
-  phone,
-  balance: 0,
-  level: 0,
+    await setDoc(doc(db,"users",cred.user.uid),{
+      email,
+      phone,
+      balance: 0,
+      level: 0,
+      referredBy: ref || null,
+      bigRewardClaimed: false,
+      createdAt: serverTimestamp()
+    });
 
-  // 🔗 صاحب رابط الإحالة
-  referredBy: ref || null,
-
-  // 🎁 جائزة 100$
-  bigRewardClaimed: false,
-
-  createdAt: serverTimestamp()
-});
     showView("appBox");
     fetchMatches();
 
   }catch(e){
+    console.error(e);
     alert(e.message);
   }
 };
