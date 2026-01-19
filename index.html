@@ -1546,7 +1546,7 @@ window.openWithdraw = ()=>{
   showView("withdrawBox");
   withdrawBalance.innerText = userData.balance ?? 0;
 };
-  window.submitWithdraw = async () => {
+window.submitWithdraw = async () => {
   try {
     const amount = Number(document.getElementById("withdrawAmount").value);
     const method = document.getElementById("withdrawMethod").value;
@@ -1580,9 +1580,9 @@ window.openWithdraw = ()=>{
     // 🔥 حفظ الطلب
     await addDoc(collection(db, "withdrawals"), {
       userId: auth.currentUser.uid,
-      amount,
-      method,
-      address,
+      amount: amount,
+      method: method,
+      address: address,
       status: "pending",
       createdAt: serverTimestamp()
     });
@@ -1595,11 +1595,11 @@ window.openWithdraw = ()=>{
     userData.balance -= amount;
     updateUI();
 
-    // ✅ عرض رسالة النجاح
+    // ✅ نجاح
     showView("withdrawSuccess");
 
   } catch (e) {
-    console.error(e);
+    console.error("🔥 WITHDRAW ERROR:", e);
     alert("❌ حدث خطأ أثناء إرسال الطلب");
   }
 };
