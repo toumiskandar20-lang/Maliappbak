@@ -1128,7 +1128,8 @@ import {
   serverTimestamp,
   getDocs,
   onSnapshot,
-  addDoc   // 👈 هذا هو السطر الناقص
+  addDoc,
+  orderBy   // ✅ أضفه
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
@@ -1564,6 +1565,58 @@ container.innerHTML += `
   </div>
 `;
   });
+}
+  /* ================= WITHDRAW HISTORY ================= */
+async function loadWithdrawHistory() {
+  try {
+    const q = query(
+      collection(db, "withdrawals"),
+      where("userId", "==", auth.currentUser.uid),
+      orderBy("createdAt", "desc")
+    );
+
+    const snap = await getDocs(q);
+    const box = document.getElementById("withdrawList");
+
+    if (!box) return;
+
+    box.innerHTML = "";
+
+    if (snap.empty) {
+      box.innerHTML = "<p>❌ لا توجد طلبات سحب</p>";
+      return;
+    }
+
+    snap.forEach(docSnap => {
+      const w = docSnap.data();
+
+      let statusText = "⏳ تحت المراجعة";
+      let statusClass = "pending";
+
+      if (w.status === "approved") {
+        statusText = "✅ تم القبول";
+        statusClass = "approved";
+      }
+
+      if (w.status === "rejected") {
+        statusText = "❌ مرفوض";
+        statusClass = "rejected";
+      }
+
+      box.innerHTML += `
+        <div class="withdraw-item ${statusClass}">
+          <div>💰 ${w.amount} USDT</div>
+          <div>${statusText}</div>
+          <small>
+            ${w.createdAt?.toDate().toLocaleString("ar-TN") || ""}
+          </small>
+        </div>
+      `;
+    });
+
+  } catch (e) {
+    console.error("🔥 LOAD WITHDRAW HISTORY ERROR:", e);
+  }
 }
 /* ================= WITHDRAW ================= */
 
