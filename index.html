@@ -1176,7 +1176,18 @@ window.openTab = function(btn, viewId){
   document.querySelectorAll(".bottom-bar button")
     .forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
+
   showView(viewId);
+
+  // ✅ الحل هنا
+  if (viewId === "profileBox") {
+    updateProfileUI();
+    loadRewards(); // 👈 هذا هو المفتاح
+  }
+
+  if (viewId === "rewardsBox") {
+    loadRewards();
+  }
 };
 
 /* ================= DOM ================= */
