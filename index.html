@@ -764,6 +764,19 @@ top: -6px;
 .level-card.locked{
   opacity:.5;
 }
+  .success-box {
+  background: linear-gradient(135deg, #1abc9c, #16a085);
+  color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
 </style>
 </head>
 <body>
@@ -947,8 +960,23 @@ top: -6px;
       أوافق على شروط وأحكام السحب
     </label>
 
-    <button class="topup-btn">🚀 إرسال طلب السحب</button>
+    <button class="topup-btn" id="withdrawBtn" onclick="submitWithdraw()">
+  🚀 إرسال طلب السحب
+</button>
   </div>
+</div>
+  <div class="box hidden" id="withdrawSuccess">
+  <h3>✅ تم إرسال طلب السحب</h3>
+  <p style="line-height:1.6;opacity:.9">
+    شكراً لك 🙏<br>
+    تم استلام طلب السحب بنجاح.<br>
+    سيتم الرد عليك في غضون
+    <strong>72 ساعة كحد أقصى</strong>.
+  </p>
+
+  <button class="topup-btn" onclick="goBack('profileBox')">
+    العودة إلى البروفيل
+  </button>
 </div>
 
 <!-- ================= UPGRADE LEVELS ================= -->
@@ -1516,6 +1544,63 @@ container.innerHTML += `
 window.openWithdraw = ()=>{
   showView("withdrawBox");
   withdrawBalance.innerText = userData.balance ?? 0;
+};
+  window.submitWithdraw = async () => {
+  try {
+    const amount = Number(document.getElementById("withdrawAmount").value);
+    const method = document.getElementById("withdrawMethod").value;
+    const address = document.getElementById("withdrawAddress").value.trim();
+    const agree = document.getElementById("agreeWithdraw").checked;
+
+    if (!amount || amount < 20) {
+      alert("❌ الحد الأدنى للسحب هو 20 USDT");
+      return;
+    }
+
+    if (amount > (userData.balance || 0)) {
+      alert("❌ رصيدك غير كافي");
+      return;
+    }
+
+    if (!address) {
+      alert("❌ أدخل عنوان المحفظة");
+      return;
+    }
+
+    if (!agree) {
+      alert("❌ يجب الموافقة على الشروط");
+      return;
+    }
+
+    const btn = document.getElementById("withdrawBtn");
+    btn.disabled = true;
+    btn.innerText = "⏳ جاري الإرسال...";
+
+    // 🔥 حفظ الطلب
+    await addDoc(collection(db, "withdrawals"), {
+      userId: auth.currentUser.uid,
+      amount,
+      method,
+      address,
+      status: "pending",
+      createdAt: serverTimestamp()
+    });
+
+    // 💰 خصم الرصيد
+    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+      balance: userData.balance - amount
+    });
+
+    userData.balance -= amount;
+    updateUI();
+
+    // ✅ عرض رسالة النجاح
+    showView("withdrawSuccess");
+
+  } catch (e) {
+    console.error(e);
+    alert("❌ حدث خطأ أثناء إرسال الطلب");
+  }
 };
 
 /* ================= TOP UP ================= */
