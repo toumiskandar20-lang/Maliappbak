@@ -777,6 +777,17 @@ top: -6px;
   from { opacity: 0; transform: scale(0.95); }
   to   { opacity: 1; transform: scale(1); }
 }
+  .withdraw-item {
+  background: #111;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.withdraw-item.pending { border-left: 4px solid orange; }
+.withdraw-item.approved { border-left: 4px solid green; }
+.withdraw-item.rejected { border-left: 4px solid red; }
 </style>
 </head>
 <body>
@@ -922,6 +933,7 @@ top: -6px;
 
 <!-- ================= WITHDRAW ================= -->
 <div class="box hidden" id="withdrawBox">
+
   <button onclick="goBack('profileBox')" class="back-btn">
     <i class="fa-solid fa-arrow-left"></i>
     العودة
@@ -938,7 +950,9 @@ top: -6px;
     <p class="warning">الحد الأدنى للسحب: 20 USDT</p>
   </div>
 
+  <!-- 🔥 فورم السحب -->
   <div class="topup-card" style="margin-top:15px">
+
     <label>طريقة السحب</label>
     <select id="withdrawMethod">
       <option value="USDT_TRC20">USDT (TRC20)</option>
@@ -961,16 +975,26 @@ top: -6px;
     </label>
 
     <button class="topup-btn" id="withdrawBtn" onclick="submitWithdraw()">
-  🚀 إرسال طلب السحب
-</button>
+      🚀 إرسال طلب السحب
+    </button>
+
   </div>
+
+  <!-- ✅ سجل السحب (هنا المكان الصحيح) -->
+  <div class="withdraw-history" style="margin-top:20px">
+    <h4>📜 سجل طلبات السحب</h4>
+    <div id="withdrawList">⏳ تحميل السجل...</div>
+  </div>
+
 </div>
-  <div class="box hidden" id="withdrawSuccess">
+
+<!-- ✅ شاشة النجاح -->
+<div class="box hidden" id="withdrawSuccess">
   <h3>✅ تم إرسال طلب السحب</h3>
   <p style="line-height:1.6;opacity:.9">
     شكراً لك 🙏<br>
     تم استلام طلب السحب بنجاح.<br>
-    سيتم الرد عليك في غضون
+    سيتم الرد عليك خلال
     <strong>72 ساعة كحد أقصى</strong>.
   </p>
 
@@ -1542,24 +1566,31 @@ container.innerHTML += `
   });
 }
 /* ================= WITHDRAW ================= */
+
+// فتح صفحة السحب + تحميل السجل
 window.openWithdraw = ()=>{
   showView("withdrawBox");
   withdrawBalance.innerText = userData.balance ?? 0;
+
+  loadWithdrawHistory(); // ✅ تحميل سجل طلبات السحب
 };
+
+// إرسال طلب سحب
 window.submitWithdraw = async () => {
   try {
-    const amount = Number(document.getElementById("withdrawAmount").value);
-    const method = document.getElementById("withdrawMethod").value;
+    const amount  = Number(document.getElementById("withdrawAmount").value);
+    const method  = document.getElementById("withdrawMethod").value;
     const address = document.getElementById("withdrawAddress").value.trim();
-    const agree = document.getElementById("agreeWithdraw").checked;
+    const agree   = document.getElementById("agreeWithdraw").checked;
 
+    // ✅ التحقق
     if (!amount || amount < 20) {
       alert("❌ الحد الأدنى للسحب هو 20 USDT");
       return;
     }
 
     if (amount > (userData.balance || 0)) {
-      alert("❌ رصيدك غير كافي");
+      alert("❌ رصيدك غير كاف");
       return;
     }
 
@@ -1569,34 +1600,48 @@ window.submitWithdraw = async () => {
     }
 
     if (!agree) {
-      alert("❌ يجب الموافقة على الشروط");
+      alert("❌ يجب الموافقة على شروط وأحكام السحب");
       return;
     }
 
     const btn = document.getElementById("withdrawBtn");
     btn.disabled = true;
-    btn.innerText = "⏳ جاري الإرسال...";
+    btn.innerText = "⏳ جاري إرسال الطلب...";
 
-    // 🔥 حفظ الطلب
+    // 🧾 تسجيل الطلب في Firestore
     await addDoc(collection(db, "withdrawals"), {
       userId: auth.currentUser.uid,
       amount: amount,
+      fee: 2,
+      netAmount: Math.max(amount - 2, 0),
       method: method,
       address: address,
-      status: "pending",
+      status: "pending", // pending | approved | rejected
       createdAt: serverTimestamp()
     });
 
-    // 💰 خصم الرصيد
+    // 💰 خصم الرصيد من المستخدم
     await updateDoc(doc(db, "users", auth.currentUser.uid), {
-      balance: userData.balance - amount
+      balance: (userData.balance || 0) - amount
     });
 
     userData.balance -= amount;
     updateUI();
 
-    // ✅ نجاح
+    // 🔄 تحديث سجل السحوبات مباشرة
+    await loadWithdrawHistory();
+
+    // 🎉 صفحة نجاح احترافية
     showView("withdrawSuccess");
+
+    // إعادة تعيين الفورم
+    document.getElementById("withdrawAmount").value = "";
+    document.getElementById("withdrawAddress").value = "";
+    document.getElementById("agreeWithdraw").checked = false;
+    document.getElementById("withdrawNet").innerText = "0 USDT";
+
+    btn.disabled = false;
+    btn.innerText = "🚀 إرسال طلب السحب";
 
   } catch (e) {
     console.error("🔥 WITHDRAW ERROR:", e);
