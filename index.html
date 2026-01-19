@@ -1314,9 +1314,9 @@ async function loadRewards() {
   const uid = auth.currentUser.uid;
 
   const q = query(
-    collection(db, "users"),
-    where("invitedBy", "==", uid)
-  );
+  collection(db, "users"),
+  where("referredBy", "==", uid)
+);
 
   const snap = await getDocs(q);
 
