@@ -1631,11 +1631,7 @@ window.openWithdraw = async ()=>{
   showView("withdrawBox");
   withdrawBalance.innerText = userData.balance ?? 0;
 
-  if (!auth.currentUser) {
-    console.warn("⛔ User not ready yet");
-    return;
-  }
-
+  // ✅ تحميل سجل طلبات السحب
   await loadWithdrawHistory();
 };
 
