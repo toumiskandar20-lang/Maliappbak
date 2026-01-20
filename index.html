@@ -1706,17 +1706,30 @@ if (status === "rejected") {
   statusClass = "rejected";
 }
 
-      box.innerHTML += `
-        <div class="withdraw-item ${statusClass}">
-          <div>
-            <div class="amount">💰 ${w.amount} USDT</div>
-            <small>
-              ${w.createdAt?.toDate().toLocaleString("ar-TN") || ""}
-            </small>
-          </div>
-          <div class="withdraw-status">${statusText}</div>
-        </div>
-      `;
+box.innerHTML += `
+  <div class="withdraw-item ${statusClass}">
+    <div class="withdraw-left">
+      <div class="amount">
+        <i class="fa-solid fa-coins"></i>
+        ${w.amount} USDT
+      </div>
+      <small class="date">
+        <i class="fa-regular fa-clock"></i>
+        ${w.createdAt?.toDate().toLocaleString("ar-TN") || ""}
+      </small>
+    </div>
+
+    <div class="withdraw-status ${statusClass}">
+      ${
+        statusClass === "approved"
+          ? '<i class="fa-solid fa-circle-check"></i> تم القبول'
+          : statusClass === "rejected"
+          ? '<i class="fa-solid fa-circle-xmark"></i> مرفوض'
+          : '<i class="fa-solid fa-hourglass-half"></i> قيد المراجعة'
+      }
+    </div>
+  </div>
+`;
     });
   });
 }
