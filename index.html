@@ -1568,62 +1568,33 @@ container.innerHTML += `
 }
   /* ================= WITHDRAW HISTORY ================= */
 async function loadWithdrawHistory() {
-  try {
+  const box = document.getElementById("withdrawList");
+  box.innerHTML = "⏳ تحميل السجل...";
 
-    // 🔐 تأكد أن المستخدم مسجّل دخول
-    if (!auth.currentUser) {
-      console.warn("⛔ loadWithdrawHistory: no user");
-      return;
-    }
+  const q = query(
+    collection(db, "withdrawals"),
+    where("userId", "==", auth.currentUser.uid)
+  );
 
-    const box = document.getElementById("withdrawList");
-    if (!box) return;
+  const snap = await getDocs(q);
 
-    const q = query(
-      collection(db, "withdrawals"),
-      where("userId", "==", auth.currentUser.uid),
-      orderBy("createdAt", "desc")
-    );
+  box.innerHTML = "";
 
-    const snap = await getDocs(q);
-
-    box.innerHTML = "";
-
-    if (snap.empty) {
-      box.innerHTML = "<p>📭 لا توجد طلبات سحب</p>";
-      return;
-    }
-
-    snap.forEach(docSnap => {
-      const w = docSnap.data();
-
-      let statusText = "⏳ تحت المراجعة";
-      let statusClass = "pending";
-
-      if (w.status === "approved") {
-        statusText = "✅ تم القبول";
-        statusClass = "approved";
-      }
-
-      if (w.status === "rejected") {
-        statusText = "❌ مرفوض";
-        statusClass = "rejected";
-      }
-
-      box.innerHTML += `
-        <div class="withdraw-item ${statusClass}">
-          <div>💰 ${w.amount} USDT</div>
-          <div>${statusText}</div>
-          <small>
-            ${w.createdAt?.toDate().toLocaleString("ar-TN") || ""}
-          </small>
-        </div>
-      `;
-    });
-
-  } catch (e) {
-    console.error("🔥 LOAD WITHDRAW HISTORY ERROR:", e);
+  if (snap.empty) {
+    box.innerHTML = "<p>❌ لا توجد طلبات سحب</p>";
+    return;
   }
+
+  snap.forEach(docSnap => {
+    const w = docSnap.data();
+
+    box.innerHTML += `
+      <div class="withdraw-item">
+        <div>💰 ${w.amount} USDT</div>
+        <div>⏳ ${w.status}</div>
+      </div>
+    `;
+  });
 }
 /* ================= WITHDRAW ================= */
 
