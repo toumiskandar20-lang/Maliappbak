@@ -785,9 +785,81 @@ top: -6px;
   font-size: 14px;
 }
 
-.withdraw-item.pending { border-left: 4px solid orange; }
-.withdraw-item.approved { border-left: 4px solid green; }
-.withdraw-item.rejected { border-left: 4px solid red; }
+.withdraw-history {
+  background: #111;
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.withdraw-item {
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.35);
+  border-left: 5px solid transparent;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.withdraw-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0,0,0,.45);
+}
+
+/* 💰 المبلغ */
+.withdraw-item .amount {
+  font-weight: 700;
+  font-size: 15px;
+  color: #fff;
+}
+
+/* 📅 التاريخ */
+.withdraw-item small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #aaa;
+}
+
+/* 🔹 الحالة */
+.withdraw-status {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ⏳ pending */
+.withdraw-item.pending {
+  border-left-color: #f6c343;
+}
+.withdraw-item.pending .withdraw-status {
+  background: rgba(246,195,67,.15);
+  color: #f6c343;
+}
+
+/* ✅ approved */
+.withdraw-item.approved {
+  border-left-color: #38d39f;
+}
+.withdraw-item.approved .withdraw-status {
+  background: rgba(56,211,159,.15);
+  color: #38d39f;
+}
+
+/* ❌ rejected */
+.withdraw-item.rejected {
+  border-left-color: #ff6b6b;
+}
+.withdraw-item.rejected .withdraw-status {
+  background: rgba(255,107,107,.15);
+  color: #ff6b6b;
+}
 </style>
 </head>
 <body>
@@ -1588,10 +1660,30 @@ async function loadWithdrawHistory() {
   snap.forEach(docSnap => {
     const w = docSnap.data();
 
+    // 🔹 هنا بالضبط ⬇⬇⬇
+    let statusText = "⏳ قيد المراجعة";
+    let statusClass = "pending";
+
+    if (w.status === "approved") {
+      statusText = "✅ تم القبول";
+      statusClass = "approved";
+    }
+
+    if (w.status === "rejected") {
+      statusText = "❌ مرفوض";
+      statusClass = "rejected";
+    }
+
+    // 🔹 ثم العرض
     box.innerHTML += `
-      <div class="withdraw-item">
-        <div>💰 ${w.amount} USDT</div>
-        <div>⏳ ${w.status}</div>
+      <div class="withdraw-item ${statusClass}">
+        <div>
+          <div class="amount">💰 ${w.amount} USDT</div>
+          <small>
+            ${w.createdAt?.toDate().toLocaleString("ar-TN") || ""}
+          </small>
+        </div>
+        <div class="withdraw-status">${statusText}</div>
       </div>
     `;
   });
