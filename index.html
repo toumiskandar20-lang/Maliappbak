@@ -934,6 +934,22 @@ top: -6px;
 .withdraw-status.pending {
   color: #f59e0b;
 }
+  .withdraw-agree {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+.withdraw-agree span {
+  white-space: nowrap; /* 🔥 يمنع تكسير النص */
+}
+
+.withdraw-agree input {
+  accent-color: #f5b301; /* لون جميل (اختياري) */
+}
 </style>
 </head>
 <body>
@@ -1118,10 +1134,10 @@ top: -6px;
       الصافي: <strong id="withdrawNet">0 USDT</strong>
     </div>
 
-    <label style="display:flex;gap:8px;align-items:center">
-      <input type="checkbox" id="agreeWithdraw">
-      أوافق على شروط وأحكام السحب
-    </label>
+   <label class="withdraw-agree">
+  <input type="checkbox" id="agreeWithdraw">
+  <span>أوافق على شروط وأحكام السحب</span>
+</label>
 
    <button class="topup-btn" id="withdrawBtn" onclick="submitWithdraw()">
   <i class="fa-solid fa-paper-plane"></i>
