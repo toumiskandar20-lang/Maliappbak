@@ -983,7 +983,7 @@ top: -6px;
   <!-- ✅ سجل السحب (هنا المكان الصحيح) -->
   <div class="withdraw-history" style="margin-top:20px">
     <h4>📜 سجل طلبات السحب</h4>
-    <div id="withdrawList">⏳ تحميل السجل...</div>
+<div id="withdrawList"></div>
   </div>
 
 </div>
@@ -1569,6 +1569,16 @@ container.innerHTML += `
   /* ================= WITHDRAW HISTORY ================= */
 async function loadWithdrawHistory() {
   try {
+
+    // 🔐 تأكد أن المستخدم مسجّل دخول
+    if (!auth.currentUser) {
+      console.warn("⛔ loadWithdrawHistory: no user");
+      return;
+    }
+
+    const box = document.getElementById("withdrawList");
+    if (!box) return;
+
     const q = query(
       collection(db, "withdrawals"),
       where("userId", "==", auth.currentUser.uid),
@@ -1576,14 +1586,11 @@ async function loadWithdrawHistory() {
     );
 
     const snap = await getDocs(q);
-    const box = document.getElementById("withdrawList");
-
-    if (!box) return;
 
     box.innerHTML = "";
 
     if (snap.empty) {
-      box.innerHTML = "<p>❌ لا توجد طلبات سحب</p>";
+      box.innerHTML = "<p>📭 لا توجد طلبات سحب</p>";
       return;
     }
 
@@ -1620,12 +1627,16 @@ async function loadWithdrawHistory() {
 }
 /* ================= WITHDRAW ================= */
 
-// فتح صفحة السحب + تحميل السجل
-window.openWithdraw = ()=>{
+window.openWithdraw = async ()=>{
   showView("withdrawBox");
   withdrawBalance.innerText = userData.balance ?? 0;
 
-  loadWithdrawHistory(); // ✅ تحميل سجل طلبات السحب
+  if (!auth.currentUser) {
+    console.warn("⛔ User not ready yet");
+    return;
+  }
+
+  await loadWithdrawHistory();
 };
 
 // إرسال طلب سحب
