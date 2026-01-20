@@ -1639,8 +1639,6 @@ container.innerHTML += `
   });
 }
   /* ================= WITHDRAW HISTORY ================= */
-import { onSnapshot } from "firebase/firestore";
-
 function loadWithdrawHistory() {
   const box = document.getElementById("withdrawList");
   box.innerHTML = "⏳ تحميل السجل...";
@@ -1650,7 +1648,7 @@ function loadWithdrawHistory() {
     where("userId", "==", auth.currentUser.uid)
   );
 
-  // 🔥 الاستماع المباشر للتغييرات
+  // ✅ Firestore global onSnapshot
   onSnapshot(q, (snap) => {
     box.innerHTML = "";
 
