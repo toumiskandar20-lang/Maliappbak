@@ -1663,15 +1663,17 @@ function loadWithdrawHistory() {
       let statusText = "⏳ قيد المراجعة";
       let statusClass = "pending";
 
-      if (w.status === "approved") {
-        statusText = "✅ تم القبول";
-        statusClass = "approved";
-      }
+     const status = (w.status || "").trim().toLowerCase();
 
-      if (w.status === "rejected") {
-        statusText = "❌ مرفوض";
-        statusClass = "rejected";
-      }
+if (status === "approved") {
+  statusText = "✅ تم القبول";
+  statusClass = "approved";
+}
+
+if (status === "rejected") {
+  statusText = "❌ مرفوض";
+  statusClass = "rejected";
+}
 
       box.innerHTML += `
         <div class="withdraw-item ${statusClass}">
