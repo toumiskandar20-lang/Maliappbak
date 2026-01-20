@@ -884,6 +884,56 @@ top: -6px;
   margin-left: 6px;
   color: #22c55e; /* أخضر مالي */
 }
+  .withdraw-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #111827;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.withdraw-left .amount {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.withdraw-left .amount i {
+  margin-left: 6px;
+  color: #f59e0b;
+}
+
+.withdraw-left .date {
+  display: block;
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.withdraw-left .date i {
+  margin-left: 4px;
+}
+
+.withdraw-status {
+  font-weight: 600;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.withdraw-status.approved {
+  color: #22c55e;
+}
+
+.withdraw-status.rejected {
+  color: #ef4444;
+}
+
+.withdraw-status.pending {
+  color: #f59e0b;
+}
 </style>
 </head>
 <body>
