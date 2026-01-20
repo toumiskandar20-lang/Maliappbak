@@ -1639,7 +1639,9 @@ container.innerHTML += `
   });
 }
   /* ================= WITHDRAW HISTORY ================= */
-async function loadWithdrawHistory() {
+import { onSnapshot } from "firebase/firestore";
+
+function loadWithdrawHistory() {
   const box = document.getElementById("withdrawList");
   box.innerHTML = "⏳ تحميل السجل...";
 
@@ -1648,44 +1650,43 @@ async function loadWithdrawHistory() {
     where("userId", "==", auth.currentUser.uid)
   );
 
-  const snap = await getDocs(q);
+  // 🔥 الاستماع المباشر للتغييرات
+  onSnapshot(q, (snap) => {
+    box.innerHTML = "";
 
-  box.innerHTML = "";
-
-  if (snap.empty) {
-    box.innerHTML = "<p>❌ لا توجد طلبات سحب</p>";
-    return;
-  }
-
-  snap.forEach(docSnap => {
-    const w = docSnap.data();
-
-    // 🔹 هنا بالضبط ⬇⬇⬇
-    let statusText = "⏳ قيد المراجعة";
-    let statusClass = "pending";
-
-    if (w.status === "approved") {
-      statusText = "✅ تم القبول";
-      statusClass = "approved";
+    if (snap.empty) {
+      box.innerHTML = "<p>📭 لا توجد طلبات سحب</p>";
+      return;
     }
 
-    if (w.status === "rejected") {
-      statusText = "❌ مرفوض";
-      statusClass = "rejected";
-    }
+    snap.forEach(docSnap => {
+      const w = docSnap.data();
 
-    // 🔹 ثم العرض
-    box.innerHTML += `
-      <div class="withdraw-item ${statusClass}">
-        <div>
-          <div class="amount">💰 ${w.amount} USDT</div>
-          <small>
-            ${w.createdAt?.toDate().toLocaleString("ar-TN") || ""}
-          </small>
+      let statusText = "⏳ قيد المراجعة";
+      let statusClass = "pending";
+
+      if (w.status === "approved") {
+        statusText = "✅ تم القبول";
+        statusClass = "approved";
+      }
+
+      if (w.status === "rejected") {
+        statusText = "❌ مرفوض";
+        statusClass = "rejected";
+      }
+
+      box.innerHTML += `
+        <div class="withdraw-item ${statusClass}">
+          <div>
+            <div class="amount">💰 ${w.amount} USDT</div>
+            <small>
+              ${w.createdAt?.toDate().toLocaleString("ar-TN") || ""}
+            </small>
+          </div>
+          <div class="withdraw-status">${statusText}</div>
         </div>
-        <div class="withdraw-status">${statusText}</div>
-      </div>
-    `;
+      `;
+    });
   });
 }
 /* ================= WITHDRAW ================= */
