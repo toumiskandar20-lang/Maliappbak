@@ -1726,9 +1726,15 @@ container.innerHTML += `
   <div class="level-card ${isCurrent ? "active" : ""}">
     <h4>مستوى ${l.level}</h4>
 
-    <p>💰 ${l.reward} على كل تكهن صحيح</p>
-    <p class="price">سعر الترقية: ${l.price} USD</p>
+   <div class="reward-box">
+  <i class="fa-solid fa-money-bill-wave"></i>
+  <span>${l.reward} لكل تكهّن صحيح</span>
+</div>
 
+<div class="price-box">
+  <i class="fa-solid fa-tag"></i>
+  <span>سعر الترقية: ${l.price} USD</span>
+</div>
     ${
       isCurrent
         ? `<span class="tag active">مستواك الحالي</span>`
