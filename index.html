@@ -935,18 +935,18 @@ top: -6px;
   color: #f59e0b;
 }
 .withdraw-agree-center {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
 
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
-  margin: 15px 0;
+
+  width: max-content;        /* 🔥 الحل */
+  margin: 15px auto;         /* 🔥 الحل */
 
   direction: rtl;
   text-align: center;
-
-  padding: 0 !important;
 }
 
 .withdraw-agree-center label {
