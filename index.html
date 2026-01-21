@@ -936,20 +936,25 @@ top: -6px;
 }
 .withdraw-agree {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;   /* ✅ هذا هو الحل */
+  justify-content: center;   /* ✅ توسيط حقيقي */
   gap: 8px;
-  font-size: 14px;
-  line-height: 1.4;
-  cursor: pointer;
+
   width: 100%;
+  margin: 12px auto 0 auto; /* ✅ توسيط داخل الكارد */
+  text-align: center;
+
+  direction: rtl;           /* لأنك عربي */
 }
 
 .withdraw-agree span {
-  white-space: nowrap;
+  display: inline-block;
+  text-align: center;
 }
 
 .withdraw-agree input {
+  margin: 0;                /* 🔥 هذا كان سبب الانحراف */
   accent-color: #f5b301;
 }
 </style>
@@ -1136,7 +1141,7 @@ top: -6px;
       الصافي: <strong id="withdrawNet">0 USDT</strong>
     </div>
 
-   <label class="withdraw-agree">
+<label class="withdraw-agree">
   <input type="checkbox" id="agreeWithdraw">
   <span>أوافق على شروط وأحكام السحب</span>
 </label>
