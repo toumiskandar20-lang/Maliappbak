@@ -934,21 +934,23 @@ top: -6px;
 .withdraw-status.pending {
   color: #f59e0b;
 }
-  .withdraw-agree {
+.withdraw-agree {
   display: flex;
   align-items: center;
+  justify-content: center;   /* ✅ هذا هو الحل */
   gap: 8px;
   font-size: 14px;
   line-height: 1.4;
   cursor: pointer;
+  width: 100%;
 }
 
 .withdraw-agree span {
-  white-space: nowrap; /* 🔥 يمنع تكسير النص */
+  white-space: nowrap;
 }
 
 .withdraw-agree input {
-  accent-color: #f5b301; /* لون جميل (اختياري) */
+  accent-color: #f5b301;
 }
 </style>
 </head>
