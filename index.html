@@ -6,785 +6,195 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
 <style>
-body{margin:0;font-family:Arial;background:#111;color:#fff;}
-.box{max-width:420px;margin:25px auto;background:#222;border-radius:16px;padding:20px;}
-input,button{width:100%;padding:12px;margin:8px 0;border-radius:8px;border:none;}
-button{background:#00c853;font-weight:bold;cursor:pointer;}
-.task{background:#333;padding:12px;border-radius:10px;margin:8px 0;display:flex;justify-content:space-between;align-items:center;}
-.hidden{display:none;}
-  .match-card{
-  background: linear-gradient(145deg,#1e1e1e,#2a2a2a);
-  border-radius:14px;
-  padding:14px;
-  margin-bottom:14px;
-  box-shadow:0 6px 16px rgba(0,0,0,.4);
-}
-
-.match-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
-}
-
-.team{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-weight:bold;
-}
-
-.team i{
-  font-size:20px;
-  color:#00e676;
-}
-
-.vs{
-  font-size:13px;
-  opacity:.7;
-}
-
-.match-time{
-  font-size:12px;
-  background:#111;
-  padding:4px 8px;
-  border-radius:6px;
-  opacity:.8;
-}
-
-.bet-buttons{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin-top:10px;
-}
-
-.bet-btn{
-  background:#111;
-  border:1px solid #333;
-  border-radius:10px;
-  padding:10px;
-  font-size:16px;
-  font-weight:bold;
-  color:#fff;
-  transition:.2s;
-}
-
-.bet-btn:hover{
-  background:#00c853;
-  color:#000;
-}
-
-.bet-btn:disabled{
-  opacity:.4;
-  cursor:not-allowed;
-}
-  .bet-btn.selected{
-  background:#00e676;
-  color:#000;
-}
-  .bet-status{
-  margin-top:6px;
-  font-weight:bold;
-  font-size:14px;
-}
-
-.bet-win{
-  color:#00e676;
-}
-
-.bet-lose{
-  color:#ff5252;
-}
-
-.bet-pending{
-  color:#ffc107;
-}
-
-.badge{
-  padding:4px 8px;
-  border-radius:6px;
-  font-size:12px;
-}
-  .section-title{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin:18px 0 12px;
-  padding-bottom:10px;
-  border-bottom:1px solid #2f2f2f;
-}
-
-.title-left{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  font-size:18px;
-  font-weight:700;
-}
-
-.title-left i{
-  color:#00e676;
-  font-size:20px;
-}
-
-.live-dot{
-  font-size:11px;
-  font-weight:bold;
-  color:#000;
-  background:#ff1744;
-  padding:4px 8px;
-  border-radius:20px;
-  animation:pulse 1.5s infinite;
-}
-
-@keyframes pulse{
-  0%{box-shadow:0 0 0 0 rgba(255,23,68,.6);}
-  70%{box-shadow:0 0 0 10px rgba(255,23,68,0);}
-  100%{box-shadow:0 0 0 0 rgba(255,23,68,0);}
-}
- .pro-time{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:14px;
-  background:#111;
-  padding:6px 10px;
-  border-radius:10px;
-  width:fit-content;
-  margin-top:8px;
-  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
-}
-
-.pro-time i{
-  color:#00e676;
-  font-size:15px;
-}
-
-.time-text{
-  opacity:.85;
-}
-
-.time-sep{
-  opacity:.4;
-}
-
-.time-hour{
-  font-weight:bold;
-  letter-spacing:.5px;
-} 
-  .back-btn{
-  background: linear-gradient(145deg,#1e1e1e,#2b2b2b);
-  color:#fff;
-  border:1px solid #333;
-  border-radius:12px;
-  padding:12px 16px;
-  font-size:15px;
-  font-weight:600;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  cursor:pointer;
-  transition:.25s;
-}
-
-.back-btn i{
-  font-size:16px;
-  color:#00e676;
-}
-
-.back-btn:hover{
-  background:#00e676;
-  color:#000;
-}
-
-.back-btn:hover i{
-  color:#000;
-}
-  .upgrade-btn{
-  background:linear-gradient(135deg,#7c4dff,#651fff);
-  border:none;
-  padding:12px;
-  color:white;
-  width:100%;
-  border-radius:10px;
-  font-weight:bold;
-  margin-top:10px;
-}
-
-.upgrade-title{
-  text-align:center;
-  color:#ffd54f;
-  margin-bottom:15px;
-}
-
-.upgrade-cards{
-  display:grid;
-  gap:15px;
-}
-
-.upgrade-card{
-  background:#1e1e2f;
-  border-radius:14px;
-  padding:15px;
-  text-align:center;
-  box-shadow:0 0 15px rgba(0,0,0,.4);
-}
-
-.upgrade-card h4{
-  color:#fff;
-}
-
-.upgrade-card button{
-  margin-top:10px;
-  width:100%;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.level-1 button{background:#00c853;color:#000;}
-.level-2 button{background:#2979ff;color:#fff;}
-.level-3 button{background:#ffab00;color:#000;}
-  .level-box{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  background:linear-gradient(135deg,#1c1c2b,#222);
-  border-radius:14px;
-  padding:14px;
-  margin-bottom:12px;
-  box-shadow:0 6px 18px rgba(0,0,0,.4);
-}
-
-.level-icon{
-  font-size:32px;
-  background:linear-gradient(135deg,#ffd54f,#ffb300);
-  color:#000;
-  width:52px;
-  height:52px;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.level-number{
-  font-weight:800;
-  font-size:15px;
-  letter-spacing:1px;
-}
-
-.level-name{
-  font-size:13px;
-  opacity:.8;
-  margin-top:2px;
-}
-
-.level-bar{
-  height:6px;
-  background:#111;
-  border-radius:10px;
-  overflow:hidden;
-  margin-top:6px;
-}
-
-.level-bar span{
-  display:block;
-  height:100%;
-  background:linear-gradient(90deg,#00e676,#00c853);
-  width:20%;
-  transition:.3s;
-}
-
-  .balance-card{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  background:linear-gradient(135deg,#1e1e1e,#2b2b2b);
-  padding:14px 16px;
-  border-radius:16px;
-  box-shadow:0 8px 18px rgba(0,0,0,.4);
-  margin-bottom:12px;
-}
-
-.balance-card i{
-  font-size:26px;
-  color:#00e676;
-}
-
-.balance-info{
-  display:flex;
-  flex-direction:column;
-}
-
-.balance-label{
-  font-size:12px;
-  opacity:.7;
-}
-
-.balance-value{
-  font-size:22px;
-  font-weight:800;
-  letter-spacing:.5px;
-}
-
-.balance-value small{
-  font-size:12px;
-  margin-left:6px;
-  opacity:.6;
-}
-  .topup-btn{
-  background:linear-gradient(135deg,#00e676,#00c853);
-  border:none;
-  padding:12px;
-  border-radius:14px;
-  font-weight:800;
-  font-size:15px;
-  color:#000;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  cursor:pointer;
-  box-shadow:0 6px 14px rgba(0,230,118,.4);
-}
- .topup-card{
-  background:#1e1e2f;
-  border-radius:18px;
-  padding:18px;
-  text-align:center;
-  box-shadow:0 0 20px rgba(0,0,0,.5);
-}
-
-.qr{
-  width:180px;
-  border-radius:14px;
-  margin-bottom:12px;
-}
-
-.wallet-address{
-  background:#111;
-  padding:10px;
-  border-radius:10px;
-  font-size:13px;
-  word-break:break-all;
-  margin-bottom:10px;
-}
-
-.copy-btn{
-  background:#2979ff;
-  border:none;
-  padding:10px;
-  width:100%;
-  border-radius:10px;
-  color:white;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.warning{
-  font-size:12px;
-  color:#ffab00;
-  margin-top:10px;
-} 
-
-
-.nav-item{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  font-size:11px;
-  color:#aaa;
-  cursor:pointer;
-  transition:.2s;
-}
-
-.nav-item i{
-  font-size:20px;
-  margin-bottom:4px;
-}
-
-.nav-item.active{
-  color:#00e676;
-}
-
-.nav-item.active i{
-  color:#00e676;
-}
-  body{
-  padding-bottom:70px;
-}
-  /* ===== PROFILE ===== */
-.profile-header{
-  display:flex;
-  gap:14px;
-  align-items:center;
-  margin-bottom:18px;
-}
-
-.avatar{
-  width:64px;
-  height:64px;
-  border-radius:50%;
-  background:linear-gradient(135deg,#00e676,#00c853);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:26px;
-  color:#000;
-}
-
-.profile-info{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-
-.profile-name{
-  font-weight:800;
-  font-size:17px;
-}
-
-.profile-id{
-  font-size:12px;
-  opacity:.6;
-}
-
-.profile-level{
-  font-size:13px;
-  color:#ffd54f;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-
-.profile-stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin-bottom:18px;
-}
-
-.stat{
-  background:#1e1e1e;
-  border-radius:12px;
-  padding:12px;
-  text-align:center;
-}
-
-.stat-number{
-  font-size:18px;
-  font-weight:800;
-  display:block;
-}
-
-.stat-label{
-  font-size:11px;
-  opacity:.6;
-}
-
-.profile-actions{
-  display:grid;
-  gap:10px;
-}
-
-.profile-actions button{
-  background:#111;
-  border:1px solid #333;
-  border-radius:12px;
-  padding:12px;
-  color:#fff;
-  font-weight:700;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.profile-actions button i{
-  color:#00e676;
-}
-
-.profile-actions .danger{
-  background:#2b1111;
-  border-color:#ff5252;
-}
-
-.profile-actions .danger i{
-  color:#ff5252;
-}
-
-.bottom-bar{
-  position: fixed;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: calc(100% - 24px);
-  max-width: 500px;
-  height: 70px;
-
-  background: rgba(20,20,20,0.9);
-  backdrop-filter: blur(12px);
-  border-radius: 24px;
-
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-
-  box-shadow: 0 15px 40px rgba(0,0,0,0.5);
-  z-index: 999;
-}
-
-.bottom-bar button{
-  background: none;
-  border: none;
-  color: #aaa;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  font-size: 11px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-
-.bottom-bar button i{
-  font-size: 20px;
-  margin-bottom: 4px;
-}
-
-/* ⭐ الزر الأوسط */
-.center-btn{
-  width: 56px;          /* كان 64 */
-  height: 56px;         /* كان 64 */
-  border-radius: 50%;
-  background: linear-gradient(135deg,#00e676,#00c853);
-  color: #000 !important;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  position: relative;
-top: -6px;
-  box-shadow: 0 10px 22px rgba(0,230,118,.5);
-  transition: 0.3s;
-}
-
-.center-btn i{
-  font-size: 22px;      /* كان 26 */
-}
-
-.center-btn:active{
-  transform: scale(0.92);
-}
-  .hidden{
+/* =================== BASE =================== */
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #111;
+  color: #fff;
+  padding-bottom: 70px;
+}
+
+.hidden {
   display: none !important;
 }
 
-/* تفعيل */
-.bottom-bar button.active:not(.center-btn){
-  color:#f5c26b;
-}
-  .referral-box{
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
+.box {
+  max-width: 420px;
+  margin: 25px auto;
+  background: #222;
+  border-radius: 16px;
+  padding: 20px;
 }
 
-.referral-box input{
-  flex: 1;
-  padding: 10px;
-  border-radius: 8px;
-  border: none;
-  background: #020617;
-  color: #e5e7eb;
-}
-
-.referral-box button{
-  background: #38bdf8;
-  border: none;
-  border-radius: 8px;
-  padding: 0 14px;
-  color: #020617;
-}
-
-.share-btn{
-  margin-top: 10px;
+input,
+button {
   width: 100%;
-  padding: 10px;
-  border-radius: 10px;
-  background: linear-gradient(135deg,#22d3ee,#38bdf8);
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
   border: none;
-  color: #020617;
+}
+
+button {
+  background: #00c853;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* =================== TASK =================== */
+.task {
+  background: #333;
+  padding: 12px;
+  border-radius: 10px;
+  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* =================== MATCH & BET =================== */
+.match-card {
+  background: linear-gradient(145deg, #1e1e1e, #2a2a2a);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.4);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: bold;
 }
-  .referral-box{
-  display:flex;
-  gap:8px;
+
+.team i {
+  font-size: 20px;
+  color: #00e676;
 }
 
-.referral-box input{
-  flex:1;
-  background:#0f172a;
-  border:1px solid rgba(255,255,255,.15);
-  color:#fff;
-  padding:8px;
-  border-radius:8px;
+.vs {
+  font-size: 13px;
+  opacity: .7;
 }
 
-.referral-box button{
-  background:#38bdf8;
-  border:none;
-  color:#000;
-  padding:8px 12px;
-  border-radius:8px;
-  font-weight:bold;
+.match-time {
+  font-size: 12px;
+  background: #111;
+  padding: 4px 8px;
+  border-radius: 6px;
+  opacity: .8;
 }
-  .bet-btn:disabled{
-  opacity: 0.5;
+
+.bet-buttons {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.bet-btn {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  transition: .2s;
+}
+
+.bet-btn:hover {
+  background: #00c853;
+  color: #000;
+}
+
+.bet-btn.selected {
+  background: #00e676;
+  color: #000;
+}
+
+.bet-btn:disabled {
+  opacity: .5;
   cursor: not-allowed;
 }
-  .section-title-text{
-  font-size:15px;
-  font-weight:700;
-  letter-spacing:.3px;
+
+/* =================== BET STATUS =================== */
+.bet-win { color: #00e676; }
+.bet-lose { color: #ff5252; }
+.bet-pending { color: #ffc107; }
+
+/* =================== SECTION TITLE =================== */
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 18px 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #2f2f2f;
 }
 
-.section-subtext{
-  font-size:12px;
-  opacity:.65;
-  margin-top:4px;
-}
-  .bet-card{
-  background: linear-gradient(145deg,#1c1c1c,#262626);
-  border-radius:16px;
-  padding:14px;
-  margin-bottom:14px;
-  box-shadow:0 8px 18px rgba(0,0,0,.45);
-  border-left:4px solid transparent;
+.title-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.bet-header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:12px;
+.title-left i {
+  color: #00e676;
+  font-size: 20px;
 }
 
-.bet-match{
-  font-weight:800;
-  font-size:14px;
-}
-
-.bet-status{
-  font-size:12px;
-  padding:4px 10px;
-  border-radius:20px;
-  font-weight:bold;
-}
-
-/* BODY */
-.bet-body{
-  display:flex;
-  justify-content:space-between;
-}
-
-.bet-item{
-  display:flex;
-  flex-direction:column;
-  gap:4px;
-}
-
-.bet-item .label{
-  font-size:11px;
-  opacity:.6;
-}
-
-.bet-item .value{
-  font-size:14px;
-  font-weight:700;
-}
-
-/* الحالات */
-.bet-pending{
-  border-left-color:#ffc107;
-}
-.bet-pending .bet-status{
-  background:#ffc107;
-  color:#000;
-}
-
-.bet-win{
-  border-left-color:#00e676;
-}
-.bet-win .bet-status{
-  background:#00e676;
-  color:#000;
-}
-
-.bet-lose{
-  border-left-color:#ff5252;
-}
-.bet-lose .bet-status{
-  background:#ff5252;
-  color:#fff;
-}
-  .level-card{
-  background:#111;
-  border-radius:12px;
-  padding:15px;
-  margin-bottom:12px;
-  border:1px solid #222;
-}
-
-.level-card h4{
-  margin:0 0 8px;
-}
-
-.level-card .price{
-  color:#f0c040;
-  font-weight:bold;
-}
-
-.level-card .tag{
-  display:inline-block;
-  margin-top:8px;
-  font-size:12px;
-  opacity:.8;
-}
-
-.level-card.active{
-  border:1px solid #4caf50;
-}
-
-.level-card.coming,
-.level-card.locked{
-  opacity:.5;
-}
-  .success-box {
-  background: linear-gradient(135deg, #1abc9c, #16a085);
-  color: #fff;
-  padding: 20px;
+/* =================== BACK BUTTON =================== */
+.back-btn {
+  background: linear-gradient(145deg,#1e1e1e,#2b2b2b);
+  border: 1px solid #333;
   border-radius: 12px;
-  text-align: center;
-  animation: fadeIn 0.4s ease;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-weight: 600;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
-}
-  .withdraw-item {
-  background: #111;
-  padding: 10px;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  font-size: 14px;
+.back-btn i {
+  color: #00e676;
 }
 
+.back-btn:hover {
+  background: #00e676;
+  color: #000;
+}
+
+/* =================== BALANCE =================== */
+.balance-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg,#1e1e1e,#2b2b2b);
+  padding: 14px 16px;
+  border-radius: 16px;
+  box-shadow: 0 8px 18px rgba(0,0,0,.4);
+}
+
+.balance-card i {
+  font-size: 26px;
+  color: #00e676;
+}
+
+/* =================== WITHDRAW =================== */
 .withdraw-history {
   background: #111;
   border-radius: 14px;
@@ -792,99 +202,6 @@ top: -6px;
 }
 
 .withdraw-item {
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 12px 14px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 4px 10px rgba(0,0,0,.35);
-  border-left: 5px solid transparent;
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-
-.withdraw-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(0,0,0,.45);
-}
-
-/* 💰 المبلغ */
-.withdraw-item .amount {
-  font-weight: 700;
-  font-size: 15px;
-  color: #fff;
-}
-
-/* 📅 التاريخ */
-.withdraw-item small {
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: #aaa;
-}
-
-/* 🔹 الحالة */
-.withdraw-status {
-  padding: 6px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-/* ⏳ pending */
-.withdraw-item.pending {
-  border-left-color: #f6c343;
-}
-.withdraw-item.pending .withdraw-status {
-  background: rgba(246,195,67,.15);
-  color: #f6c343;
-}
-
-/* ✅ approved */
-.withdraw-item.approved {
-  border-left-color: #38d39f;
-}
-.withdraw-item.approved .withdraw-status {
-  background: rgba(56,211,159,.15);
-  color: #38d39f;
-}
-
-/* ❌ rejected */
-.withdraw-item.rejected {
-  border-left-color: #ff6b6b;
-}
-.withdraw-item.rejected .withdraw-status {
-  background: rgba(255,107,107,.15);
-  color: #ff6b6b;
-}
-  .withdraw-history h4 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-}
-
-.withdraw-history h4 i {
-  color: #f0b90b; /* أصفر Binance */
-}
-  .topup-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.topup-btn i {
-  font-size: 16px;
-}
-  .topup-card p i {
-  margin-left: 6px;
-  color: #22c55e; /* أخضر مالي */
-}
-  .withdraw-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -892,6 +209,8 @@ top: -6px;
   border-radius: 12px;
   padding: 12px 14px;
   margin-bottom: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,.35);
+  border-left: 5px solid transparent;
 }
 
 .withdraw-left .amount {
@@ -899,20 +218,10 @@ top: -6px;
   font-size: 15px;
 }
 
-.withdraw-left .amount i {
-  margin-left: 6px;
-  color: #f59e0b;
-}
-
 .withdraw-left .date {
-  display: block;
   font-size: 12px;
-  opacity: 0.7;
+  opacity: .7;
   margin-top: 4px;
-}
-
-.withdraw-left .date i {
-  margin-left: 4px;
 }
 
 .withdraw-status {
@@ -923,67 +232,39 @@ top: -6px;
   gap: 6px;
 }
 
-.withdraw-status.approved {
-  color: #22c55e;
-}
+.withdraw-item.approved { border-left-color: #22c55e; }
+.withdraw-item.rejected { border-left-color: #ef4444; }
+.withdraw-item.pending  { border-left-color: #f59e0b; }
 
-.withdraw-status.rejected {
-  color: #ef4444;
-}
-
-.withdraw-status.pending {
-  color: #f59e0b;
-}
+/* =================== AGREE CENTER =================== */
 .withdraw-agree-center {
-  position: relative;
-
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-
-  width: max-content;        /* 🔥 الحل */
-margin: 25px auto;
-
+  width: max-content;
+  margin: 25px auto;
   direction: rtl;
-  text-align: center;
 }
 
-.withdraw-agree-center label {
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.withdraw-agree-center input {
-  margin: 0;
-  accent-color: #f5b301;
-}
+/* =================== REWARD & PRICE =================== */
 .reward-box,
 .price-box {
   display: flex;
   align-items: center;
   gap: 10px;
-
   padding: 12px 16px;
   border-radius: 12px;
   margin-top: 10px;
-
   font-weight: 700;
   font-size: 15px;
-}
-
   box-shadow: 0 6px 18px rgba(0,0,0,.12);
 }
 
-/* 💰 الأرباح */
- .reward-box {
+.reward-box {
   background: #0f172a;
   color: #22c55e;
   border: 1px solid #22c55e;
-}
-
-.reward-box i {
-  color: #22c55e;
 }
 
 .price-box {
@@ -992,10 +273,7 @@ margin: 25px auto;
   border: 1px solid #38bdf8;
 }
 
-.price-box i {
-  color: #38bdf8;
-} 
- /* صندوق الجوائز العام */
+/* =================== REWARDS BOX =================== */
 #rewardsBox .level-card {
   background: #020617;
   border: 1px solid #1e293b;
@@ -1004,42 +282,16 @@ margin: 25px auto;
   margin-bottom: 15px;
 }
 
-/* العناوين */
 #rewardsBox h4 {
   color: #38bdf8;
-  margin-bottom: 10px;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-/* نص المستويات */
-#rewardsBox p {
-  color: #cbd5f5;
-  margin: 6px 0;
-}
+#activeInvites { color: #facc15; }
+#inviteProgress { color: #38bdf8; }
 
-/* الأرقام (USD) */
-#rewardsBox strong {
-  color: #22c55e;
-}
-
-/* الدعوات المفعّلة */
-#activeInvites {
-  color: #facc15;
-}
-
-/* جائزة 100 USD */
-#rewardsBox .level-card:nth-of-type(2) h4 {
-  color: #facc15;
-}
-
-/* التقدم */
-#inviteProgress {
-  color: #38bdf8;
-}
-
-/* زر غير متاحة بعد */
 #claimBigReward {
   background: #020617;
   border: 1px solid #334155;
@@ -1048,11 +300,7 @@ margin: 25px auto;
   padding: 10px;
   width: 100%;
   cursor: not-allowed;
-} 
- #rewardsBox h4 i {
-  margin-left: 6px;
-  color: #38bdf8;
-} 
+}
 </style>
 </head>
 <body>
