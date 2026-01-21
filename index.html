@@ -936,25 +936,24 @@ top: -6px;
 }
 .withdraw-agree {
   display: flex;
-  flex-direction: row;
+  flex-direction: row-reverse;   /* 🔥 هذا هو السر */
   align-items: center;
-  justify-content: center;   /* ✅ توسيط حقيقي */
+  justify-content: center;
+
   gap: 8px;
-
   width: 100%;
-  margin: 12px auto 0 auto; /* ✅ توسيط داخل الكارد */
-  text-align: center;
+  margin: 15px auto;
 
-  direction: rtl;           /* لأنك عربي */
+  text-align: center;
 }
 
 .withdraw-agree span {
-  display: inline-block;
+  direction: rtl;                /* النص عربي */
   text-align: center;
 }
 
 .withdraw-agree input {
-  margin: 0;                /* 🔥 هذا كان سبب الانحراف */
+  margin: 0;
   accent-color: #f5b301;
 }
 </style>
