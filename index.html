@@ -1777,17 +1777,21 @@ function updateProfileUI(){
       `${location.origin}${location.pathname}?ref=${uid}`;
   }
 }
+let unsubscribeWinBets = null;
+
 function loadWinBetsCount() {
   if (!auth.currentUser) return;
+
+  if (unsubscribeWinBets) unsubscribeWinBets();
 
   const q = query(
     collection(db, "bets"),
     where("userId", "==", auth.currentUser.uid),
-    where("win", "==", true) // 🔥 هذا هو السر
+    where("win", "==", true)
   );
 
-  onSnapshot(q, (snap) => {
-    document.getElementById("winBetsCount").innerText = snap.size;
+  unsubscribeWinBets = onSnapshot(q, (snap) => {
+    winBetsCount.innerText = snap.size;
   });
 }
 
