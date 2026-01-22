@@ -1783,22 +1783,18 @@ function loadWinBetsCount() {
   const q = query(
     collection(db, "bets"),
     where("userId", "==", auth.currentUser.uid),
-    where("status", "==", "win") // 🔥 هذا هو المهم
+    where("win", "==", true) // 🔥 هذا هو السر
   );
 
   onSnapshot(q, (snap) => {
-    const winCount = snap.size; // أسهل وأسرع
-
-    const el = document.getElementById("winBetsCount");
-    if (el) el.innerText = winCount;
+    document.getElementById("winBetsCount").innerText = snap.size;
   });
 }
 
 window.openProfile = ()=>{
   updateProfileUI();
+  loadWinBetsCount();
   showView("profileBox");
-
-  loadWinBetsCount(); // ✅ هنا فقط
 };
  
   /* ================= UPGRADE LEVELS ================= */
