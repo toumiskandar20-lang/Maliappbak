@@ -1782,12 +1782,13 @@ let unsubscribeWinBets = null;
 function loadWinBetsCount() {
   if (!auth.currentUser) return;
 
+  // 🔁 إلغاء القديم إن وجد
   if (unsubscribeWinBets) unsubscribeWinBets();
 
   const q = query(
     collection(db, "bets"),
     where("userId", "==", auth.currentUser.uid),
-    where("win", "==", true)
+    where("status", "==", "win")
   );
 
   unsubscribeWinBets = onSnapshot(q, (snap) => {
@@ -1797,7 +1798,7 @@ function loadWinBetsCount() {
 
 window.openProfile = ()=>{
   updateProfileUI();
-  loadWinBetsCount();
+  loadWinBetsCount(); // ✅
   showView("profileBox");
 };
  
