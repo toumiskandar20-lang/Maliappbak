@@ -1777,28 +1777,19 @@ function updateProfileUI(){
       `${location.origin}${location.pathname}?ref=${uid}`;
   }
 }
-  function loadWinBetsCount() {
+import { collection, query, where, onSnapshot } from "firebase/firestore";
+
+function loadWinBetsCount() {
   if (!auth.currentUser) return;
 
   const q = query(
-    collection(db, "bets"),
-    where("userId", "==", auth.currentUser.uid)
+    collection(db, "bets"),          // أو اسم collection متاعك
+    where("userId", "==", auth.currentUser.uid),
+    where("status", "==", "win")     // 🔥 المهم
   );
 
   onSnapshot(q, (snap) => {
-    let winCount = 0;
-
-    snap.forEach(docSnap => {
-      const b = docSnap.data();
-
-      // ✔️ الرهان محسوب فقط إذا النتيجة موجودة
-      if (b.result !== null && b.prediction === b.result) {
-        winCount++;
-      }
-    });
-
-    const el = document.getElementById("winBetsCount");
-    if (el) el.innerText = winCount;
+    document.getElementById("winBetsCount").innerText = snap.size;
   });
 }
 
