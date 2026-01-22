@@ -1321,7 +1321,52 @@ margin: 25px auto;
   </div>
 
 </div>
+<div class="box hidden" id="infoBox">
 
+  <button onclick="goBack('appBox')" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i>
+    العودة
+  </button>
+
+  <h3 class="upgrade-title">
+    <i class="fa-solid fa-circle-info"></i>
+    معلومات التطبيق
+  </h3>
+
+  <div class="level-card">
+    <h4>
+      <i class="fa-solid fa-mobile-screen-button"></i>
+      حول التطبيق
+    </h4>
+    <p>
+      هذا التطبيق مخصص للتكهنات والمتابعة التفاعلية.
+      جميع البيانات محفوظة بشكل آمن.
+    </p>
+  </div>
+
+  <div class="level-card">
+    <h4>
+      <i class="fa-solid fa-file-contract"></i>
+      الشروط والأحكام
+    </h4>
+    <p>
+      • يمنع إنشاء أكثر من حساب واحد<br>
+      • أي تحايل يؤدي إلى حظر الحساب<br>
+      • طلبات السحب تخضع للمراجعة
+    </p>
+  </div>
+
+  <div class="level-card">
+    <h4>
+      <i class="fa-solid fa-shield-halved"></i>
+      الخصوصية
+    </h4>
+    <p>
+      لا يتم مشاركة بيانات المستخدم مع أي طرف ثالث.
+    </p>
+  </div>
+
+</div>
 <!-- ================= NAV BAR ================= -->
 <div id="navBar" class="bottom-bar hidden">
   <button onclick="openInfo()" class="nav-item">
@@ -1961,6 +2006,9 @@ window.submitWithdraw = async () => {
 
 /* ================= TOP UP ================= */
 window.openTopUp = ()=> showView("topUpBox");
+ window.openInfo = () => {
+  showView("infoBox");
+}; 
 /* ================= COPY TOP UP ADDRESS ================= */
 window.copyAddress = async function () {
   const addressEl = document.querySelector("#topUpBox .wallet-address");
