@@ -1782,31 +1782,7 @@ window.openProfile = ()=>{
   updateProfileUI();
   showView("profileBox");
  };
-  import { collection, query, where, onSnapshot } from "firebase/firestore";
-
-function loadWinBetsCount() {
-  if (!auth.currentUser) return;
-
-  const q = query(
-    collection(db, "bets"), // اسم collection متاع الرهانات
-    where("userId", "==", auth.currentUser.uid)
-  );
-
-  onSnapshot(q, (snap) => {
-    let winCount = 0;
-
-    snap.forEach(doc => {
-      const b = doc.data();
-
-      // ✔️ لازم النتيجة تكون موجودة
-      if (b.result !== null && b.prediction === b.result) {
-        winCount++;
-      }
-    });
-
-    document.getElementById("winBetsCount").innerText = winCount;
-  });
-}
+ 
   /* ================= UPGRADE LEVELS ================= */
 
 const levelsData = [
