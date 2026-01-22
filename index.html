@@ -1782,20 +1782,12 @@ function loadWinBetsCount() {
 
   const q = query(
     collection(db, "bets"),
-    where("userId", "==", auth.currentUser.uid)
+    where("userId", "==", auth.currentUser.uid),
+    where("status", "==", "win") // 🔥 هذا هو المهم
   );
 
   onSnapshot(q, (snap) => {
-    let winCount = 0;
-
-    snap.forEach(docSnap => {
-      const b = docSnap.data();
-
-      // ✔️ الرهان محسوب فقط إذا النتيجة موجودة
-      if (b.result !== null && b.prediction === b.result) {
-        winCount++;
-      }
-    });
+    const winCount = snap.size; // أسهل وأسرع
 
     const el = document.getElementById("winBetsCount");
     if (el) el.innerText = winCount;
