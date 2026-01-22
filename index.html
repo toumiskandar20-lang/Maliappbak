@@ -1777,22 +1777,27 @@ function updateProfileUI(){
       `${location.origin}${location.pathname}?ref=${uid}`;
   }
 }
-let unsubscribeWinBets = null;
-
 function loadWinBetsCount() {
   if (!auth.currentUser) return;
 
-  // 🔁 إلغاء القديم إن وجد
-  if (unsubscribeWinBets) unsubscribeWinBets();
-
   const q = query(
     collection(db, "bets"),
-    where("userId", "==", auth.currentUser.uid),
-    where("status", "==", "win")
+    where("userId", "==", auth.currentUser.uid)
   );
 
+  if (unsubscribeWinBets) unsubscribeWinBets();
+
   unsubscribeWinBets = onSnapshot(q, (snap) => {
-    winBetsCount.innerText = snap.size;
+    let count = 0;
+
+    snap.forEach(doc => {
+      const b = doc.data();
+      if ((b.status || "").trim().toLowerCase() === "win") {
+        count++;
+      }
+    });
+
+    winBetsCount.innerText = count;
   });
 }
 
