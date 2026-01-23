@@ -1397,7 +1397,7 @@ margin: 25px auto;
 <script type="module">
 /* ================= IMPORTS ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
+  import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -1429,6 +1429,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+ 
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    loadWinBetsCount(); // 🔥 هنا
+  }
+}); 
 
 function watchMatchesResults() {
   const q = collection(db, "matches");
@@ -1803,7 +1810,6 @@ function loadWinBetsCount() {
 
 window.openProfile = ()=>{
   updateProfileUI();
-  loadWinBetsCount(); // ✅
   showView("profileBox");
 };
  
