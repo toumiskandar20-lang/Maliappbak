@@ -1430,13 +1430,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
  
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    loadWinBetsCount(); // 🔥 هنا
-  }
-}); 
-
 function watchMatchesResults() {
   const q = collection(db, "matches");
 
@@ -1492,7 +1485,8 @@ function watchMatchesResults() {
   });
 }
 /* ================= GLOBAL ================= */
- let unsubscribeMyBets = null; 
+let unsubscribeWinBets = null;
+  let unsubscribeMyBets = null; 
 let currentView = "authBox";
 let userData = {};
 let matches = [];
@@ -1659,9 +1653,9 @@ onAuthStateChanged(auth, async (user)=>{
 
   updateUI();
   updateProfileUI();
-  
-watchMatchesResults();
-  // ✅ هنا فقط
+
+  loadWinBetsCount();   // ✅ هنا فقط
+  watchMatchesResults();
   fetchMatches();
 
   showView("appBox");
