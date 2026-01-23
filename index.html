@@ -1455,23 +1455,17 @@ function watchMatchesResults() {
         const isWin = bet.choice === match.result;
         const newStatus = isWin ? "win" : "lose";
 
+        // تحديث حالة الرهان
         await updateDoc(betDoc.ref, { status: newStatus });
+
+        // ✅ إن كان ربح
         if (isWin) {
-  await updateDoc(
-    doc(db, "users", bet.userId),
-    {
-      winCount: increment(1)
-    }
-  );
-}
-
-  
-
-            if (auth.currentUser?.uid === bet.userId) {
-              userData.balance += reward;
-              updateUI();
+          await updateDoc(
+            doc(db, "users", bet.userId),
+            {
+              winCount: increment(1)
             }
-          }
+          );
         }
       }
 
