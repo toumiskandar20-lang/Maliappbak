@@ -1661,18 +1661,30 @@ onAuthStateChanged(auth, async (user)=>{
 
   navBar.classList.remove("hidden");
 
-  const snap = await getDoc(doc(db,"users",user.uid));
-  userData = snap.data();
+  watchUserData(user.uid); // ✅ هذا هو المفتاح
 
-  updateUI();
-  updateProfileUI();
-
-  loadWinBetsCount();   // ✅ هنا فقط
+  loadWinBetsCount();
   watchMatchesResults();
   fetchMatches();
 
   showView("appBox");
 });
+ let unsubscribeUser = null;
+
+function watchUserData(uid) {
+  const userRef = doc(db, "users", uid);
+
+  if (unsubscribeUser) unsubscribeUser();
+
+  unsubscribeUser = onSnapshot(userRef, (snap) => {
+    if (!snap.exists()) return;
+
+    userData = snap.data();
+
+    updateUI();
+    updateProfileUI();
+  });
+} 
   window.openRewards = async () => {
   showView("rewardsBox");
   await loadRewards();
