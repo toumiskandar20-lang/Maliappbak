@@ -1449,27 +1449,50 @@ function watchMatchesResults() {
 
       const betsSnap = await getDocs(betsQ);
 
-      for (const betDoc of betsSnap.docs) {
-        const bet = betDoc.data();
+for (const betDoc of betsSnap.docs) {
+  const bet = betDoc.data();
 
-        const isWin = bet.choice === match.result;
-        const newStatus = isWin ? "win" : "lose";
+  const isWin = bet.choice === match.result;
+  const newStatus = isWin ? "win" : "lose";
 
-        // تحديث حالة الرهان
-        await updateDoc(betDoc.ref, { status: newStatus });
+  // تحديث حالة الرهان
+  await updateDoc(betDoc.ref, { status: newStatus });
 
-        // ✅ إن كان ربح
-        if (isWin) {
-          await updateDoc(
-            doc(db, "users", bet.userId),
-            {
-              winCount: increment(1)
-            }
-          );
-        }
-      }
+  // ✅ إذا الرهان رابح
+  if (isWin) {
 
-      // 🔒 إغلاق المباراة
+    // 🔹 نحسب قيمة الربح حسب المستوى
+    const userRef = doc(db, "users", bet.userId);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) continue;
+
+    const user = userSnap.data();
+
+    const levelRewards = {
+      bronze: 0.5,
+      silver: 1,
+      gold: 2,
+      diamond: 3
+    };
+
+    const userReward = levelRewards[user.level] || 0;
+
+    // 🔥 هنا الكود متاعك
+    await updateDoc(userRef, {
+      winCount: increment(1),
+      balance: increment(userReward)
+    });
+
+    // تحديث الواجهة لو المستخدم هو نفسه
+    if (auth.currentUser?.uid === bet.userId) {
+      userData.winCount += 1;
+      userData.balance += userReward;
+      updateUI();
+    }
+  }
+}
+
+      // 🔒 مهم جدًا
       await updateDoc(doc(db, "matches", matchId), {
         settled: true
       });
@@ -1482,17 +1505,7 @@ let unsubscribeWinBets = null;
 let currentView = "authBox";
 let userData = {};
 let matches = [];
-const levelRewards = {
-  1: 0.5,
-  2: 1,
-  3: 2,
-  4: 3.5,
-  5: 5
-};
-  function computeBalance(winCount, level) {
-  const reward = levelRewards[level] || 0;
-  return Number((winCount * reward).toFixed(2));
-}
+
 /* ================= VIEW SYSTEM (المهم) ================= */
 function showView(id){
   currentView = id;
@@ -1546,13 +1559,10 @@ const withdrawBalance = document.getElementById("withdrawBalance");
 const winBetsCount = document.getElementById("winBetsCount");
   /* ================= UI ================= */
 function updateUI(){
-  const wins = userData.winCount || 0;
-  const lvl  = userData.level || 0;
+  const bal = Number(userData.balance || 0);
 
-  const computed = computeBalance(wins, lvl);
-
-  balance.innerText = computed;
-  withdrawBalance.innerText = computed;
+  balance.innerText = bal.toFixed(2);
+  withdrawBalance.innerText = bal.toFixed(2);
 
   updateLevelUI();
 }
@@ -1802,11 +1812,9 @@ function loadWinBetsCount() {
       }
     });
 
-    // 🔥 هنا الحل
     userData.winCount = count;
-    winBetsCount.innerText = count;
-
-    updateUI(); // 🔥 يعيد حساب الرصيد
+winBetsCount.innerText = count;
+// ❌ ما تمسّش الرصيد هنا
   });
 }
  
