@@ -1455,6 +1455,14 @@ function watchMatchesResults() {
         const newStatus = isWin ? "win" : "lose";
 
         await updateDoc(betDoc.ref, { status: newStatus });
+        if (isWin) {
+  await updateDoc(
+    doc(db, "users", bet.userId),
+    {
+      winCount: increment(1)
+    }
+  );
+}
 
         if (isWin) {
           const userRef = doc(db, "users", bet.userId);
@@ -1497,6 +1505,10 @@ const levelRewards = {
   4: 3.5,
   5: 5
 };
+  function computeBalance(winCount, level) {
+  const reward = levelRewards[level] || 0;
+  return Number((winCount * reward).toFixed(2));
+}
 /* ================= VIEW SYSTEM (المهم) ================= */
 function showView(id){
   currentView = id;
@@ -1550,7 +1562,14 @@ const withdrawBalance = document.getElementById("withdrawBalance");
 const winBetsCount = document.getElementById("winBetsCount");
   /* ================= UI ================= */
 function updateUI(){
-  balance.innerText = userData.balance ?? 0;
+  const wins = userData.winCount || 0;
+  const lvl  = userData.level || 0;
+
+  const computed = computeBalance(wins, lvl);
+
+  balance.innerText = computed;
+  withdrawBalance.innerText = computed;
+
   updateLevelUI();
 }
 
@@ -1599,15 +1618,15 @@ window.submitRegister = async ()=>{
 
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
 
-    await setDoc(doc(db,"users",cred.user.uid),{
-      email,
-      phone,
-      balance: 0,
-      level: 0,
-      referredBy: ref || null,
-      bigRewardClaimed: false,
-      createdAt: serverTimestamp()
-    });
+await setDoc(doc(db,"users",cred.user.uid),{
+  email,
+  phone,
+  level: 0,
+  winCount: 0,          // 👈 جديد
+  referredBy: ref || null,
+  bigRewardClaimed: false,
+  createdAt: serverTimestamp()
+});
 
     showView("appBox");
     fetchMatches();
