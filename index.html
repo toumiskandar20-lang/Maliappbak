@@ -1397,13 +1397,15 @@ margin: 25px auto;
 <script type="module">
 /* ================= IMPORTS ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
+
+import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 import {
   getFirestore,
   doc,
@@ -1418,8 +1420,10 @@ import {
   onSnapshot,
   addDoc,
   orderBy,
-  increment   // ✅ أضف هذا
+  increment,
+  runTransaction   // ✅ هنا بالضبط
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyBfMUa-8vsUZ_1r5F79iSKOKqMre99lwbI",
@@ -1442,26 +1446,28 @@ function watchMatchesResults() {
       const matchId = docSnap.id;
 
       const betsQ = query(
-        collection(db, "bets"),
-        where("matchId", "==", matchId),
-        where("status", "==", "pending")
-      );
+  collection(db, "bets"),
+  where("matchId", "==", matchId),
+  where("status", "==", "pending"),
+  where("settled", "==", false)
+);
 
       const betsSnap = await getDocs(betsQ);
 
 for (const betDoc of betsSnap.docs) {
   const bet = betDoc.data();
-
+if (bet.settled === true) continue;
   const isWin = bet.choice === match.result;
   const newStatus = isWin ? "win" : "lose";
 
-  // تحديث حالة الرهان
-  await updateDoc(betDoc.ref, { status: newStatus });
+  // ✅ تحديث الرهان مرة وحدة فقط
+  await updateDoc(betDoc.ref, {
+    status: newStatus,
+    settled: true
+  });
 
   // ✅ إذا الرهان رابح
   if (isWin) {
-
-    // 🔹 نحسب قيمة الربح حسب المستوى
     const userRef = doc(db, "users", bet.userId);
     const userSnap = await getDoc(userRef);
     if (!userSnap.exists()) continue;
@@ -1469,29 +1475,24 @@ for (const betDoc of betsSnap.docs) {
     const user = userSnap.data();
 
     const levelRewards = {
-  0: 0,    // Locked
-  1: 0.5,  // Bronze
-  2: 1,    // Silver
-  3: 2,    // Gold
-  4: 3.5   // Platinum
-};
+      1: 0.5,
+      2: 1,
+      3: 2,
+      4: 3
+    };
 
-const userReward = levelRewards[user.level] || 0;
+    const userReward = levelRewards[user.level] || 0;
 
-await updateDoc(userRef, {
-  winCount: increment(1),
-  balance: increment(userReward)
-});
+    await runTransaction(db, async (transaction) => {
+      const freshSnap = await transaction.get(userRef);
 
-    // تحديث الواجهة لو المستخدم هو نفسه
-    if (auth.currentUser?.uid === bet.userId) {
-      userData.winCount += 1;
-      userData.balance += userReward;
-      updateUI();
-    }
+      transaction.update(userRef, {
+        balance: (freshSnap.data().balance || 0) + userReward,
+        winCount: increment(1)
+      });
+    });
   }
 }
-
       // 🔒 مهم جدًا
       await updateDoc(doc(db, "matches", matchId), {
         settled: true
