@@ -1469,19 +1469,19 @@ for (const betDoc of betsSnap.docs) {
     const user = userSnap.data();
 
     const levelRewards = {
-      bronze: 0.5,
-      silver: 1,
-      gold: 2,
-      diamond: 3
-    };
+  0: 0,    // Locked
+  1: 0.5,  // Bronze
+  2: 1,    // Silver
+  3: 2,    // Gold
+  4: 3.5   // Platinum
+};
 
-    const userReward = levelRewards[user.level] || 0;
+const userReward = levelRewards[user.level] || 0;
 
-    // 🔥 هنا الكود متاعك
-    await updateDoc(userRef, {
-      winCount: increment(1),
-      balance: increment(userReward)
-    });
+await updateDoc(userRef, {
+  winCount: increment(1),
+  balance: increment(userReward)
+});
 
     // تحديث الواجهة لو المستخدم هو نفسه
     if (auth.currentUser?.uid === bet.userId) {
@@ -1616,12 +1616,12 @@ await setDoc(doc(db,"users",cred.user.uid),{
   email,
   phone,
   level: 0,
-  winCount: 0,          // 👈 جديد
+  balance: 0,          // ✅ ضروري
+  winCount: 0,
   referredBy: ref || null,
   bigRewardClaimed: false,
   createdAt: serverTimestamp()
 });
-
     showView("appBox");
     fetchMatches();
 
