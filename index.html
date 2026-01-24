@@ -2131,6 +2131,10 @@ function loadMatches(){
   const locked = lvl === 0;
 
   matches.forEach(m=>{
+    const now = new Date();
+const matchStart = m.startTime?.toDate?.();
+
+const matchStarted = matchStart && now >= matchStart;
     matchesBox.innerHTML += `
       <div class="match-card">
         <div class="match-header">
@@ -2153,8 +2157,9 @@ function loadMatches(){
 }
  
 /* ================= BET ================= */
-window.placeBet = async (matchId, choice, btn)=>{
+window.placeBet = async (matchId, choice, btn) => {
   try {
+    // 🔒 تحقق من المستوى
     const lvl = Number(userData.level) || 0;
     if (lvl === 0) {
       alert("⛔ يجب ترقية المستوى أولًا");
@@ -2164,22 +2169,48 @@ window.placeBet = async (matchId, choice, btn)=>{
     const user = auth.currentUser;
     if (!user) throw "USER NOT LOGGED";
 
+    // 🔒 نجيب المباراة من الذاكرة
     const match = matches.find(m => m.id === matchId);
+    if (!match) {
+      alert("❌ المباراة غير موجودة");
+      return;
+    }
 
+    // 🔒 نمنع الرهان بعد البداية أو بعد الإغلاق
+    if (match.settled === true) {
+      alert("❌ المباراة مغلقة");
+      return;
+    }
+
+    if (match.startTime?.toDate() <= new Date()) {
+      alert("⏱️ لا يمكن التكهّن بعد بداية المباراة");
+      return;
+    }
+
+    // 🔒 نمنع تغيير التكهّن (لأن الوثيقة ثابتة)
     const betRef = doc(db, "bets", `${user.uid}_${matchId}`);
+    const betSnap = await getDoc(betRef);
 
-    await setDoc(betRef,{
+    if (betSnap.exists()) {
+      alert("❌ لا يمكنك تغيير التكهّن");
+      return;
+    }
+
+    // ✅ نضيف الرهان
+    await setDoc(betRef, {
       userId: user.uid,
       matchId: matchId,
-      matchName: match
-        ? `${match.teamA} vs ${match.teamB}`
-        : "مباراة",
+      matchName: `${match.teamA} vs ${match.teamB}`,
       choice: choice,
       status: "pending",
+      settled: false,
       createdAt: serverTimestamp()
     });
 
     alert("✅ تم تسجيل التكهن");
+
+    // 🔕 تعطيل الأزرار بعد الرهان
+    if (btn) btn.disabled = true;
 
   } catch (e) {
     console.error("🔥 BET ERROR:", e);
