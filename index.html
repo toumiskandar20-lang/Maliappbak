@@ -1439,70 +1439,68 @@ function watchMatchesResults() {
   const q = collection(db, "matches");
 
   onSnapshot(q, async (snap) => {
-   for (const docSnap of snap.docs) {
-  const match = docSnap.data();
-  const matchId = docSnap.id;
+    for (const docSnap of snap.docs) {
+      const match = docSnap.data();
+      const matchId = docSnap.id;
 
-  // ⛔ ما عندهاش نتيجة → قيد اللعب
-  if (!match.result) continue;
+      // ⛔ ما عندهاش نتيجة
+      if (!match.result) continue;
 
-  // ⛔ إذا تسكّرت قبل → ما نعاودش
-  if (match.settled === true) continue;
+      // ⛔ متسوّية من قبل
+      if (match.settled === true) continue;
 
-  // 🔥 هنا نعالج الرهانات
-  const betsQ = query(
-    collection(db, "bets"),
-    where("matchId", "==", matchId),
-    where("status", "==", "pending")
-  );
+      const betsQ = query(
+        collection(db, "bets"),
+        where("matchId", "==", matchId),
+        where("status", "==", "pending")
+      );
 
-  const betsSnap = await getDocs(betsQ);
+      const betsSnap = await getDocs(betsQ);
 
-  for (const betDoc of betsSnap.docs) {
-    const bet = betDoc.data();
+      for (const betDoc of betsSnap.docs) {
+        const bet = betDoc.data();
 
-    // ⛔ حماية إضافية
-    if (bet.settled === true) continue;
+        if (bet.settled === true) continue;
 
-    const isWin = bet.choice === match.result;
-    const newStatus = isWin ? "win" : "lose";
+        const isWin = bet.choice === match.result;
+        const newStatus = isWin ? "win" : "lose";
 
-    // تحديث الرهان
-    await updateDoc(betDoc.ref, {
-      status: newStatus,
-      settled: true
-    });
-
-    // ✅ أرباح
-    if (isWin) {
-      const userRef = doc(db, "users", bet.userId);
-
-      await runTransaction(db, async (tx) => {
-        const snapUser = await tx.get(userRef);
-        if (!snapUser.exists()) return;
-
-        const user = snapUser.data();
-
-        const rewards = {
-          1: 0.5,
-          2: 1,
-          3: 2,
-          4: 3
-        };
-
-        const reward = rewards[user.level] || 0;
-
-        tx.update(userRef, {
-          balance: (user.balance || 0) + reward,
-          winCount: increment(1)
+        await updateDoc(betDoc.ref, {
+          status: newStatus,
+          settled: true
         });
+
+        if (isWin) {
+          const userRef = doc(db, "users", bet.userId);
+
+          await runTransaction(db, async (tx) => {
+            const snapUser = await tx.get(userRef);
+            if (!snapUser.exists()) return;
+
+            const user = snapUser.data();
+
+            const rewards = {
+              1: 0.5,
+              2: 1,
+              3: 2,
+              4: 3
+            };
+
+            const reward = rewards[user.level] || 0;
+
+            tx.update(userRef, {
+              balance: (user.balance || 0) + reward,
+              winCount: increment(1)
+            });
+          });
+        }
+      }
+
+      // 🔒 إغلاق المباراة بعد إتمام كل شيء
+      await updateDoc(doc(db, "matches", matchId), {
+        settled: true
       });
     }
-  }
-
-  // 🔒 في الآخر فقط
-  await updateDoc(doc(db, "matches", matchId), {
-    settled: true
   });
 } 
 /* ================= GLOBAL ================= */
