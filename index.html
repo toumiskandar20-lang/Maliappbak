@@ -2226,34 +2226,36 @@ function loadMatches(){
 
     const matchStarted = matchStart && now >= matchStart;
 
-    matchesBox.innerHTML += `
-      <div class="match-card">
+   matchesBox.innerHTML += `
+  <div class="match-card">
 
-        <div class="match-header">
-          <div class="team">${m.teamA}</div>
-          <div class="vs">VS</div>
-          <div class="team">${m.teamB}</div>
-        </div>
+    <!-- ⏱️ الوقت + الحالة -->
+    ${timeHtml}
+    ${statusBadge}
 
-        ${timeHtml}
-        ${statusBadge}
+    <!-- الفرق -->
+    <div class="match-header">
+      <div class="team team-left">${m.teamA}</div>
+      <div class="vs">VS</div>
+      <div class="team team-right">${m.teamB}</div>
+    </div>
 
-        <div class="bet-buttons">
-          <button class="bet-btn"
-            ${locked || matchStarted || m.settled ? "disabled" : ""}
-            onclick="placeBet('${m.id}','1',this)">1</button>
+    <div class="bet-buttons">
+      <button class="bet-btn"
+        ${locked || matchStarted || m.settled ? "disabled" : ""}
+        onclick="placeBet('${m.id}','1',this)">1</button>
 
-          <button class="bet-btn"
-            ${locked || matchStarted || m.settled ? "disabled" : ""}
-            onclick="placeBet('${m.id}','X',this)">X</button>
+      <button class="bet-btn"
+        ${locked || matchStarted || m.settled ? "disabled" : ""}
+        onclick="placeBet('${m.id}','X',this)">X</button>
 
-          <button class="bet-btn"
-            ${locked || matchStarted || m.settled ? "disabled" : ""}
-            onclick="placeBet('${m.id}','2',this)">2</button>
-        </div>
+      <button class="bet-btn"
+        ${locked || matchStarted || m.settled ? "disabled" : ""}
+        onclick="placeBet('${m.id}','2',this)">2</button>
+    </div>
 
-      </div>
-    `;
+  </div>
+`;
   });
 }
 /* ================= BET ================= */
