@@ -1021,42 +1021,33 @@ margin: 25px auto;
 } 
 .match-header {
   display: grid;
-  grid-template-columns: 1fr auto 1fr; /* يسار | VS | يمين */
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 14px;
+  width: 100%;
 }
 
-/* أسماء الفرق */
 .match-header .team {
-  font-size: 14px;
-  font-weight: 600;
-  color: #e5e7eb;
-  max-width: 100%;
+  color: #22c55e;
+  font-weight: 700;
+  font-size: 16px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .match-header .team:first-child {
-  text-align: right;
+  text-align: right;   /* الفريق اليسار */
 }
 
 .match-header .team:last-child {
-  text-align: left;
+  text-align: left;    /* الفريق اليمين */
 }
 
-/* VS */
 .match-header .vs {
-  font-size: 12px;
-  font-weight: 700;
-  color: #9aa4af;
-  letter-spacing: 1px;
-  padding: 2px 6px;
-  border-left: 1px solid #374151;
-  border-right: 1px solid #374151;
-}
- .match-header .team {
-  color: #22c55e;
+  margin: 0 12px;
+  font-weight: 800;
+  font-size: 14px;
+  color: #9ca3af;
 }
 </style>
 </head>
