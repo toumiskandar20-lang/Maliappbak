@@ -887,11 +887,10 @@ top: -6px;
   justify-content: center;
   gap: 10px;
 
-  max-width: 100%;
+  width: 100%;
   margin: 25px auto;
 
   direction: rtl;
-  text-align: right;
 }
 
 .withdraw-agree-center label {
@@ -899,7 +898,7 @@ top: -6px;
   line-height: 1.6;
   cursor: pointer;
 
-  max-width: calc(100% - 26px); /* 🔥 يضمن ظهور كلمة السحب */
+  white-space: nowrap;   /* 🔥 يمنع تكسير الكلام */
 }
 
 .withdraw-agree-center input {
