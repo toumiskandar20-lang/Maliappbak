@@ -882,27 +882,28 @@ top: -6px;
   color: #f59e0b;
 }
 .withdraw-agree-center {
-  position: relative;
-
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 
-  width: max-content;        /* 🔥 الحل */
-margin: 25px auto;
+  max-width: 100%;
+  margin: 25px auto;
 
   direction: rtl;
-  text-align: center;
+  text-align: right;
 }
 
 .withdraw-agree-center label {
-  white-space: nowrap;
+  font-size: 14px;
+  line-height: 1.6;
   cursor: pointer;
+
+  max-width: calc(100% - 26px); /* 🔥 يضمن ظهور كلمة السحب */
 }
 
 .withdraw-agree-center input {
-  margin: 0;
+  flex-shrink: 0;
   accent-color: #f5b301;
 }
 .reward-box,
