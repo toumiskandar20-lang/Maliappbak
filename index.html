@@ -1884,8 +1884,7 @@ function renderLevels() {
     }
 
 const isCurrent = l.level === currentLevel;
-const isNext = l.level === currentLevel + 1;
-
+const canUpgrade = l.level > currentLevel;
 container.innerHTML += `
   <div class="level-card ${isCurrent ? "active" : ""}">
     <h4>مستوى ${l.level}</h4>
@@ -1900,15 +1899,16 @@ container.innerHTML += `
   <span>سعر الترقية: ${l.price} USD</span>
 </div>
     ${
-      isCurrent
-        ? `<span class="tag active">مستواك الحالي</span>`
-        : isNext
-        ? `<button class="upgrade-btn"
-             onclick="upgradeLevel(${l.level}, ${l.price})">
-             ترقية الآن
-           </button>`
-        : `<span class="tag locked">غير متاح</span>`
-    }
+      ${
+  isCurrent
+    ? `<span class="tag active">مستواك الحالي</span>`
+    : canUpgrade
+    ? `<button class="upgrade-btn"
+         onclick="upgradeLevel(${l.level}, ${l.price})">
+         ترقية الآن
+       </button>`
+    : `<span class="tag locked">غير متاح</span>`
+}
   </div>
 `;
   });
