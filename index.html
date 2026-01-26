@@ -1883,34 +1883,40 @@ function renderLevels() {
       return;
     }
 
-const isCurrent = l.level === currentLevel;
-const canUpgrade = l.level > currentLevel;
-container.innerHTML += `
-  <div class="level-card ${isCurrent ? "active" : ""}">
-    <h4>مستوى ${l.level}</h4>
+    const isCurrent = l.level === currentLevel;
+    const canUpgrade = l.level > currentLevel;
 
-   <div class="reward-box">
-  <i class="fa-solid fa-money-bill-wave"></i>
-  <span>${l.reward} لكل تكهّن صحيح</span>
-</div>
+    let actionHtml = "";
+    if (isCurrent) {
+      actionHtml = `<span class="tag active">مستواك الحالي</span>`;
+    } else if (canUpgrade) {
+      actionHtml = `
+        <button class="upgrade-btn"
+          onclick="upgradeLevel(${l.level}, ${l.price})">
+          ترقية الآن
+        </button>
+      `;
+    } else {
+      actionHtml = `<span class="tag locked">غير متاح</span>`;
+    }
 
-<div class="price-box">
-  <i class="fa-solid fa-tag"></i>
-  <span>سعر الترقية: ${l.price} USD</span>
-</div>
-    ${
-      ${
-  isCurrent
-    ? `<span class="tag active">مستواك الحالي</span>`
-    : canUpgrade
-    ? `<button class="upgrade-btn"
-         onclick="upgradeLevel(${l.level}, ${l.price})">
-         ترقية الآن
-       </button>`
-    : `<span class="tag locked">غير متاح</span>`
-}
-  </div>
-`;
+    container.innerHTML += `
+      <div class="level-card ${isCurrent ? "active" : ""}">
+        <h4>مستوى ${l.level}</h4>
+
+        <div class="reward-box">
+          <i class="fa-solid fa-money-bill-wave"></i>
+          <span>${l.reward} لكل تكهّن صحيح</span>
+        </div>
+
+        <div class="price-box">
+          <i class="fa-solid fa-tag"></i>
+          <span>سعر الترقية: ${l.price} USD</span>
+        </div>
+
+        ${actionHtml}
+      </div>
+    `;
   });
 }
   /* ================= WITHDRAW HISTORY ================= */
