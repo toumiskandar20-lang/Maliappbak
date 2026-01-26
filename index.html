@@ -1756,11 +1756,11 @@ async function loadRewards() {
   const currentLevel = Number(userData.level) || 0;
   const currentBalance = Number(userData.balance) || 0;
 
-  // 🔒 يسمح فقط بالترقية للمستوى التالي
-  if (targetLevel !== currentLevel + 1) {
-    alert("❌ يمكنك الترقية للمستوى التالي فقط");
-    return;
-  }
+// 🔒 يمنع الترقية لمستوى أقل أو نفس المستوى
+if (targetLevel <= currentLevel) {
+  alert("❌ هذا المستوى مفعّل بالفعل أو أقل من مستواك");
+  return;
+} 
 
   // 💰 التحقق من الرصيد
   if (currentBalance < price) {
