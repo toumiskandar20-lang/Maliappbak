@@ -1019,18 +1019,33 @@ margin: 25px auto;
   margin-left: 6px;
   color: #38bdf8;
 } 
-  .vs {
-  width: 36px;
-  height: 36px;
-  background: linear-gradient(135deg, #1e90ff, #00c6ff);
-  color: #fff;
-  font-weight: 800;
-  font-size: 13px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,.25);
+.vs {
+  position: relative;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #9aa4af;
+  text-transform: uppercase;
+}
+
+.vs::before,
+.vs::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 28px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #9aa4af);
+}
+
+.vs::before {
+  left: -32px;
+}
+
+.vs::after {
+  right: -32px;
+  background: linear-gradient(to left, transparent, #9aa4af);
 }
 </style>
 </head>
