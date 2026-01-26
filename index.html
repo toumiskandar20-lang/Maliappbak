@@ -1020,17 +1020,21 @@ margin: 25px auto;
   color: #38bdf8;
 } 
 .match-header {
-  position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* يسار | VS | يمين */
   align-items: center;
-  justify-content: space-between;
+  gap: 14px;
 }
 
+/* أسماء الفرق */
 .match-header .team {
-  width: 45%;
-  font-weight: 600;
   font-size: 14px;
+  font-weight: 600;
   color: #e5e7eb;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .match-header .team:first-child {
@@ -1041,34 +1045,15 @@ margin: 25px auto;
   text-align: left;
 }
 
-/* VS ثابتة في الوسط */
+/* VS */
 .match-header .vs {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 1px;
   color: #9aa4af;
-  pointer-events: none;
-}
-
-.match-header .vs::before,
-.match-header .vs::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  width: 26px;
-  height: 1px;
-  background: #9aa4af;
-}
-
-.match-header .vs::before {
-  right: 120%;
-}
-
-.match-header .vs::after {
-  left: 120%;
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-left: 1px solid #374151;
+  border-right: 1px solid #374151;
 }
 </style>
 </head>
