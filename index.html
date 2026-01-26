@@ -1021,7 +1021,7 @@ margin: 25px auto;
 } 
 .match-header {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: 1fr 60px 1fr; /* مسافات متساوية */
   align-items: center;
   width: 100%;
 }
@@ -1036,15 +1036,17 @@ margin: 25px auto;
 }
 
 .match-header .team:first-child {
-  text-align: right;   /* الفريق اليسار */
+  text-align: right;
+  padding-right: 10px;
 }
 
 .match-header .team:last-child {
-  text-align: left;    /* الفريق اليمين */
+  text-align: left;
+  padding-left: 10px;
 }
 
 .match-header .vs {
-  margin: 0 12px;
+  text-align: center;
   font-weight: 800;
   font-size: 14px;
   color: #9ca3af;
