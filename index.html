@@ -881,31 +881,34 @@ top: -6px;
 .withdraw-status.pending {
   color: #f59e0b;
 }
-.withdraw-agree-center {
+.withdraw-agree-center{
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
 
   width: 100%;
-  margin: 25px auto;
+  margin: 25px 0;
 
-  padding-right: 5px; /* 👈 جرّب 0px أو 5px */
   direction: rtl;
-}
-.withdraw-agree-center label {
-  font-size: 14px;
-  line-height: 1.6;
-  cursor: pointer;
-
-  white-space: nowrap;   /* 🔥 يمنع تكسير الكلام */
+  text-align: right;
 }
 
-.withdraw-agree-center input {
+/* 🔥 أهم سطر في الحل */
+.withdraw-agree-center input{
+  width: auto !important;
+  padding: 0;
+  margin: 0;
   flex-shrink: 0;
   accent-color: #f5b301;
 }
-.reward-box,
+
+.withdraw-agree-center label{
+  white-space: nowrap;
+  font-size: 14px;
+  cursor: pointer;
+}
+  .reward-box,
 .price-box {
   display: flex;
   align-items: center;
