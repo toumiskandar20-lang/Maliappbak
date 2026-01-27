@@ -1670,7 +1670,9 @@ let unsubscribeWinBets = null;
 let currentView = "authBox";
 let userData = {};
 let matches = [];
-
+window.openSupport = function () {
+  window.open("https://t.me/maliapp_support", "_blank");
+};
 /* ================= VIEW SYSTEM (المهم) ================= */
 function showView(id){
   currentView = id;
