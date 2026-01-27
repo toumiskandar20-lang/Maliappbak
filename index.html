@@ -1913,20 +1913,19 @@ winBetsCount.innerText = count;
 // ❌ ما تمسّش الرصيد هنا
   });
 }
- function logoutUser(){
+window.logoutUser = function () {
   if (!confirm("هل أنت متأكد من تسجيل الخروج؟")) return;
 
   signOut(auth)
     .then(() => {
-      showView("authBox");        // يرجّعك لواجهة الدخول
       navBar.classList.add("hidden");
+      showView("authBox");
     })
     .catch(error => {
       alert("حدث خطأ أثناء تسجيل الخروج");
       console.error(error);
     });
-}
- 
+};
   /* ================= UPGRADE LEVELS ================= */
 
 const levelsData = [
