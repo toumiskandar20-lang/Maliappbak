@@ -1210,7 +1210,16 @@ top: -6px;
   <span class="stat-number" id="winBetsCount">0</span>
   <span class="stat-label">رهانات رابحة</span>
 </div>
-
+ <div class="profile-section">
+<h4 class="section-title-text">رابط الإحالة الخاص بك</h4>
+    <p class="section-subtext">
+  شارك هذا الرابط مع أصدقائك واحصل على مزايا إضافية عند تسجيلهم.
+</p>
+    <div class="referral-box">
+      <input id="referralLink" readonly>
+      <button onclick="copyReferral()">نسخ</button>
+    </div>
+  </div>
   <div class="profile-actions">
     <button onclick="openTopUp()">
       <i class="fa-solid fa-wallet"></i>
@@ -1227,16 +1236,7 @@ top: -6px;
     </button>
   </div>
 
-  <div class="profile-section">
-<h4 class="section-title-text">رابط الإحالة الخاص بك</h4>
-    <p class="section-subtext">
-  شارك هذا الرابط مع أصدقائك واحصل على مزايا إضافية عند تسجيلهم.
-</p>
-    <div class="referral-box">
-      <input id="referralLink" readonly>
-      <button onclick="copyReferral()">نسخ</button>
-    </div>
-  </div>
+
 <div class="profile-logout">
   <button onclick="logoutUser()" class="logout-btn">
     <i class="fa-solid fa-right-from-bracket"></i>
