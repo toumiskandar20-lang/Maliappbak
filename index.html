@@ -1051,6 +1051,48 @@ top: -6px;
  .match-header .team {
   min-width: 0;
 } 
+  .profile-logout{
+  width: 100%;
+  margin: 35px 0 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.logout-btn{
+  width: 90%;
+  max-width: 320px;
+
+  background: linear-gradient(135deg, #e53935, #c62828);
+  color: #fff;
+
+  border: none;
+  border-radius: 14px;
+  padding: 14px 18px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.logout-btn i{
+  font-size: 16px;
+}
+
+.logout-btn:hover{
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.logout-btn:active{
+  transform: scale(0.98);
+}
 </style>
 </head>
 <body>
@@ -1195,7 +1237,12 @@ top: -6px;
       <button onclick="copyReferral()">نسخ</button>
     </div>
   </div>
-
+<div class="profile-logout">
+  <button onclick="logoutUser()" class="logout-btn">
+    <i class="fa-solid fa-right-from-bracket"></i>
+    تسجيل الخروج
+  </button>
+</div>
 </div>
 
 <!-- ================= WITHDRAW ================= -->
@@ -1865,6 +1912,18 @@ function loadWinBetsCount() {
 winBetsCount.innerText = count;
 // ❌ ما تمسّش الرصيد هنا
   });
+}
+  function logoutUser(){
+  if(!confirm("هل أنت متأكد من تسجيل الخروج؟")) return;
+
+  auth.signOut()
+    .then(() => {
+      window.location.href = "login.html";
+    })
+    .catch(err => {
+      alert("حدث خطأ أثناء تسجيل الخروج");
+      console.error(err);
+    });
 }
  
   /* ================= UPGRADE LEVELS ================= */
