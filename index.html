@@ -1093,6 +1093,15 @@ top: -6px;
 .logout-btn:active{
   transform: scale(0.98);
 }
+ #registerBox h2{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#registerBox h2 i{
+  color: #00e676;
+} 
 </style>
 </head>
 <body>
@@ -1108,7 +1117,10 @@ top: -6px;
 
 <!-- ================= REGISTER ================= -->
 <div class="box hidden" id="registerBox">
-  <h2>📝 إنشاء حساب جديد</h2>
+<h2>
+  <i class="fa-solid fa-user-plus"></i>
+  إنشاء حساب جديد
+</h2>
   <input id="regEmail" type="email" placeholder="📧 البريد الإلكتروني">
   <input id="regPhone" type="tel" placeholder="📱 رقم الهاتف">
   <input id="regPassword" type="password" placeholder="🔑 كلمة المرور">
