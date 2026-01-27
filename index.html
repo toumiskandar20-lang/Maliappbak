@@ -1913,16 +1913,17 @@ winBetsCount.innerText = count;
 // ❌ ما تمسّش الرصيد هنا
   });
 }
-  function logoutUser(){
-  if(!confirm("هل أنت متأكد من تسجيل الخروج؟")) return;
+ function logoutUser(){
+  if (!confirm("هل أنت متأكد من تسجيل الخروج؟")) return;
 
-  auth.signOut()
+  signOut(auth)
     .then(() => {
-      window.location.href = "login.html";
+      showView("authBox");        // يرجّعك لواجهة الدخول
+      navBar.classList.add("hidden");
     })
-    .catch(err => {
+    .catch(error => {
       alert("حدث خطأ أثناء تسجيل الخروج");
-      console.error(err);
+      console.error(error);
     });
 }
  
