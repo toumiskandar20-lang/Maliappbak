@@ -1549,11 +1549,11 @@ top: -6px;
 <button onclick="openRewards()">
   <i class="fa-solid fa-gift"></i><span>الجوائز</span>
 </button>
-
-  <button onclick="alert('الدعم')">
-    <i class="fa-solid fa-headset"></i><span>الدعم</span>
-  </button>
-</div>
+<button onclick="openSupport()">
+  <i class="fa-solid fa-headset"></i>
+  <span>الدعم</span>
+</button>
+  </div>
 <script type="module">
 /* ================= IMPORTS ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -2506,6 +2506,10 @@ window.openMyBets = async ()=>{
     myBetsList.innerHTML = "❌ خطأ في تحميل الرهانات";
   }
 };
+/* ================= SUPPORT ================= */
+function openSupport(){
+  window.open("https://t.me/maliapp_support", "_blank");
+} 
 /* ================= LOGOUT ================= */
 window.logout = async ()=>{
   await signOut(auth);
