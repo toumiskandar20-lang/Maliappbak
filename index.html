@@ -1102,6 +1102,54 @@ top: -6px;
 #registerBox h2 i{
   color: #00e676;
 } 
+ .input-icon{
+  position: relative;
+  width: 100%;
+  margin-bottom: 14px;
+}
+
+.input-icon i{
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #00e676;
+  font-size: 16px;
+}
+
+.input-icon input{
+  width: 100%;
+  padding: 12px 40px 12px 12px;
+  border-radius: 10px;
+  border: 1px solid #2a2a2a;
+  background: #111;
+  color: #fff;
+  font-size: 14px;
+}
+
+/* أزرار */
+.primary-btn{
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 12px;
+  background: linear-gradient(135deg,#00e676,#00c853);
+  border: none;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.secondary-btn{
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid #333;
+  color: #ccc;
+  border-radius: 12px;
+  cursor: pointer;
+} 
 </style>
 </head>
 <body>
@@ -1121,14 +1169,36 @@ top: -6px;
   <i class="fa-solid fa-user-plus"></i>
   إنشاء حساب جديد
 </h2>
-  <input id="regEmail" type="email" placeholder="📧 البريد الإلكتروني">
-  <input id="regPhone" type="tel" placeholder="📱 رقم الهاتف">
-  <input id="regPassword" type="password" placeholder="🔑 كلمة المرور">
-  <input id="regConfirm" type="password" placeholder="🔑 تأكيد كلمة المرور">
-  <button onclick="submitRegister()">✅ تسجيل</button>
-  <button onclick="backToLogin()">⬅ رجوع</button>
+  <div class="input-icon">
+  <i class="fa-solid fa-envelope"></i>
+  <input id="regEmail" type="email" placeholder="البريد الإلكتروني">
 </div>
 
+<div class="input-icon">
+  <i class="fa-solid fa-phone"></i>
+  <input id="regPhone" type="tel" placeholder="رقم الهاتف">
+</div>
+
+<div class="input-icon">
+  <i class="fa-solid fa-lock"></i>
+  <input id="regPassword" type="password" placeholder="كلمة المرور">
+</div>
+
+<div class="input-icon">
+  <i class="fa-solid fa-lock"></i>
+  <input id="regConfirm" type="password" placeholder="تأكيد كلمة المرور">
+</div>
+
+<button onclick="submitRegister()" class="primary-btn">
+  <i class="fa-solid fa-user-plus"></i>
+  تسجيل
+</button>
+
+<button onclick="backToLogin()" class="secondary-btn">
+  <i class="fa-solid fa-arrow-right"></i>
+  رجوع
+</button>
+</div>
 <!-- ================= APP ================= -->
 <div class="box hidden" id="appBox">
 
