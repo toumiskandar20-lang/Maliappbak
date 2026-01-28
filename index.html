@@ -2355,7 +2355,9 @@ function loadMatches(){
 matches.forEach(m => {
 
   const nowUTC = toUTC(new Date());
-  const matchStart = m.startTime?.toDate?.();
+const matchStart = m.startTime
+  ? new Date(m.startTime.replace(" ", "T"))
+  : null;
   const matchUTC = matchStart ? toUTC(matchStart) : null;
 
   let timeHtml = "";
