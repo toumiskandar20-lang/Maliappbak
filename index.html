@@ -2321,6 +2321,16 @@ window.copyReferral = async function () {
     alert("✅ تم نسخ رابط الدعوة");
   }
 };
+function toUTC(date) {
+  return new Date(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
+    date.getUTCHours(),
+    date.getUTCMinutes(),
+    date.getUTCSeconds()
+  );
+} 
 /* ================= MATCHES ================= */
 async function fetchMatches(){
   matchesBox.innerHTML = "⏳ تحميل المباريات...";
@@ -2342,46 +2352,47 @@ function loadMatches(){
 
   const lvl = Number(userData.level ?? 0);
   const locked = lvl === 0;
+matches.forEach(m => {
 
-  matches.forEach(m => {
+  const nowUTC = toUTC(new Date());
+  const matchStart = m.startTime?.toDate?.();
+  const matchUTC = matchStart ? toUTC(matchStart) : null;
 
-    const now = new Date();
-    const matchStart = m.startTime?.toDate?.();
+  let timeHtml = "";
+  let statusBadge = "";
 
-    let timeHtml = "";
-    let statusBadge = "";
+  if (matchStart) {
+    const timeStr = matchStart.toLocaleTimeString("ar-TN", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
 
-    if (matchStart) {
-      const timeStr = matchStart.toLocaleTimeString("ar-TN", {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
+    const dateStr = matchStart.toLocaleDateString("ar-TN", {
+      weekday: "short",
+      day: "numeric",
+      month: "short"
+    });
 
-      const dateStr = matchStart.toLocaleDateString("ar-TN", {
-        weekday: "short",
-        day: "numeric",
-        month: "short"
-      });
-
-      if (now < matchStart) {
-        statusBadge = `<span class="badge upcoming">قادمة</span>`;
-      } else if (m.settled === true) {
-        statusBadge = `<span class="badge finished">انتهت</span>`;
-      } else {
-        statusBadge = `<span class="live-dot">LIVE</span>`;
-      }
-
-      timeHtml = `
-        <div class="pro-time">
-          <i class="fa-regular fa-clock"></i>
-          <span>${dateStr}</span>
-          <span class="sep">|</span>
-          <span>${timeStr}</span>
-        </div>
-      `;
+    if (nowUTC < matchUTC) {
+      statusBadge = `<span class="badge upcoming">قادمة</span>`;
+    } else if (m.settled === true) {
+      statusBadge = `<span class="badge finished">انتهت</span>`;
+    } else {
+      statusBadge = `<span class="live-dot">LIVE</span>`;
     }
 
-    const matchStarted = matchStart && now >= matchStart;
+    timeHtml = `
+      <div class="pro-time">
+        <i class="fa-regular fa-clock"></i>
+        <span>${dateStr}</span>
+        <span class="sep">|</span>
+        <span>${timeStr}</span>
+      </div>
+    `;
+  }
+
+  const matchStarted = matchUTC && nowUTC >= matchUTC;
+
 
    matchesBox.innerHTML += `
   <div class="match-card">
