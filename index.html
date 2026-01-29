@@ -2472,22 +2472,28 @@ window.placeBet = async (matchId, choice, btn) => {
       return;
     }
 
-    // ✅ إنشاء الرهان
-    await setDoc(betRef, {
-      userId: user.uid,
-      matchId: matchId,
-      matchName: `${match.teamA} vs ${match.teamB}`,
-      choice: choice,
-      status: "pending",
-      settled: false,
-      createdAt: serverTimestamp()
-    });
+// ✅ نضيف الرهان
+await setDoc(betRef, {
+  userId: user.uid,
+  matchId: matchId,
+  matchName: `${match.teamA} vs ${match.teamB}`,
+  choice: choice,
+  status: "pending",
+  settled: false,
+  createdAt: serverTimestamp()
+});
 
-    alert("✅ تم تسجيل التكهن");
+// 🚀 تحديث فوري للواجهة (Optimistic UI)
+matches = matches.map(m =>
+  m.id === matchId ? { ...m, userBet: choice } : m
+);
 
-    // 🔕 تعطيل الزر
-    if (btn) btn.disabled = true;
+loadMatches(); // 👈 يعاود يرندر الكروت فوراً
 
+alert("✅ تم تسجيل التكهن");
+
+// 🔕 تعطيل الزر
+if (btn) btn.disabled = true;
   } catch (e) {
     console.error("🔥 BET ERROR:", e);
 
