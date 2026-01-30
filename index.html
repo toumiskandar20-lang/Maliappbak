@@ -1617,7 +1617,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 /* ================= URL CLEAN (HIDE GITHUB) ================= */
 if (window.location.hostname.includes("github.io")) {
-  window.location.replace("https://bit.ly/4k8qiOh");
+  const cleanUrl = "https://bit.ly/4k8qiOh" + window.location.search;
+  window.history.replaceState({}, document.title, cleanUrl);
 }
 /* ================= FIREBASE ================= */
 const firebaseConfig = {
